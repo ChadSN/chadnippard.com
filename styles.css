@@ -159,22 +159,20 @@ footer {
 .project-thumbnail {
     width: 100%; /* Make image fill the width of the project item */
     height: 200px; /* Fixed height for uniformity */
-    object-fit: cover; /* Ensure the image covers the area without distortion */
+    object-fit:contain; /* Ensure the image covers the area without distortion */
+    margin-top: 1em;
 }
 
-.project-name {
+.project-name, .project-description {
     padding: 10px; /* Spacing around text */
     font-size: 1.1em; /* Slightly larger text */
     color: #333;
+    text-align: center;
 }
 
 .project-banner {
     width: 100vw;
-    transition: scale 0.4s;
-}
 
-.project-banner:hover {
-    scale: 102%;
 }
 
 .project-grid-60-40 {
@@ -192,11 +190,22 @@ footer {
 .project-image {
     width: 100%;
     padding: 1em;
-    transition: scale 0.2s;
 }
 
-.project-image:hover {
-    scale: 105%;
+/*//////////////*/
+/* SOCIAL MEDIA */
+/*//////////////*/
+
+.social-media-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    align-items: center;
+    width: 10vh;
+}
+
+.social-media-logo {
+    width: 30px;
+    margin: .5em;
 }
 
 /*///////////////////*/
