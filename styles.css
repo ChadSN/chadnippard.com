@@ -1,0 +1,217 @@
+/* General Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+a {
+    color: #333;
+}
+
+/* Body Styles */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #ffffff;
+    color: #333;
+    display: flex; /* Use flexbox for layout */
+}
+
+/* Side Panel Styles */
+.side-panel {
+    width: 200px; /* Fixed width for side panel */
+    background: linear-gradient(to top, #666, #999);
+    color: #ffffff; /* White text */
+    padding: 20px; /* Padding for side panel */
+    height: 100vh; /* Full height */
+    display: flex; /* Use flex for layout */
+    flex-direction: column; /* Stack items vertically */
+    justify-content: space-between; /* Space between items */
+}
+
+.logo {
+    margin-bottom: 10px; /*Space below logo*/
+    margin-left: auto;
+
+}
+
+.logo-image {
+    width: 150px; /* Set logo width */
+    height: auto; /* Maintain aspect ratio */
+}
+
+.site-name h1 {
+    font-size: 1.5em; /* Font size for site name */
+    margin-bottom: 20px; /* Space below site name */
+    text-align: center; /* Center align the site name */
+}
+
+nav ul {
+    list-style: none; /* Remove bullet points */
+    padding: 0; /* Remove padding */
+}
+
+nav ul li {
+    margin: 25% 0; /* Increased spacing between nav items */
+}
+
+nav ul li a {
+    text-decoration: none; /* Remove underline */
+    color: #ffffff; /* White text color */
+    font-weight: bold; /* Bold text */
+    transition: color 0.2s;
+    transition: font-size 0.2s;
+}
+
+nav ul li a:hover {
+    color: #ddd;
+    font-size: 105%;
+}
+
+/* Footer Styles */
+.nav-footer {
+    text-align: center; /* Center align footer text */
+    margin-top: auto; /* Push footer to the bottom */
+    padding: 10px 0; /* Padding for footer */
+}
+
+/* Main Content Styles */
+main {
+    flex: 1; /* Take up remaining space */
+    padding: 20px; /* Padding for main content */
+}
+
+/* About Container Styles */
+.about-container {
+    max-width: 1200px; /* Set a max width for the about section */
+    margin: 0 auto; /* Center the container */
+}
+
+.about-content {
+    display: flex; /* Use flexbox for alignment */
+    align-items: flex-start; /* Align items at the start */
+}
+
+.about-image {
+    width: 400px; /* Set a smaller width for the image */
+    height: auto; /* Maintain aspect ratio */
+    margin-right: 20px; /* Space between image and text */
+}
+
+.about-text {
+    flex: 1; /* Allow text to take up remaining space */
+}
+
+/* Footer Styles */
+footer {
+    color: #ffffff; /* White text for footer */
+    text-align: center; /* Center align footer text */
+    padding: 10px 0; /* Padding for footer */
+}
+
+/* Contact Container Styles */
+.contact-container {
+    max-width: 600px; /* Set a max width for the contact section */
+    margin: 0 auto; /* Center the container */
+    text-align: center; /* Center text */
+}
+
+.leftarrow {
+    position: fixed;
+    left: 10px;
+    top: 50vh;
+    width: 50px;
+    opacity: 75%;
+}
+
+.leftarrow:hover {
+    opacity: 100%;
+}
+
+/*/////////*/
+/* Project */
+/*/////////*/
+
+/* Projects Container Styles */
+.projects-container {
+    text-align: center; /* Center the heading */
+}
+
+.projects-grid {
+    display: grid; /* Use CSS Grid for layout */
+    grid-template-columns: repeat(3, 1fr); /* 3 columns of equal width */
+    gap: 20px; /* Space between grid items */
+    margin-top: 20px; /* Space above the grid */
+}
+
+.project-item {
+    background-color: #f8f8f8; /* Light gray background for each project */
+    border: 1px solid #ddd; /* Light border */
+    border-radius: 8px; /* Rounded corners */
+    overflow: hidden; /* Hide overflow for rounded corners */
+    transition: scale .2s;
+}
+
+.project-item:hover {
+    scale: 105%;
+}
+
+.project-thumbnail {
+    width: 100%; /* Make image fill the width of the project item */
+    height: 200px; /* Fixed height for uniformity */
+    object-fit: cover; /* Ensure the image covers the area without distortion */
+}
+
+.project-name {
+    padding: 10px; /* Spacing around text */
+    font-size: 1.1em; /* Slightly larger text */
+    color: #333;
+}
+
+.project-banner {
+    width: 100vw;
+    transition: scale 0.4s;
+}
+
+.project-banner:hover {
+    scale: 102%;
+}
+
+.project-grid-60-40 {
+    display: grid;
+    grid-template-columns: 60% 40%;
+    align-items: center;
+}
+
+.project-grid-40-60 {
+    display: grid;
+    grid-template-columns: 40% 60%;
+    align-items: center;
+}
+
+.project-image {
+    width: 100%;
+    padding: 1em;
+    transition: scale 0.2s;
+}
+
+.project-image:hover {
+    scale: 105%;
+}
+
+/*///////////////////*/
+/* Responsive Styles */
+/*///////////////////*/
+
+@media (max-width: 600px) {
+    .side-panel {
+        width: 100%; /* Full width for small screens */
+        height: auto; /* Height auto */
+    }
+    .projects-grid {
+        grid-template-columns: repeat(2, 1fr); /* 2 columns on small screens */
+    }
+    .project-grid-40-60, .project-grid-60-40 {
+        grid-template-columns: repeat(1, 1fr); /* 2 columns on small screens */
+    }
+}

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>Contact Me</title>
+    <style>
+        .email-container {
+            display: none; /* Initially hide the email container */
+            margin-top: 20px; /* Spacing above the email */
+            font-size: 1.2em; /* Font size for email */
+        }
+        .contact-button {
+            padding: 10px 20px; /* Padding for button */
+            background-color: #333; /* Button background color */
+            color: #ffffff; /* Button text color */
+            border: none; /* Remove border */
+            border-radius: 5px; /* Rounded corners */
+            cursor: pointer; /* Pointer cursor on hover */
+            font-size: 1em; /* Font size for button */
+        }
+        .contact-button:hover {
+            background-color: #555; /* Darker background on hover */
+        }
+    </style>
+</head>
+<body>
+    <div id="nav"></div> <!-- This will load the side panel -->
+    <main>
+        <div class="container contact-container">
+            <h1>Contact Me</h1>
+            <button class="contact-button" onclick="showEmail()">Reveal My Email</button>
+            <div class="email-container" id="emailContainer">
+                <p>Email: yourname@example.com</p> <!-- Replace with your actual email -->
+            </div>
+        </div>
+    </main>
+    <script>
+        fetch('nav.html')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('nav').innerHTML = data;
+            });
+
+        function showEmail() {
+            document.getElementById('emailContainer').style.display = 'block'; // Show the email container
+        }
+    </script>
+</body>
+</html>
