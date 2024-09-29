@@ -9,7 +9,7 @@ a:link, a:visited{
     color: #333;
 }
 
-.veil-href:link, .veil-href:visited {
+.gray-href:link, .gray-href:visited {
     color: lightgray;
 }
 
@@ -25,7 +25,11 @@ body {
     background: linear-gradient(to top, #012b37, #017d9f);
 }
 
-.veil-project-description {
+.bloodlust-bg {
+    background: linear-gradient(to top, black, rgb(34, 34, 34));
+}
+
+.white-project-description {
     color: white;
     padding: 10px; /* Spacing around text */
     font-size: 1.1em; /* Slightly larger text */
