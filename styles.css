@@ -5,8 +5,12 @@
     box-sizing: border-box;
 }
 
-a {
+a:link, a:visited{
     color: #333;
+}
+
+.veil-href:link, .veil-href:visited {
+    color: lightgray;
 }
 
 /* Body Styles */
@@ -17,6 +21,16 @@ body {
     display: flex; /* Use flexbox for layout */
 }
 
+.veil-bg {
+    background: linear-gradient(to top, #012b37, #017d9f);
+}
+
+.veil-project-description {
+    color: white;
+    padding: 10px; /* Spacing around text */
+    font-size: 1.1em; /* Slightly larger text */
+    text-align: center;
+}
 /* Side Panel Styles */
 .side-panel {
     width: 200px; /* Fixed width for side panel */
@@ -172,7 +186,13 @@ footer {
 
 .project-banner {
     width: 100vw;
+}
 
+.project-banner-thin {
+    width:100vw;
+    height: 25vh;
+    object-fit:scale-down;
+    display:flex; 
 }
 
 .project-grid-60-40 {
@@ -189,6 +209,16 @@ footer {
 
 .project-image {
     width: 100%;
+    padding: 1em;
+}
+
+.youtube-video {
+    aspect-ratio: 16 / 9;
+    width: 50%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
     padding: 1em;
 }
 
