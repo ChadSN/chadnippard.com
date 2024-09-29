@@ -30,6 +30,9 @@ body {
     padding: 10px; /* Spacing around text */
     font-size: 1.1em; /* Slightly larger text */
     text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    width: 75vh;
 }
 /* Side Panel Styles */
 .side-panel {
