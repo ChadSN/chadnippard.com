@@ -40,10 +40,10 @@ body {
 }
 /* Side Panel Styles */
 .side-panel {
-    width: 200px; /* Fixed width for side panel */
+    width: 20vh; /* Fixed width for side panel */
     background: linear-gradient(to top, #666, #999);
     color: #ffffff; /* White text */
-    padding: 20px; /* Padding for side panel */
+    padding: 1em; /* Padding for side panel */
     height: 100vh; /* Full height */
     display: flex; /* Use flex for layout */
     flex-direction: column; /* Stack items vertically */
@@ -139,9 +139,9 @@ footer {
 
 .leftarrow {
     position: fixed;
-    left: 10px;
+    left: 1vh;
     top: 50vh;
-    width: 50px;
+    width: 5vh;
     opacity: 75%;
 }
 
@@ -192,11 +192,15 @@ footer {
 }
 
 .project-banner {
-    width: 100vw;
+    width: 100%;
+    height: auto;
+    display: flex;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .project-banner-thin {
-    width:100vw;
+    width: 100vw;
     height: 25vh;
     object-fit:scale-down;
     display:flex; 
@@ -206,17 +210,24 @@ footer {
     display: grid;
     grid-template-columns: 60% 40%;
     align-items: center;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .project-grid-40-60 {
     display: grid;
     grid-template-columns: 40% 60%;
     align-items: center;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .project-image {
     width: 100%;
+    height: auto;
     padding: 1em;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .youtube-video {
@@ -259,5 +270,9 @@ footer {
     }
     .project-grid-40-60, .project-grid-60-40 {
         grid-template-columns: repeat(1, 1fr); /* 2 columns on small screens */
+    }
+
+    .youtube-video {
+        width: 100%;
     }
 }
