@@ -1,278 +1,302 @@
-/* General Reset */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-a:link, a:visited{
-    color: #333;
-}
-
-.gray-href:link, .gray-href:visited {
-    color: lightgray;
-}
-
-/* Body Styles */
+/* General Styles */
 body {
+    margin: 0;
     font-family: Arial, sans-serif;
-    background-color: #ffffff;
+    background: linear-gradient(to bottom, #FFDAB9, #FFABAB); /* Peach background */
     color: #333;
-    display: flex; /* Use flexbox for layout */
 }
 
-.veil-bg {
-    background: linear-gradient(to top, #012b37, #017d9f);
+h1 {
+    font-size: xx-large;
 }
 
-.bloodlust-bg {
-    background: linear-gradient(to top, black, rgb(34, 34, 34));
+h3, p {
+    padding: 5px; /* Add padding around h3 and p */
+    margin: 0; /* Remove default margin */
 }
 
-.white-project-description {
-    color: white;
-    padding: 10px; /* Spacing around text */
-    font-size: 1.1em; /* Slightly larger text */
-    text-align: center;
-    margin-left: auto;
-    margin-right: auto;
-    width: 75vh;
-}
-/* Side Panel Styles */
-.side-panel {
-    width: 20vh; /* Fixed width for side panel */
-    background: linear-gradient(to top, #666, #999);
-    color: #ffffff; /* White text */
-    padding: 1em; /* Padding for side panel */
-    height: 100vh; /* Full height */
-    display: flex; /* Use flex for layout */
-    flex-direction: column; /* Stack items vertically */
-    justify-content: space-between; /* Space between items */
+/* Navigation Styles */
+nav {
+    position: fixed;
+    top: 50%; /* Center vertically */
+    left: 0;
+    width: 13vh; /* Further reduced width */
+    transform: translateY(-50%); /* Center the nav vertically */
+    padding: 1vh;
+    transition: opacity 0.3s;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column; /* Stack the links vertically */
+    align-items: flex-start; /* Align links to the left */
+    z-index: 1000; /* Ensure nav is above other content */
 }
 
-.logo {
-    margin-bottom: 10px; /*Space below logo*/
-    margin-left: auto;
-
+nav a {
+    display: block;
+    padding: 2vh; /* Reduced padding */
+    color: #333;
+    text-decoration: none;
+    opacity: 0.5; /* Reduced opacity */
+    font-weight: bold; /* Make text bold */
+    font-size: 14px; /* Smaller font size */
+    transition: opacity 0.3s;
 }
 
-.logo-image {
-    width: 150px; /* Set logo width */
-    height: auto; /* Maintain aspect ratio */
+nav a:hover {
+    opacity: 1; /* Full opacity on hover */
 }
 
-.site-name h1 {
-    font-size: 1.5em; /* Font size for site name */
-    margin-bottom: 20px; /* Space below site name */
-    text-align: center; /* Center align the site name */
-}
-
-nav ul {
-    list-style: none; /* Remove bullet points */
-    padding: 0; /* Remove padding */
-}
-
-nav ul li {
-    margin: 25% 0; /* Increased spacing between nav items */
-}
-
-nav ul li a {
-    text-decoration: none; /* Remove underline */
-    color: #ffffff; /* White text color */
-    font-weight: bold; /* Bold text */
-    transition: color 0.2s;
-    transition: font-size 0.2s;
-}
-
-nav ul li a:hover {
-    color: #ddd;
-    font-size: 105%;
-}
-
-/* Footer Styles */
-.nav-footer {
-    text-align: center; /* Center align footer text */
-    margin-top: auto; /* Push footer to the bottom */
-    padding: 10px 0; /* Padding for footer */
-}
-
-/* Main Content Styles */
-main {
-    flex: 1; /* Take up remaining space */
-    padding: 20px; /* Padding for main content */
-}
-
-/* About Container Styles */
-.about-container {
-    max-width: 1200px; /* Set a max width for the about section */
-    margin: 0 auto; /* Center the container */
+/* Section Styles */
+section {
+    padding-top: 10vh; /* Reduced padding to decrease white space */
+    margin-left: 20vh; /* Adjusted margin for nav width */
 }
 
 .about-content {
-    display: flex; /* Use flexbox for alignment */
-    align-items: flex-start; /* Align items at the start */
-}
-
-.about-image {
-    width: 400px; /* Set a smaller width for the image */
-    height: auto; /* Maintain aspect ratio */
-    margin-right: 20px; /* Space between image and text */
-}
-
-.about-text {
-    flex: 1; /* Allow text to take up remaining space */
-}
-
-/* Footer Styles */
-footer {
-    color: #ffffff; /* White text for footer */
-    text-align: center; /* Center align footer text */
-    padding: 10px 0; /* Padding for footer */
-}
-
-/* Contact Container Styles */
-.contact-container {
-    max-width: 600px; /* Set a max width for the contact section */
-    margin: 0 auto; /* Center the container */
-    text-align: center; /* Center text */
-}
-
-.leftarrow {
-    position: fixed;
-    left: 1vh;
-    top: 50vh;
-    width: 5vh;
-    opacity: 75%;
-}
-
-.leftarrow:hover {
-    opacity: 100%;
-}
-
-/*/////////*/
-/* Project */
-/*/////////*/
-
-/* Projects Container Styles */
-.projects-container {
-    text-align: center; /* Center the heading */
-}
-
-.projects-grid {
-    display: grid; /* Use CSS Grid for layout */
-    grid-template-columns: repeat(3, 1fr); /* 3 columns of equal width */
-    gap: 20px; /* Space between grid items */
-    margin-top: 20px; /* Space above the grid */
-}
-
-.project-item {
-    background-color: #f8f8f8; /* Light gray background for each project */
-    border: 1px solid #ddd; /* Light border */
-    border-radius: 8px; /* Rounded corners */
-    overflow: hidden; /* Hide overflow for rounded corners */
-    transition: scale .2s;
-}
-
-.project-item:hover {
-    scale: 105%;
-}
-
-.project-thumbnail {
-    width: 100%; /* Make image fill the width of the project item */
-    height: 200px; /* Fixed height for uniformity */
-    object-fit:contain; /* Ensure the image covers the area without distortion */
-    margin-top: 1em;
-}
-
-.project-name, .project-description {
-    padding: 10px; /* Spacing around text */
-    font-size: 1.1em; /* Slightly larger text */
-    color: #333;
-    text-align: center;
-}
-
-.project-banner {
-    width: 100%;
-    height: auto;
     display: flex;
-    margin-left: auto;
-    margin-right: auto;
+    align-items: center; /* Align items horizontally in the About section */
 }
 
-.project-banner-thin {
-    width: 100vw;
-    height: 25vh;
-    object-fit:scale-down;
-    display:flex; 
+.circular-photo {
+    border-radius: 50%; /* Make the photo circular */
+    width: 200px; /* Set width for the circular photo */
+    height: 200px; /* Set height for the circular photo */
+    object-fit: cover; /* Maintain aspect ratio without distortion */
+    margin-top: 10px; /* Space above the photo */
 }
 
-.project-grid-60-40 {
-    display: grid;
-    grid-template-columns: 60% 40%;
-    align-items: center;
-    margin-left: auto;
-    margin-right: auto;
+/* Panel Styles */
+.panel {
+    display: flex; /* Use flexbox for layout */
+    margin: 20px 0; /* Space between panels */
 }
 
-.project-grid-40-60 {
-    display: grid;
-    grid-template-columns: 40% 60%;
-    align-items: center;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.project-image {
-    width: 100%;
+.panel img {
+    max-width: 100%;
     height: auto;
-    padding: 1em;
-    margin-left: auto;
-    margin-right: auto;
 }
 
-.youtube-video {
-    aspect-ratio: 16 / 9;
-    width: 50%;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    text-align: center;
-    padding: 1em;
+.panel-content {
+    display: flex;
+    width: 100%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-/*//////////////*/
-/* SOCIAL MEDIA */
-/*//////////////*/
+/* General image styles */
+img {
+    max-width: 100%; /* Ensure images fit within their containers */
+    height: auto; /* Maintain aspect ratio */
+}
 
-.social-media-grid {
+.panel-10 {
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+/* Content and Slideshow Grid */
+.panel-90 {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr 1fr; /* Two equal columns */
+    grid-column-gap: 20px; /* Add gap between columns */
+    align-items: center; /* Vertically center content */
+    padding: 20px;
+    background-color: white; /* White background for panels */
+    border-radius: 10px; /* Rounded corners for panels */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+}
+
+.content {
+    grid-column: 1; /* Place content in the first column */
+}
+
+/* Slideshow Container */
+.slideshow-container {
+    grid-column: 2; /* Place slideshow in the second column */
+    position: relative;
+    display: flex;
+    flex-direction: column; /* Stack slides and description vertically */
+    align-items: center; /* Center content horizontally */
+    margin-bottom: 40px; /* Space for paragraph below */
+}
+.slides {
+    display: none; /* Hide all slides by default */
+    justify-content: center; /* Center the image horizontally */
+    width: 100%; /* Ensure the slides take full width */
+}
+
+.slides img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px; /* Optional: add rounded corners to images */
+}
+
+/* Show the first slide */
+.slides:first-child {
+    display: flex; /* Use flex to center the image */
+}
+
+.prev, .next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    padding: 16px;
+    color: white;
+    font-weight: bold;
+    font-size: 18px;
+    transition: 0.6s ease;
+    border-radius: 0 3px 3px 0;
+    user-select: none;
+}
+
+.prev {
+    left: 0;
+    border-radius: 3px 0 0 3px;
+}
+
+.next {
+    right: 0;
+    border-radius: 3px 0 0 3px;
+}
+
+.prev:hover, .next:hover {
+    background-color: rgba(0, 0, 0, 0.8); /* Darker background on hover */
+}
+
+/* Slideshow description styling */
+.slideshow-description {
+    text-align: center;
+    font-size: 16px;
+    color: #333;
+    margin-top: 10px;
+}
+
+.slideshow-description h3 {
+    margin-bottom: 10px;
+}
+
+.slideshow-description p {
+    margin: 0;
+    padding: 0 15px; /* Optional padding for better text alignment */
+}
+/* YouTube Video */
+.youtube-video {
+    width: 100%; /* Make video responsive */
+    height: auto; /* Maintain aspect ratio */
+}
+
+.youtube-video iframe {
+    width: 100%;
+    height: 100%; /* Ensure iframe takes full height of the container */
+    aspect-ratio: 16 / 9; /* Maintain 16:9 aspect ratio */
+    border: 0; /* Remove border */
+}
+
+/* Contact Grid */
+.contact-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 20px; /* Space between grid items */
+    justify-items: center;
     align-items: center;
-    width: 10vh;
+    padding: 20px;
 }
 
-.social-media-logo {
-    width: 30px;
-    margin: .5em;
+.contact-item {
+    text-align: center; /* Center text and icon */
 }
 
-/*///////////////////*/
-/* Responsive Styles */
-/*///////////////////*/
+.references {
+    display: flex;
+    flex-direction: column; /* Stack references vertically */
+    align-items: center; /* Center align all references */
+    margin: 20px 0; /* Space above and below the references */
+}
 
-@media (max-width: 600px) {
-    .side-panel {
-        width: 100%; /* Full width for small screens */
-        height: auto; /* Height auto */
+.reference {
+    display: flex;
+    align-items: center; /* Align text next to the image */
+    width: 80%; /* Set width for references */
+    margin: 10px 0; /* Add vertical spacing between references */
+}
+
+.reference.left {
+    justify-content: flex-start; /* Align left reference to the start */
+}
+
+.reference.right {
+    justify-content: flex-end; /* Align right reference to the end */
+}
+
+.socials img {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+}
+
+.reveal-email {
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.promotional {
+    display: flex;
+    justify-content: space-between;
+    background-color: black;
+    padding: 7vh;
+}
+
+.promotional div {
+    flex: 1;
+    text-align: center;
+}
+
+.icon {
+    width: 60px;
+    height: auto;
+}
+
+.icon-text {
+    color: white;
+}
+
+/* Media Queries for Responsiveness */
+@media (max-width: 768px) {
+    nav {
+        display: none; /* Hide the navigation for small screens */
     }
-    .projects-grid {
-        grid-template-columns: repeat(2, 1fr); /* 2 columns on small screens */
+    
+    section {
+        margin-left: 0; /* Remove left margin for sections */
+        padding: 20px 10px; /* Adjust padding for smaller screens */
     }
-    .project-grid-40-60, .project-grid-60-40 {
-        grid-template-columns: repeat(1, 1fr); /* 2 columns on small screens */
+
+    .about-content {
+        flex-direction: column; /* Stack photo and text for smaller screens */
+        align-items: center; /* Center align the items */
+        text-align: center; /* Center align text */
+    }
+
+    .circular-photo {
+        margin-right: 0; /* No margin for photo */
+        margin-bottom: 10px; /* Add space below the photo */
     }
 
     .youtube-video {
-        width: 100%;
+        width: 100%; /* 100% width on phones */
+    }
+
+    .panel-90 {
+        grid-template-columns: 1fr; /* Stack columns on smaller screens */
+    }
+
+    .slideshow-container {
+        margin-top: 20px; /* Add space above slideshow when stacked */
+    }
+}
+
+@media (max-width: 480px) {
+    nav {
+        display: none; /* Ensure nav is hidden on extra small screens */
     }
 }
