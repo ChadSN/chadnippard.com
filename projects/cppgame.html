@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>C++ Game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="../css/style.css" rel="stylesheet">
+    <link rel="icon" type="image/ico" href="../assets/images/favicon.ico">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div id="wrapper">
+        <section id="banner">
+            <!--Header-->
+            <header>
+                <h1>C++ Game</h1>
+            </header>
+            <!--Nav Menu-->
+            <nav id="nav">
+                <ul>
+                    <li><a class="active">C++ Game</a></li>
+                    <li><a href="../index.html">HOME</a></li>
+                    <li><a href="../about.html">ABOUT</a></li>
+                    <li><a href="../contact.html">CONTACT</a></li>
+                </ul>
+            </nav>
+        </section>
+        <!--Project Details-->
+        <section class="project-details">
+            <div class="project-details magazine-layout">
+                <div class="magazine-content">
+                    <h2>Project Overview</h2>
+                    <p>
+                        One assignment for my first semester at University of Brighton was to create a game in Visual
+                        Studio with C++.
+                    </p>
+                    <p>
+                        I developed a dynamic two-player C++ console game using Visual Studio with the C++ Console App
+                        template. The game combines strategic progression, radial level design, and an engaging combat
+                        system. Players traverse a board to defeat enemies, collect keys, and unlock levels in a
+                        clockwise sequence following the structure of the Helm of Awe. The final goal is to clear all
+                        levels by vanquishing all NPCs.
+                    </p>
+
+                    <h3>Gameplay and Mechanics</h3>
+                    <ul>
+                        <li><strong>Player Control and Movement:</strong> Players move across the game board using input
+                            keys. The <code>conio.h</code> library provided <code>getch()</code> functionality for
+                            responsive input without requiring the Enter key.</li>
+                        <li><strong>Health and Levelling System:</strong> Players collect health packs and defeat
+                            enemies to gain experience points (XP). Levelling up increases all stats, including
+                            strength, dexterity, and mana, enhancing combat effectiveness.</li>
+                        <li><strong>Combat and Blood Lock Mechanic:</strong> Each enemy must be defeated to progress,
+                            with the final NPC dropping a key to unlock the next level. Combat power is calculated based
+                            on player class attributes:
+                            <ul>
+                                <li>Strength, Dexterity, and Mana determine attack power.</li>
+                                <li>Attacking occurs when a player collides with an enemy.</li>
+                                <li>Experience gained is proportional to damage inflicted.</li>
+                            </ul>
+                        </li>
+                        <li><strong>Revival Mechanic:</strong> In two-player mode, a downed player can be revived by the
+                            other. If both players fall, the game ends with a replay or quit option.</li>
+                    </ul>
+
+                    <h3>Level Design</h3>
+                    <p>
+                        The radial layout reflects the Helm of Awe symbol.
+                    </p>
+                    <ul>
+                        <li>Levels unlock sequentially in a clockwise pattern.</li>
+                        <li>Each prong represents a combat challenge with randomised enemies.</li>
+                    </ul>
+                    <div class="image-grid-3x3 wide">
+                        <img src="../assets/images/cppgame/level 8.png" alt="Level 8 Screenshot">
+                        <img src="../assets/images/cppgame/level 1.png" alt="Level 1 Screenshot">
+                        <img src="../assets/images/cppgame/level 2.png" alt="Level 2 Screenshot">
+                        <img src="../assets/images/cppgame/level 7.png" alt="Level 7 Screenshot">
+                        <img src="../assets/images/cppgame/level 0.png" alt="Level 0 Screenshot">
+                        <img src="../assets/images/cppgame/level 3.png" alt="Level 3 Screenshot">
+                        <img src="../assets/images/cppgame/level 6.png" alt="Level 6 Screenshot">
+                        <img src="../assets/images/cppgame/level 5.png" alt="Level 5 Screenshot">
+                        <img src="../assets/images/cppgame/level 4.png" alt="Level 4 Screenshot">
+                    </div>
+                    <h3>Development and Code Structure</h3>
+                    <ul>
+                        <li><strong>Object-Oriented Design:</strong> The project leverages C++ classes for modular,
+                            maintainable code:
+                            <ul>
+                                <li><strong>Game</strong> class manages game flow, player turns, and level transitions.
+                                </li>
+                                <li><strong>GameObject</strong> class serves as a base for player and NPC objects,
+                                    encapsulating properties like health, position, and stats.</li>
+                                <li><strong>Level</strong> class handles level-specific design and NPC generation.</li>
+                                <li><strong>ConsoleHandle</strong> (custom header) utilizes Windows functions for
+                                    enhanced console control:
+                                    <ul>
+                                        <li><code>SetConsoleTextAttribute()</code> changes text colour for dynamic
+                                            feedback.</li>
+                                        <li><code>SetConsoleDisplayMode()</code> switches to full-screen mode for
+                                            immersive play.</li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </li>
+                        <li><strong>Control Structures:</strong> Loops and conditionals handle core logic:
+                            <ul>
+                                <li>For loops iterate through levels and NPCs.</li>
+                                <li>While loops manage game state until win/loss conditions are met.</li>
+                                <li>If statements determine combat outcomes and XP rewards.</li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <h3>Key Programming Techniques</h3>
+                    <ul>
+                        <li><strong>Modular Header Files:</strong> Each header file defines distinct components,
+                            enhancing reusability and clarity:
+                            <ul>
+                                <li><strong>Main.cpp</strong> coordinates the game loop and player input.</li>
+                                <li><strong>Game.h</strong> and <strong>Game.cpp</strong> manage overall game logic.
+                                </li>
+                                <li><strong>GameObject.h</strong> encapsulates character and enemy behaviour.</li>
+                                <li><strong>Level.h</strong> designs dynamic board states.</li>
+                                <li><strong>ConsoleHandle.h</strong> streamlines Windows-specific functionality.</li>
+                            </ul>
+                        </li>
+                        <li><strong>Colour Feedback and Full-Screen Control:</strong> Using Windows API functions added
+                            visual feedback for health, damage, and key collection events.</li>
+                    </ul>
+
+                    <h3>Conclusion</h3>
+                    <p>
+                        This project demonstrated my ability to design a fully functional C++ game using fundamental
+                        programming concepts, object-oriented principles, and Windows API features. By balancing combat,
+                        strategic levelling, and engaging mechanics within a radial level design, I delivered an
+                        immersive and technically robust console-based gaming experience. Given more time, I would
+                        expand the interactions with more objects, such as opening chests to unlock new items, such as
+                        permanent stat increases, armour and weapons. I would have introduced more vectors, in use for
+                        the NPCs to have unique and enemies with saved states.
+                    </p>
+                </div>
+            </div>
+        </section>
+    </div>
+    <footer>
+        <div id="footer-links">
+            <div id="social-links">
+                <a href="http://linkedin.com/in/chadnippard" target="_blank">LinkedIn</a>
+                <a href="https://www.instagram.com/chad.nippard/" target="_blank">Instagram</a>
+                <a href="https://www.youtube.com/@ChadNippard" target="_blank">YouTube</a>
+            </div>
+            <p>&copy; 2025 Chad Nippard. All rights reserved. Website created by Chad Nippard</p>
+    </footer>
+</body>

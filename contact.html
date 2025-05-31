@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Contact</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="css/style.css" rel="stylesheet">
+    <link rel="icon" type="image/ico" href="assets/images/favicon.ico">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div id="wrapper">
+        <section id="banner">
+            <!--Header-->
+            <header>
+                <h1>Contact Me</h1>
+            </header>
+            <!--Nav Menu-->
+            <nav id="nav">
+                <ul>
+                    <li><a href="index.html">HOME</a></li>
+                    <li><a href="about.html">ABOUT</a></li>
+                    <li><a href="contact.html" class="active">CONTACT</a></li>
+                </ul>
+            </nav>
+        </section>
+        <section id="contact-form-section">
+            <h2>Want to get in touch?</h2>
+            <p>Drop me a line!</p>
+            <form action="https://formspree.io/f/xeokjnja" method="POST">
+
+                <label for="name">Name</label>
+                <input type="text" id="name" name="name" required autocomplete="name">
+
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" required autocomplete="email">
+
+                <label for="message">Message</label>
+                <textarea id="message" name="message" rows="6" required></textarea>
+
+                <button type="submit">Send</button>
+            </form>
+        </section>
+        <footer>
+            <div id="footer-links">
+                <div id="social-links">
+                    <a href="http://linkedin.com/in/chadnippard" target="_blank">LinkedIn</a>
+                    <a href="https://www.instagram.com/chad.nippard/" target="_blank">Instagram</a>
+                    <a href="https://www.youtube.com/@ChadNippard" target="_blank">YouTube</a>
+                </div>
+                <p>&copy; 2025 Chad Nippard. All rights reserved.</p>
+                <p>Website created by Chad Nippard.</p>
+        </footer>
+    </div>
+</body>
+
+</html>

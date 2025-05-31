@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Flax: Bot City</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="../css/style.css" rel="stylesheet">
+    <link rel="icon" type="image/ico" href="../assets/images/favicon.ico">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div id="wrapper">
+        <section id="banner">
+            <!--Header-->
+            <header>
+                <h1>Flax: Bot City</h1>
+            </header>
+            <!--Nav Menu-->
+            <nav id="nav">
+                <ul>
+                    <li><a class="active">Flax: Bot City</a></li>
+                    <li><a href="../index.html">HOME</a></li>
+                    <li><a href="../about.html">ABOUT</a></li>
+                    <li><a href="../contact.html">CONTACT</a></li>
+                </ul>
+            </nav>
+        </section>
+        <!--Project Details-->
+        <section class="project-details">
+            <img src="../assets/images/flax/bot city/Banner.png" alt="Flax: Bot City Banner Image"
+                id="project-banner"></img>
+            <div class="project-details magazine-layout">
+                <div class="magazine-image left">
+                    <img src="../assets/images/flax/bot city/Level.png" alt="Flax: Bot City Level Screenshot">
+                </div>
+                <div class="magazine-content">
+                    <h2>First-person sci-fi platform-shooter - University of Brighton, Semester 2</h2>
+                    <div id="play-here">
+                        <h3>Play Here: </h3>
+                        <a href="https://chadnippard.itch.io/flaxbotcity"
+                            target="_blank">https://chadnippard.itch.io/flaxbotcity</a>
+                    </div>
+                    <h3>Project Overview</h3>
+                    <p>
+                        My second semester at uni I had to create an FPS/RPG with the first-person-shoot template in
+                        Unreal Engine 5 (UE5). I decided to build Flax: Bot City, a momentum-driven shooter-platformer.
+                        The entire level unfolds inside a giant stylised motherboard: players bounce across PCI slots,
+                        ride conveyor belts, grind rails and battle rogue ArmBots while racing to the top of a glowing
+                        Quantum Computer.
+                    </p>
+
+                </div>
+            </div>
+            <div class="project-details magazine-layout">
+                <div class="magazine-content">
+                    <h3>Core Gameplay &amp; Features</h3>
+                    <ul>
+                        <li><strong>Layered Traversal Loop:</strong> Bounce pads → fan updrafts → Thruster Boots →
+                            rail-grinding. Each upgrade re-contextualises earlier spaces and unlocks shortcuts.</li>
+                        <li><strong>Physics Puzzles:</strong> Plug-and-socket gates ask players to drag (or skill-shot)
+                            a cable across platforms.</li>
+                        <li><strong>Expressive Combat:</strong> A burst-fire Raygun fires EMP rings that knock back
+                            airborne ArmBots; Health-Shield stations create risk-reward pockets mid-fight.</li>
+                        <li><strong>Environmental Guidance:</strong> Red circuit splines, uplighting and HintBot
+                            dialogue (self-voiced) steer players without intrusive UI.</li>
+                    </ul>
+                </div>
+                <div class="magazine-image right">
+                    <img src="../assets/images/flax/bot city/QC.png" alt="Flax: Bot City Quantum Computer Screenshot">
+                </div>
+            </div>
+            <div class="project-details magazine-layout">
+                <div class="magazine-image left">
+                    <img src="../assets/images/flax/bot city/ArmBot.png" alt="Flax: Bot City ArmBot Screenshot">
+                </div>
+                <div class="magazine-content">
+                    <h3>Technical &amp; Design Highlights</h3>
+                    <ul>
+                        <li><strong>Decoupled Blueprint Architecture</strong>
+                            <ul>
+                                <li>Event Dispatchers broadcast global changes (enemy count, collectables).</li>
+                                <li>Re-usable Actor Components (health, flying AI, spline detectors) plug into any
+                                    asset.</li>
+                                <li>Spline-based systems drive circuits, rails, conveyors and wall-run surfaces from one
+                                    parent
+                                    class.</li>
+                            </ul>
+                        </li>
+                        <li><strong>Cross-Module Asset Planning</strong>
+                            <ul>
+                                <li>I modelled bespoke meshes in Blender—Quantum Computer, 24-pin connector, capacitors,
+                                    DNA
+                                    collectable, etc...</li>
+                            </ul>
+                        </li>
+                        <li><strong>Custom Character Controller</strong>
+                            <ul>
+                                <li>Wall-running, thrust-fuel management, rail auto-jump and fall-damage curves are
+                                    managed
+                                    through a tidy CharacterState enum, camera shakes and Niagara FX.</li>
+                            </ul>
+                        </li>
+                        <li><strong>AI &amp; Animation</strong>
+                            <ul>
+                                <li>The ArmBot enemy is fully rigged and animated (idle hover + two melee swings) and
+                                    driven by
+                                    a behaviour-tree/blackboard.</li>
+                            </ul>
+                        </li>
+                        <li><strong>Level Streaming</strong>
+                            <ul>
+                                <li>A shared environment level streams seamlessly between menu and gameplay maps,
+                                    keeping load
+                                    times low.</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="project-details magazine-layout">
+                <div class="magazine-content">
+                    <h3>Development Process</h3>
+                    <h4>Tools</h4>
+                    <ul>
+                        <li>UE5 (Blueprint + Niagara): Core gameplay, VFX</li>
+                        <li>Blender: All hard-surface props, “greeble” &amp; rigged assets.</li>
+                        <li>Audacity: Self-recorded HintBot VO</li>
+                        <li>Photoshop: Emissive masks &amp; UI icons</li>
+                    </ul>
+                    <p>
+                        Frequent play-tests with classmates surfaced issues—fan “yo-yo” forces, rail oscillation,
+                        sensitivity
+                        differences—fixed via distance-based force curves, direction locking and an in-game
+                        look-sensitivity
+                        slider.
+                    </p>
+                </div>
+                <div class="magazine-image right">
+                    <img src="../assets/images/flax/bot city/Greeble.png" alt="Flax: Bot City Greeble Screenshot">
+                </div>
+            </div>
+            <div class="project-details magazine-layout">
+                <div class="magazine-image left">
+                    <img src="../assets/images/flax/bot city/Conveyer.png" alt="Flax: Bot City Conveyor Screenshot">
+                </div>
+                <div class="magazine-content">
+                    <h3>Outcome &amp; Next Steps</h3>
+                    <p>
+                        <strong>Flax: Bot City</strong> demonstrates my ability to:
+                    </p>
+                    <ul>
+                        <li>craft readable 3D levels that teach, test and remix mechanics;</li>
+                        <li>architect modular, reusable Blueprints;</li>
+                        <li>model and animate a coherent sci-fi asset set under tight deadlines.</li>
+                    </ul>
+                    <p>
+                        Given more time I would extend conveyor physics to allow counter-movement, add holographic
+                        foliage for
+                        extra life, and fold the movement set into a larger multi-level campaign, and much more!
+                    </p>
+                </div>
+            </div>
+            <div class="youtube-video">
+                <h3>Game Walkthrough</h3>
+                <div class="video-wrapper">
+                    <iframe src="https://www.youtube.com/embed/nSwb7Sup1R4" title="YouTube video player" frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowfullscreen>
+                    </iframe>
+                </div>
+            </div>
+        </section>
+        <footer>
+            <div id="footer-links">
+                <div id="social-links">
+                    <a href="http://linkedin.com/in/chadnippard" target="_blank">LinkedIn</a>
+                    <a href="https://www.instagram.com/chad.nippard/" target="_blank">Instagram</a>
+                    <a href="https://www.youtube.com/@ChadNippard" target="_blank">YouTube</a>
+                </div>
+                <p>&copy; 2025 Chad Nippard. All rights reserved.</p>
+                <p>Website created by Chad Nippard.</p>
+        </footer>
+    </div>
+</body>
