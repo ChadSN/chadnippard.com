@@ -679,7 +679,7 @@ footer {
 }
 
 @media (max-width: 700px) {
-    .carousel img {
-        height: 150px;
+    .carousel {
+        display: none;
     }
 }
