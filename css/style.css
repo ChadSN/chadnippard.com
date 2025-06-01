@@ -149,14 +149,14 @@ section {
     padding: 0 2em;
 }
 
-#social-links {
+.social-links {
     display: flex;
     flex-direction: column;
     /* vertical by default (mobile) */
     justify-content: stretch;
 }
 
-#social-links a {
+.social-links a {
     color: #a3472c;
     text-decoration: none;
     transition: color 0.2s;
@@ -164,7 +164,7 @@ section {
     text-align: center;
 }
 
-#social-links a:hover {
+.social-links a:hover {
     color: #3a1408;
 }
 
@@ -180,7 +180,7 @@ section {
         /* Size to content */
     }
 
-    #social-links {
+    .social-links {
         flex: 1 1 0;
         flex-direction: row;
         align-items: center;
@@ -188,7 +188,7 @@ section {
         height: auto;
     }
 
-    #social-links a {
+    .social-links a {
         text-align: center;
         flex: 1 1 0;
     }
@@ -658,7 +658,6 @@ footer {
     box-shadow: 0 2px 8px rgba(90, 35, 16, 0.07);
     margin: 0 1em 1em 1em;
     border-radius: 1em;
-    background: #ffdfc9;
 }
 
 .carousel-track {
