@@ -681,7 +681,7 @@ footer {
 }
 
 @media (max-width: 700px) {
-    .carousel img {
-        height: 100%;
+    .carousel {
+        display: none;
     }
 }
