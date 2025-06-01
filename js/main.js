@@ -53,3 +53,17 @@ Array.from(track.children).forEach(slide => {
 // Start
 goToSlide(0);
 startAutoSlide();
+
+// lightbox functionality
+document.querySelectorAll('.expandable-img').forEach(img => {
+    img.style.cursor = 'zoom-in';
+    img.addEventListener('click', function () {
+        const lightbox = document.getElementById('img-lightbox');
+        const lightboxImg = document.getElementById('lightbox-img');
+        lightboxImg.src = img.src;
+        lightbox.style.display = 'flex';
+    });
+});
+document.getElementById('img-lightbox').addEventListener('click', function () {
+    this.style.display = 'none';
+});
