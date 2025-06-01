@@ -299,7 +299,7 @@ section {
     max-height: 25em;
 }
 
-#play-here {
+.play-here {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -307,18 +307,18 @@ section {
     justify-content: flex-start;
 }
 
-#play-here h3 {
+.play-here h3 {
     font-size: 1.1em;
 }
 
-#play-here a {
+.play-here a {
     color: #a3472c;
     font-weight: 600;
     text-decoration: underline;
     transition: color 0.2s;
 }
 
-#play-here a:hover {
+.play-here a:hover {
     color: #3a1408;
 }
 
