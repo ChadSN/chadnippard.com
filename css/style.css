@@ -275,6 +275,7 @@ section {
     align-items: left;
     margin-left: 1em;
     margin-right: 1em;
+    padding-bottom: 1em;
 }
 
 .project-details h3 {
