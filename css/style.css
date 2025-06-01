@@ -1,6 +1,7 @@
 /* Base styles ---------------------------------------------------------- */
 
-html, body {
+html,
+body {
     width: 100%;
 }
 
@@ -374,6 +375,7 @@ section {
     max-width: 50%;
     aspect-ratio: 16 / 9;
     background: #000;
+    border-radius: 1em;
 }
 
 .video-wrapper iframe {
