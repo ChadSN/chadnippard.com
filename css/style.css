@@ -268,7 +268,7 @@ section {
     }
 }
 
-#tools {
+.tools {
     margin-top: auto;
     color: rgba(78, 50, 34, 0.7);
     text-align: center;
