@@ -678,9 +678,3 @@ footer {
     object-fit: cover;
     border-radius: 1em;
 }
-
-@media (max-width: 700px) {
-    .carousel {
-        display: none;
-    }
-}
