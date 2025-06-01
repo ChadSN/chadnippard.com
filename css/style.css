@@ -194,6 +194,34 @@ section {
     }
 }
 
+@media (max-width: 700px) {
+    #bio {
+        flex-direction: column;
+        align-items: center;
+        padding: 1em;
+        margin-left: 0.5em;
+        margin-right: 0.5em;
+    }
+
+    #bio img {
+        width: 100px;
+        height: 100px;
+        margin-bottom: 1em;
+    }
+
+    #intro-wrap {
+        padding: 0;
+        text-align: center;
+    }
+
+    .social-links {
+        flex-direction: row;
+        justify-content: center;
+        gap: 0.5em;
+        margin-top: 1em;
+    }
+}
+
 /* Projects Section --------------------------------------------------------------- */
 
 #projects {
@@ -695,7 +723,7 @@ footer {
 }
 
 #img-lightbox img {
-    max-width: 90vw;
-    max-height: 90vh;
+    max-width: 95vw;
+    max-height: 80vh;
     box-shadow: 0 0 20px #000;
 }
