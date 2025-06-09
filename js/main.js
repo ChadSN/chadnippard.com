@@ -3,16 +3,17 @@ const slides = Array.from(track.children);
 let currentIndex = 0;
 let interval;
 
+
 // Clone the first slide and append it to the end
 const firstClone = slides[0].cloneNode(true);
 track.appendChild(firstClone);
 
 const totalSlides = slides.length; // original slides count
 
-track.style.transition = 'transform 3s linear';
+track.style.transition = 'transform 10s linear';
 
 function goToSlide(index) {
-    track.style.transition = 'transform 3s linear';
+    track.style.transition = 'transform 10s linear';
     track.style.transform = `translateX(-${index * 100}%)`;
     currentIndex = index;
 }
@@ -22,7 +23,7 @@ function nextSlide() {
 }
 
 function startAutoSlide() {
-    interval = setInterval(nextSlide, 5000); // Change slide every 5 seconds
+    interval = setInterval(nextSlide, 10000) ; // Change slide every x seconds
 }
 
 function stopAutoSlide() {
@@ -52,4 +53,5 @@ Array.from(track.children).forEach(slide => {
 
 // Start
 goToSlide(0);
+nextSlide();
 startAutoSlide();

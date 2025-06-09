@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Google Tag Manager -->
+    <script>(function (w, d, s, l, i) {
+            w[l] = w[l] || []; w[l].push({
+                'gtm.start':
+                    new Date().getTime(), event: 'gtm.js'
+            }); var f = d.getElementsByTagName(s)[0],
+                j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+                    'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+        })(window, document, 'script', 'dataLayer', 'GTM-PRF5264G');</script>
+    <!-- End Google Tag Manager -->
+    <meta charset="UTF-8">
+    <title>Rooty Tooty</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="../../../../css/style.css" rel="stylesheet">
+    <link rel="icon" type="image/ico" href="../../../../assets/images/favicon.ico">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700&display=swap" rel="stylesheet">
+    <link href="path/to/prism-vsc-dark-plus.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/gh/PrismJS/prism-themes/themes/prism-vsc-dark-plus.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-csharp.min.js"></script>
+</head>
+
+<body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PRF5264G" height="0" width="0"
+            style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    <div id="wrapper">
+        <section id="banner">
+            <!--Header-->
+            <header>
+                <h1>Rooty Tooty</h1>
+            </header>
+            <!--Nav Menu-->
+            <nav id="nav">
+                <ul>
+                    <li><a href="../../">Rooty Tooty</a>
+                        <small><em>Blog 001</em></small>
+                    </li>
+                    <li><a href="../../../../">HOME</a></li>
+                    <li><a href="../../../../about/">ABOUT</a></li>
+                    <li><a href="../../../../contact/">CONTACT</a></li>
+                </ul>
+            </nav>
+        </section>
+        <article class="blog-post">
+            <header>
+                <h1>Introducing A* Pathfinding to Rooty Tooty in Unity</h1>
+                <time datetime="2025-06-08">8 June 2025</time>
+                <p class="author">By Chad Nippard</p>
+            </header>
+            <section>
+                <p>
+                    Welcome to the first blog post for <strong>Rooty Tooty</strong>, a board game-inspired western
+                    shooter. In Rooty
+                    Tooty, players face off in 1v1 or 2v2 shootouts, using unique character traits, wild weapons, and
+                    tactical cards.
+                    The action unfolds on a 2 by 20 grid, which immediately made me think about how to handle
+                    character movement in a smart and
+                    flexible way. That's where A* pathfinding comes in.
+                </p>
+                <p>
+                    The game is still a work in progress, being built in the Unity engine. It was originally designed as
+                    a physical board game
+                    by my friend Josh Ruff. After Andy Connacher and I play-tested it, Josh invited us to help bring it
+                    to life as a digital
+                    couch co-op / online game. Andy took the lead on 3D art, I stepped in as lead programmer, and
+                    Josh - who is the game's
+                    lead designer and director - is continuing to develop the core mechanics while also handling 2D art
+                    and 3D modelling.
+                    Oli Ruff joined the team as our sound designer, and the original 2D concept art was created by Moe
+                    McKinney.
+                    It's a collaborative and evolving project, and this devlog is my way of sharing the technical side
+                    of building
+                    Rooty Tooty from the ground up.
+                </p>
+
+                <p>
+                    Next academic year I'll be learning about A* pathfinding at university, but I wanted to
+                    get a head start
+                    and implement it myself for this project. My first step was to organise my Unity scripts with a
+                    clear folder structure, making it easier to manage different systems as the game grows. I have no
+                    doubt that I'll be learning much more about folder structure and script separation on this journey,
+                    and things are bound to get moved about, alas, here's how I
+                    set up my scripts directory:
+                </p>
+                <pre><code class="language-csharp">Assets/
+└── Scripts/
+    ├── Camera/
+        ├── CameraController.cs
+        ├── CameraOrbit.cs
+    ├── Core/
+        |── TurnManager.cs
+    ├── Grid/
+        ├── Cell.cs
+        ├── GridManager.cs
+    ├── Pathfinding/
+        ├── AStarPathFinder.cs
+        ├── PathVisualiser.cs
+    └── Player/
+        ├── GridInputController.cs
+        ├── PlayerCharacter.cs
+        ├── PlayerController.cs
+        </code></pre>
+                <strong>Cell.cs</strong>
+                <p>
+                    To represent each space on the board, I created a simple <code>Cell</code> class. Each cell tracks
+                    its position, whether it's walkable, if it's occupied, and if it provides cover. These properties
+                    are essential for pathfinding and gameplay logic.
+                </p>
+                <pre><code class="language-csharp">// Cell essentials
+public Vector2Int GridPosition { get; }
+public bool IsWalkable { get; set; }
+public bool IsOccupied { get; set; }
+public bool IsCover { get; set; }
+</code></pre>
+                <p>
+                    For A* pathfinding, each cell also stores its movement costs and a reference to its parent cell,
+                    which helps reconstruct the path. This keeps the system flexible and easy to expand as the game
+                    grows.
+                </p>
+                <pre><code class="language-csharp">// Pathfinding variables
+public int GCost, HCost;
+public int FCost => GCost + HCost;
+public Cell Parent { get; set; }
+</code></pre>
+                <strong>GridManager.cs</strong>
+                <p>
+                    With the <code>Cell</code> class ready, I needed a way to build and manage the grid in Unity. The
+                    <code>GridManager</code> script handles creating all the cells, checking which are walkable or
+                    provide cover, and making it easy to find neighbours for pathfinding.
+                </p>
+                <pre><code class="language-csharp">// Singleton pattern for easy access
+public static GridManager Instance { get; private set; }
+
+private void Awake()
+{
+    Instance = this;
+    BuildGrid();
+}
+</code></pre>
+                <p>
+                    The grid automatically updates if I change its size or layout in the editor. I use collision checks
+                    to decide if a cell should be walkable or marked as cover, so I can just drop obstacles into the
+                    scene and the grid updates itself - no manual setup needed.
+                </p>
+                <pre><code class="language-csharp">// Check if a cell is walkable or cover
+bool walkable = !Physics.CheckSphere(worldPoint, CollisionProbeRadius, UnwalkableMask);
+bool isCover = Physics.CheckSphere(worldPoint, CollisionProbeRadius, CoverMask);
+</code></pre>
+                <strong>AStarPathFinder.cs</strong>
+                <p>
+                    With the grid and cells in place, I was ready to tackle the heart of the system: A* pathfinding. My
+                    <code>AStarPathFinder</code> script finds the shortest path between two cells, taking into account
+                    movement limits and obstacles like barrels or occupied cells.
+                </p>
+                <pre><code class="language-csharp">// Finds a path between two cells
+public static List<Cell> FindPath(Cell startCell, Cell targetCell, int maxMoveAmount = 4)
+{
+    // ... open/closed set logic, pathfinding loop
+}
+</code></pre>
+                <p>
+                    I use Manhattan distance as the heuristic, since movement is only up, down, left, or right. Once the
+                    target is reached, the script retraces the path using parent pointers. This approach keeps
+                    pathfinding efficient and easy to debug for a board game layout.
+                </p>
+                <pre><code class="language-csharp">// Manhattan distance heuristic
+private static int GetHeuristic(Cell a, Cell b)
+{
+    return Mathf.Abs(a.GridPosition.x - b.GridPosition.x) + Mathf.Abs(a.GridPosition.y - b.GridPosition.y);
+}
+</code></pre>
+                <strong>PathVisualiser.cs</strong>
+                <p>
+                    After getting A* working, I wanted to see the paths in the scene. My <code>PathVisualiser</code>
+                    script spawns a highlight prefab at each cell along the path, using a transparent material so it
+                    sits just above the board.
+                </p>
+                <pre><code class="language-csharp">// Visualises a path by spawning highlight prefabs
+public class PathVisualiser : MonoBehaviour
+{
+    public List<Cell> CurrentPath;
+    public GameObject cellHighlightPrefab;
+    // ...
+}
+</code></pre>
+                <p>
+                    The highlights update every frame, changing colour based on cell state - red for obstacles, yellow
+                    for
+                    the path, and green for the destination. This visual feedback makes it much easier to debug and
+                    tweak pathfinding logic.
+                </p>
+                <pre><code class="language-csharp">// Example: setting highlight colour
+if (renderer != null)
+{
+    renderer.material.color = isObstacle ? Color.red : PathColor;
+}
+</code></pre>
+                <strong>CameraOrbit.cs</strong>
+                <p>
+                    To give players a great view of the action, I wrote a <code>CameraOrbit</code> script. It lets you
+                    smoothly orbit, zoom, and pan around the board using the mouse and keyboard, with clamped angles and
+                    smooth transitions for a polished feel.
+                </p>
+                <pre><code class="language-csharp">// Basic orbit and zoom setup
+public Transform target;
+public float distance = 15f;
+public float xSpeed = 120f;
+public float ySpeed = 80f;
+</code></pre>
+                <p>
+                    The camera can also follow a player character, keeping the action centred. All movement is handled
+                    in <code>LateUpdate</code> for smoothness, and panning is clamped so you never lose sight of the
+                    board.
+                </p>
+                <pre><code class="language-csharp">// Orbit and zoom logic
+if (Input.GetMouseButton(1)) { /* ... */ }
+distance = Mathf.Lerp(distance, targetDistance, Time.deltaTime * zoomLerpSpeed);
+</code></pre>
+                <strong>GridInputController.cs</strong>
+                <p>
+                    With the board, pathfinding, and camera working, I needed a way for players to interact.
+                    <code>GridInputController</code> handles mouse input for selecting cells and moving characters,
+                    restricting movement to the current move limit and only allowing one player to act at a time.
+                </p>
+                <pre><code class="language-csharp">// Handles player input for grid navigation and movement
+public class GridInputController : MonoBehaviour
+{
+    public PathVisualiser pathVisualiser;
+    public TurnManager turnManager;
+    // ...
+}
+</code></pre>
+                <p>
+                    The script uses raycasts to detect which cell is hovered, previews the path, and starts movement
+                    when a valid cell is clicked. Input is disabled while moving to prevent bugs from rapid clicks.
+                </p>
+                <pre><code class="language-csharp">// Handles mouse input for cell selection and movement
+void HandleMouse() { /* ... raycast and pathfinding logic ... */ }
+</code></pre>
+                <strong>PlayerCharacter.cs</strong>
+                <p>
+                    <code>PlayerCharacter</code> represents each character on the board, tracking health, movement
+                    range, and which cell they occupy. When a move is triggered, it updates cell occupancy and animates
+                    the character smoothly from cell to cell.
+                </p>
+                <pre><code class="language-csharp">
+// Moves the character along the given path
+public IEnumerator MoveAlongPath(List<Cell> path, float unitsPerSecond = 8f)
+{
+    foreach (var cell in path)
+    {
+        // ... update occupancy and move ...
+    }
+}
+</code></pre>
+                <p>
+                    The script also supports spawning at specific cells and handling offsets for multiple players in one
+                    cell. This keeps everything tidy and avoids visual overlap.
+                </p>
+                <strong>PlayerController.cs</strong>
+                <p>
+                    <code>PlayerController</code> is a lightweight script for enabling or disabling input for a player.
+                    This is especially useful in a turn-based system, keeping input logic clean and ensuring only the
+                    active player can act.
+                </p>
+                <pre><code class="language-csharp">// Handles enabling and disabling input for a player character
+public class PlayerController : MonoBehaviour
+{
+    public PlayerCharacter character;
+    private bool inputEnabled = false;
+    // ...
+}
+</code></pre>
+                <strong>TurnManager.cs</strong>
+                <p>
+                    To tie everything together, <code>TurnManager</code> spawns each player at their starting position,
+                    assigns unique offsets for sharing cells, and manages the turn order. Only one player can act at a
+                    time, and the camera focuses on the current player.
+                </p>
+                <pre><code class="language-csharp">// Manages turn order and player spawning
+public class TurnManager : MonoBehaviour
+{
+    public List<GridInputController> players;
+    private int currentPlayerIndex = 0;
+    // ...
+}
+</code></pre>
+                <p>
+                    When a turn ends, the script waits briefly, then advances to the next player and starts their turn.
+                    This keeps gameplay smooth and makes it easy to add more players or tweak the turn order.
+                </p>
+                <strong>CameraController.cs</strong>
+                <p>
+                    <code>CameraController</code> acts as a bridge between the turn system and the camera, telling the
+                    camera to focus on the current player at the start of each turn. This keeps the action front and
+                    centre and makes the game feel polished.
+                </p>
+                <pre><code class="language-csharp">// Focuses the camera on the current player
+public void FocusOnPlayer(PlayerCharacter player)
+{
+    if (cameraOrbit != null && player != null)
+    {
+        cameraOrbit.desiredTargetPosition = player.transform.position;
+        cameraOrbit.followPlayer = player.transform;
+        cameraOrbit.ResetPan();
+    }
+}
+</code></pre>
+                <p>
+                    Writing and building this system for Rooty Tooty has been a fantastic learning experience. I've had
+                    the chance to dive deep into pathfinding, grid management, and Unity's component system, all while
+                    keeping the code flexible enough for future features. Seeing everything come together - from the
+                    grid
+                    and pathfinding to the camera and turn management - has been incredibly satisfying.
+                </p>
+                <p>
+                    Along the way, I've learned the value of breaking complex problems into smaller, manageable scripts
+                    and the importance of visual feedback for debugging and polish. There's still plenty to explore,
+                    like adding AI opponents, more advanced movement, and much more, but I'm excited for what's next.
+                    Thanks for reading!
+                </p>
+                <div class="video-wrapper">
+                    <iframe src="https://www.youtube.com/embed/oh4zESjhldE?si=Y-X-CZcC4U9E48cY"
+                        title="YouTube video player"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowfullscreen>
+                    </iframe>
+                </div>
+                <footer>
+                    <nav>
+                        <a href="../../">← Back to Blog</a>
+                    </nav>
+                </footer>
+        </article>
+    </div>
+    <footer>
+        <div>
+            <div class="social-links">
+                <a href="http://linkedin.com/in/chadnippard" target="_blank">LinkedIn</a>
+                <a href="https://www.instagram.com/chad.nippard/" target="_blank">Instagram</a>
+                <a href="https://www.youtube.com/@ChadNippard" target="_blank">YouTube</a>
+            </div>
+            <p>&copy; 2025 Chad Nippard. All rights reserved.</p>
+            <p>Website created by Chad Nippard.</p>
+        </div>
+    </footer>
+</body>
+
+</html>
