@@ -41,7 +41,7 @@ track.addEventListener('transitionend', () => {
         void track.offsetWidth;
         // Restore transition for next moves
         setTimeout(() => {
-            track.style.transition = 'transform 3s linear';
+            track.style.transition = 'transform 15s linear';
         }, 20);
     }
 });
