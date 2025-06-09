@@ -1,15 +1,27 @@
 const fs = require('fs');
 const path = require('path');
 
-const htmlPath = path.join(__dirname, 'index.html');
-const cssPath = path.join(__dirname, 'css', 'style.css');
-const jsPath = path.join(__dirname, 'js', 'main.js');
+function getAllHtmlFiles(dir, fileList = []) {
+    fs.readdirSync(dir).forEach(file => {
+        const filePath = path.join(dir, file);
+        if (fs.statSync(filePath).isDirectory()) {
+            getAllHtmlFiles(filePath, fileList);
+        } else if (filePath.endsWith('.html')) {
+            fileList.push(filePath);
+        }
+    });
+    return fileList;
+}
+
+const rootDir = __dirname;
+const htmlFiles = getAllHtmlFiles(rootDir);
 
 const timestamp = Date.now();
 
-let html = fs.readFileSync(htmlPath, 'utf8');
-html = html.replace(/css\/style\.css(\?v=\d+)?/g, `css/style.css?v=${timestamp}`);
-html = html.replace(/js\/main\.js(\?v=\d+)?/g, `js/main.js?v=${timestamp}`);
-
-fs.writeFileSync(htmlPath, html);
-console.log('Cache-busting complete!');
+htmlFiles.forEach(htmlPath => {
+    let html = fs.readFileSync(htmlPath, 'utf8');
+    html = html.replace(/css\/style\.css(\?v=\d+)?/g, `css/style.css?v=${timestamp}`);
+    html = html.replace(/js\/main\.js(\?v=\d+)?/g, `js/main.js?v=${timestamp}`);
+    fs.writeFileSync(htmlPath, html);
+    console.log(`Cache-busted: ${htmlPath}`);
+});
