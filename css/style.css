@@ -718,7 +718,7 @@ footer {
 
 .carousel-track {
     display: flex;
-    transition: transform 10s linear;
+    transition: transform 15s linear;
     will-change: transform;
 }
 

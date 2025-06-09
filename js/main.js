@@ -10,10 +10,10 @@ track.appendChild(firstClone);
 
 const totalSlides = slides.length; // original slides count
 
-track.style.transition = 'transform 10s linear';
+track.style.transition = 'transform 15s linear';
 
 function goToSlide(index) {
-    track.style.transition = 'transform 10s linear';
+    track.style.transition = 'transform 15s linear';
     track.style.transform = `translateX(-${index * 100}%)`;
     currentIndex = index;
 }
@@ -23,7 +23,7 @@ function nextSlide() {
 }
 
 function startAutoSlide() {
-    interval = setInterval(nextSlide, 10000) ; // Change slide every x seconds
+    interval = setInterval(nextSlide, 15000); // Change slide every x seconds
 }
 
 function stopAutoSlide() {
