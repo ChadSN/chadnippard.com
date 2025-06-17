@@ -928,6 +928,22 @@ footer {
     display: block;
 }
 
+.caption {
+    font-size: .5rem;
+    font-style: italic;
+    color: #ffdfc9;
+    text-align: center;
+    margin-top: 0;
+}
+
+.blog-image {
+    display: block;
+    margin: 0 auto;
+    max-width: 50%;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 4px rgba(90, 35, 16, 0.07);
+}
+
 /* Code blocks --------------------------------------------------------------- */
 pre code,
 code.language-csharp {

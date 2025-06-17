@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Google Tag Manager -->
+    <script>(function (w, d, s, l, i) {
+            w[l] = w[l] || []; w[l].push({
+                'gtm.start':
+                    new Date().getTime(), event: 'gtm.js'
+            }); var f = d.getElementsByTagName(s)[0],
+                j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+                    'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+        })(window, document, 'script', 'dataLayer', 'GTM-PRF5264G');</script>
+    <!-- End Google Tag Manager -->
+    <meta charset="UTF-8">
+    <title>Rooty Tooty</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description"
+        content="Chad Nippard's portfolio: game development, programming, and creative projects in Unity, Unreal, C++, and more.">
+    <link href="../../../../css/style.css?v=1750170186073" rel="stylesheet">
+    <link rel="icon" type="image/ico" href="../../../../assets/images/favicon.ico">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700&display=swap" rel="stylesheet">
+    <link href="path/to/prism-vsc-dark-plus.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/gh/PrismJS/prism-themes/themes/prism-vsc-dark-plus.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-csharp.min.js"></script>
+</head>
+
+<body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PRF5264G" height="0" width="0"
+            style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    <div id="wrapper">
+        <section id="banner">
+            <!--Header-->
+            <header>
+                <h1>Rooty Tooty</h1>
+            </header>
+            <!--Nav Menu-->
+            <nav id="nav">
+                <ul>
+                    <li><a href="../../">Rooty Tooty</a>
+                        <small><em>Blog 001</em></small>
+                    </li>
+                    <li><a href="../../../../">HOME</a></li>
+                    <li><a href="../../../../about/">ABOUT</a></li>
+                    <li><a href="../../../../contact/">CONTACT</a></li>
+                </ul>
+            </nav>
+        </section>
+        <article class="blog-post">
+            <header>
+                <h1>Menu Flow, Game Setup & World Integration in Rooty Tooty</h1>
+                <time datetime="2025-06-17">17 June 2025</time>
+                <p class="author">By Chad Nippard</p>
+            </header>
+            <section>
+                <p>
+                    Last time, I wrote about pathfinding and grid-based movement - this time I've developed and will
+                    talk about the overall menu flow, game setup system, and how Rooty Tooty elegantly
+                    transitions from its dynamic main menu into live gameplay. There's a surprising amount going on
+                    under the hood
+                    to make it feel smooth, modular, and future-ready.
+                </p>
+
+                <strong>GameSetupData: The Backbone</strong>
+                <p>
+                    At the centre of everything is a static class called <code>GameSetupData</code>. This isn't a
+                    <code>ScriptableObject</code>, and it doesn't live in a scene. Instead, it holds persistent session
+                    data like player count, team
+                    mode, controller assignments, selected characters, CPU flags, and arena selection. It's accessible
+                    from
+                    any script without needing instantiation, making it ideal for storing game state between scenes.
+                </p>
+                <pre><code class="language-csharp">// Inside GameSetupData.cs
+public static int NumPlayers;
+public static int[] CharacterSelections;
+public static ArenaInfo SelectedArenaInfo;
+</code></pre>
+                <p>
+                    When players choose characters and arenas, the data goes into <code>GameSetupData</code>, and the
+                    gameplay scene pulls directly from it.
+                </p>
+
+                <strong>ScriptableObjects: Characters & Arenas</strong>
+                <p>
+                    Two key systems use Unity <code>ScriptableObject</code> assets: <code>CharacterInfo</code> and
+                    <code>ArenaInfo</code>. These act as templates - one for playable characters and the other for
+                    playable arenas. Each prefab
+                    is assigned a ScriptableObject, and those objects store descriptive metadata, UI portraits, movement
+                    stats, and
+                    more. It keeps configuration data out of prefabs and makes balancing easier across the board.
+                </p>
+
+                <strong>Main Menu Flow</strong>
+                <p>
+                    Rooty Tooty begins in the <code>MainMenu</code> scene, with the camera set looking over the town.
+                    From here, players choose between <code>Local</code>, <code>Settings</code> (currently a
+                    placeholder), or <code>Quit</code>. Selecting "Local" initiates the full multiplayer setup flow.
+                </p>
+
+                <p>
+                    Each panel - from team mode to character select - is part of a smooth, stylised UI experience.
+                    As players move through the menu, the camera doesn't just cut between screens. It lerps - easing
+                    from one hand-crafted camera transform to another - revealing different corners of the blockout
+                    town.
+                </p>
+
+                <p>
+                    The world scene itself loads additively in the background via Unity's scene streaming. Andy created
+                    a quick and temporary blockout in Blender in under 5 minutes (it was impressively fast) that let me
+                    visualise panel positions and test transitions. Later, after a proper design session with Andy, Josh
+                    and myself,
+                    we refined the town layout using physical paper cut-outs to map out where key buildings and arena
+                    tiles would sit around the town. That blockout became the foundation of what is seen in the
+                    background of the menu.
+                </p>
+                <img src="../../../../assets/images/rootytooty/papercutout001.jpg" alt="Paper Cutout Layout"
+                    class="blog-image">
+                <img src="../../../../assets/images/rootytooty/blockout001.png" alt="Block out Town" class="blog-image">
+                <strong>Panel Progression</strong>
+                <p>
+                    Menu navigation is handled by <code>MenuManager.cs</code>, which controls the current panel, camera
+                    target,
+                    and manages transitions with a bit of polish. The order is as follows:
+                </p>
+
+                <ol>
+                    <li><strong>MainMenu Panel</strong> - entry point with "Local" as the launch option.</li>
+                    <li><strong>LocalCoopSetup Panel</strong> - here players choose 1v1 or 2v2. This sets
+                        <code>NumPlayers</code> and <code>TeamMode</code> in <code>GameSetupData</code>.
+                    </li>
+                    <li><strong>CharacterSelectPanel</strong> - shows 2 or 4 character slots depending on team mode.
+                        Character choices are saved to <code>GameSetupData.CharacterSelections</code>.</li>
+                    <li><strong>ArenaSelectPanel</strong> - lets you pick from available arenas. When one is selected,
+                        its <code>ArenaInfo</code> is saved into <code>GameSetupData.SelectedArenaInfo</code>.</li>
+                    <li><strong>GameSetupPanel</strong> - final review screen showing all selections: characters, arena,
+                        and mode. The "Play" button starts the match.</li>
+                </ol>
+
+                <strong>LocalCoopSetupController.cs</strong>
+                <p>
+                    This script captures the 1v1 or 2v2 selection, sets the team mode, and pushes the flow forward. It's
+                    simple but critical - everything else hinges on the correct number of player slots and controller
+                    inputs being prepared.
+                </p>
+                <pre><code class="language-csharp">GameSetupData.NumPlayers = 2;
+GameSetupData.TeamMode = 2;
+menuManager.ShowCharacterSelectPanel();
+</code></pre>
+
+                <strong>CharacterSelectPanel.cs</strong>
+                <p>
+                    Character select adapts dynamically: if you're in 1v1, two player slots are shown; if 2v2, all four
+                    appear. Players navigate a grid of characters (pulled from <code>CharacterInfo</code> assets) and
+                    select one each. Once
+                    filled, it triggers a "Next" button to move on.
+                </p>
+
+                <strong>ArenaSelectPanel.cs</strong>
+                <p>
+                    In this panel, players choose through unlockable and unlocked arenas. Locked ones show a brief
+                    description on how to unlock them.
+                    Each arena when selected preview their location in the town via the world camera and a highlight
+                    prefab. The
+                    chosen arena is
+                    stored in
+                    <code>GameSetupData.SelectedArenaInfo</code>.
+                </p>
+
+                <strong>GameSetupPanel.cs</strong>
+                <p>
+                    The final panel gives players a chance to confirm everything: team mode, characters, and arena.
+                    This is the last stop before gameplay starts - and pressing the "Play" button kicks off the scene
+                    load.
+                </p>
+
+                <strong>World Streaming & Play Button</strong>
+                <p>
+                    Pressing play triggers the <code>GameLoader</code> script. Behind the scenes, Unity unloads the
+                    <code>MainMenu</code> scene and loads the <code>Gameplay</code> scene additively, while keeping the
+                    persistent
+                    <code>World</code> scene in memory. This keeps transitions fast, reduces loading stutter, and allows
+                    for seamless visuals between menu and in-game environment.
+                </p>
+                <pre><code class="language-csharp">// In GameLoader.cs
+SceneManager.UnloadSceneAsync("MainMenu");
+SceneManager.LoadSceneAsync("Gameplay", LoadSceneMode.Additive);
+</code></pre>
+
+                <strong>Gameplay-Side Scripts: TurnManager, GridInputController & PlayerCharacter</strong>
+                <p>
+                    On the gameplay side, I updated key scripts to read from <code>GameSetupData</code>:
+                </p>
+                <ul>
+                    <li><code>TurnManager</code> now spawns the correct number of players based on
+                        <code>NumPlayers</code>, assigns
+                        characters from <code>CharacterSelections</code>, and positions the arena using
+                        <code>SelectedArenaInfo.glowPoint</code>.
+                    </li>
+                    <li><code>GridInputController</code> disables input except for the active player in the turn
+                        sequence.</li>
+                    <li><code>PlayerCharacter</code> initialises with the right scriptable-character data and spawns
+                        exactly in the preset grid cell.</li>
+                </ul>
+                <p>
+                    All of this ties gameplay setup directly back to your menu selections, making the flow feel seamless
+                    and cohesive.
+                </p>
+                <p>
+                    The entire system now feels tightly integrated - a user journey that starts with an overlook of the
+                    town and
+                    ends in a shootout without breaking immersion. And all of it driven by centralised data,
+                    well-structured
+                    panels, and a background world that feels alive.
+                </p>
+
+                <p>
+                    In the next post, I'll hopefully have a turn phase system - movement, shooting, and card play -
+                    as well as how each character
+                    executes actions during their round. But for now, I'm thrilled with how the game is stitching
+                    together, and hopefully next time each character will appear differently rather than appearing as
+                    capsule placeholders.
+                </p>
+
+                <p>Thanks again for following along, and be sure to keep up with the blogs.</p>
+                <div class="video-wrapper">
+                    <iframe src="https://www.youtube.com/embed/hDu4cK5CAkE"
+                        title="Rooty Tooty (Working Title) | World streaming test 001"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowfullscreen>
+                    </iframe>
+                </div>
+                <img src="../../../../assets/images/rootytooty/devpic005.jpg" alt="Dev team photo of Andy and Josh"
+                    class="blog-image">
+                <p class="caption">Andy and Josh hard at work</p>
+                <img src="../../../../assets/images/rootytooty/devpic001.jpg" alt="Dev team photo of Andy and Chad"
+                    class="blog-image">
+                <p class="caption">Chad and Andy hard at work</p>
+                <footer>
+                    <nav>
+                        <a href=" ../../">← Back to Blog</a>
+                    </nav>
+                </footer>
+        </article>
+    </div>
+    <footer>
+        <div>
+            <div class="social-links">
+                <a href="http://linkedin.com/in/chadnippard" target="_blank">LinkedIn</a>
+                <a href="https://www.instagram.com/chad.nippard/" target="_blank">Instagram</a>
+                <a href="https://www.youtube.com/@ChadNippard" target="_blank">YouTube</a>
+            </div>
+            <p>&copy; 2025 Chad Nippard. All rights reserved.</p>
+            <p>Website created by Chad Nippard.</p>
+        </div>
+    </footer>
+</body>
+
+</html>
