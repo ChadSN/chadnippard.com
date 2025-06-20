@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://chadnippard.com/</loc>
+  </url>
+  <url>
+    <loc>https://chadnippard.com/about/</loc>
+  </url>
+  <url>
+    <loc>https://chadnippard.com/contact/</loc>
+  </url>
+  <url>
+    <loc>https://chadnippard.com/projects/flax-bot-city/</loc>
+  </url>
+  <url>
+    <loc>https://chadnippard.com/projects/escape-gnipahellir/</loc>
+  </url>
+  <url>
+    <loc>https://chadnippard.com/projects/cpp-game/</loc>
+  </url>
+  <url>
+    <loc>https://chadnippard.com/projects/rooty-tooty/</loc>
+  </url>
+  <url>
+    <loc>https://chadnippard.com/projects/rooty-tooty/blog/blog001/</loc>
+  </url>
+    <url>
+        <loc>https://chadnippard.com/projects/rooty-tooty/blog/blog002/</loc>
+  <url>
+    <loc>https://chadnippard.com/projects/bardgame/</loc>
+  </url>
+  <!-- Add more URLs as you add more projects or blog posts -->
+</urlset>
