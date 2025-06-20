@@ -950,3 +950,23 @@ code.language-csharp {
     font-family: 'Fira Mono', 'Consolas', 'Menlo', monospace;
     overflow-x: auto;
 }
+
+/* 404 page styles --------------------------------------------------------------- */
+.not-found {
+    text-align: center;
+    padding: 4em 1em;
+}
+
+.not-found h1 {
+    font-size: 3em;
+    margin-bottom: 0.5em;
+}
+
+.not-found p {
+    font-size: 1.2em;
+}
+
+.not-found a {
+    color: #ff935e;
+    text-decoration: underline;
+}
