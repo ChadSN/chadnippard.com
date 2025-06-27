@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Google Tag Manager -->
+    <script>(function (w, d, s, l, i) {
+            w[l] = w[l] || []; w[l].push({
+                'gtm.start':
+                    new Date().getTime(), event: 'gtm.js'
+            }); var f = d.getElementsByTagName(s)[0],
+                j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+                    'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+        })(window, document, 'script', 'dataLayer', 'GTM-PRF5264G');</script>
+    <!-- End Google Tag Manager -->
+    <meta charset="UTF-8">
+    <title>Rooty Tooty Blog 003 - Refactoring, UI, and Character Prefabs | Chad Nippard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description"
+        content="Devlog: Refactoring Rooty Tooty with new managers, gameplay UI, and character prefabs. Learning about code architecture, Unity best practices, and collaborative workflows.">
+    <link rel="icon" type="image/ico" href="../../../../assets/images/favicon.ico">
+    <link rel="canonical" href="https://chadnippard.com/projects/rooty-tooty/blog/blog003/">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Rooty Tooty Blog 003 - Refactoring, UI, and Character Prefabs | Chad Nippard">
+    <meta property="og:description"
+        content="Devlog: Refactoring Rooty Tooty with new managers, gameplay UI, and character prefabs. Learning about code architecture, Unity best practices, and collaborative workflows.">
+    <meta property="og:image" content="https://chadnippard.com/assets/images/rootytooty/RootyTootyCard.webp">
+    <meta property="og:url" content="https://chadnippard.com/projects/rooty-tooty/blog/blog003/">
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Rooty Tooty Blog 003 - Refactoring, UI, and Character Prefabs | Chad Nippard">
+    <meta name="twitter:description"
+        content="Devlog: Refactoring Rooty Tooty with new managers, gameplay UI, and character prefabs. Learning about code architecture, Unity best practices, and collaborative workflows.">
+    <meta name="twitter:image" content="https://chadnippard.com/assets/images/rootytooty/RootyTootyCard.webp">
+    <meta name="twitter:url" content="https://chadnippard.com/projects/rooty-tooty/blog/blog003/">
+
+    <link href="../../../../css/style.css?v=1751034775666" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700&display=swap" rel="stylesheet">
+    <!-- PrismJS for code highlighting -->
+    <link href="https://cdn.jsdelivr.net/gh/PrismJS/prism-themes/themes/prism-vsc-dark-plus.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-csharp.min.js"></script>
+</head>
+
+<body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PRF5264G" height="0" width="0"
+            style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    <div id="wrapper">
+        <section id="banner">
+            <header>
+                <h1>Rooty Tooty</h1>
+            </header>
+            <nav id="nav">
+                <ul>
+                    <li><a href="../../">Rooty Tooty</a>
+                        <small><em>Blog 003</em></small>
+                    </li>
+                    <li><a href="../../../../">HOME</a></li>
+                    <li><a href="../../../../about/">ABOUT</a></li>
+                    <li><a href="../../../../contact/">CONTACT</a></li>
+                </ul>
+            </nav>
+        </section>
+        <article class="blog-post">
+            <header>
+                <h1>Refactoring, UI, and Character Prefabs - Rooty Tooty's Next Steps</h1>
+                <time datetime="2025-06-27">27 June 2025</time>
+                <p class="author">By Chad Nippard</p>
+            </header>
+            <section>
+                <p>
+                    Since the last blog, Rooty Tooty has gone through a major refactor and a wave of new features. This
+                    post is all about splitting up the <code>TurnManager</code>, introducing new scripts, and building a
+                    more robust gameplay UI. I've also been learning a lot about Unity best practices, especially around
+                    code architecture and variable visibility.
+                </p>
+
+                <h2>Splitting Up the TurnManager</h2>
+                <p>
+                    The original <code>TurnManager</code> was doing far too much - handling player turns, actions, UI,
+                    and even some player management. As the project grew, it became clear that this
+                    approach was making things harder to debug and extend. To make the codebase more maintainable and
+                    modular, I split it into three new scripts:
+                </p>
+                <ul>
+                    <li><strong>ActionManager</strong> - Handles the queue and execution of player actions (move,
+                        attack, card, etc.), as well as tracking how many actions a player has left each turn.</li>
+                    <li><strong>GameplayUIManager</strong> - Responsible for updating the UI: showing player info, round
+                        number, action history (notifications), and managing the state of action buttons (attack, card,
+                        move, end turn).</li>
+                    <li><strong>PlayerManager</strong> - Keeps track of all player objects, their states, and handles
+                        spawning and switching between them.</li>
+                </ul>
+                <p>
+                    This separation has made it much easier to reason about each part of the game, and scripts now
+                    communicate with each other through clear method calls and events. For example, when a player
+                    finishes their move, <code>ActionManager</code> notifies <code>GameplayUIManager</code> to update
+                    the UI, and <code>PlayerManager</code> to check if the turn should end.
+                </p>
+                <h3>ActionManager Example</h3>
+                <p>
+                    The <code>ActionManager</code> is now the central hub for all player actions. It keeps track of how
+                    many actions a player has left, and ensures that once all actions are used, the turn ends
+                    automatically. Here's a simplified snippet:
+                </p>
+                <pre><code class="language-csharp">// ActionManager.cs
+private int MaxActionsPerTurn = 3;
+private int actionsRemaining;
+private bool[] actionsSpent = new bool[3];
+
+public int ActionsRemaining => actionsRemaining;
+public bool[] ActionsSpent => actionsSpent;
+
+public event Action&lt;int&gt; OnActionsChanged;
+
+public void StartTurn()
+{
+    actionsRemaining = MaxActionsPerTurn;
+    for (int i = 0; i &lt; actionsSpent.Length; i++)
+        actionsSpent[i] = false;
+    OnActionsChanged?.Invoke(actionsRemaining);
+}
+
+public void SpendAction(ActionType type)
+{
+    int idx = (int)type;
+    if (actionsRemaining &gt; 0 &amp;&amp; !actionsSpent[idx])
+    {
+        actionsSpent[idx] = true;
+        actionsRemaining--;
+        OnActionsChanged?.Invoke(actionsRemaining);
+    }
+}
+</code></pre>
+                <p>
+                    This approach has made it much easier to add new action types in the future, and keeps the logic for
+                    action limits in one place.
+                </p>
+                <h3>GameplayUIManager Example</h3>
+                <p>
+                    The <code>GameplayUIManager</code> is responsible for keeping the player informed. It updates the UI
+                    whenever the game state changes, such as when a player uses an action or when the round advances. It
+                    also manages the game log, which shows up to five of the most recent actions:
+                </p>
+                <pre><code class="language-csharp">// Adds an entry to the game log (shows up to 5 most recent entries)
+public void AddLogEntry(string entry)
+{
+    gameLog.Add(entry);
+    if (gameLog.Count > 5)
+        gameLog.RemoveAt(0);
+
+    if (logText)
+        logText.text = string.Join("\n", gameLog);
+}
+</code></pre>
+                <p>
+                    By keeping UI logic out of the gameplay scripts and using a dedicated log, it's much easier to tweak
+                    the look and feel of the game without risking gameplay bugs. This approach also makes it simple to
+                    keep players up to date with the latest actions and events in the match.
+                </p>
+                <h3>PlayerManager Example</h3>
+                <p>
+                    <code>PlayerManager</code> now handles all player objects, including spawning, switching, and
+                    tracking their state. This has made it much easier to support multiple players and to add new
+                    character prefabs:
+                </p>
+                <pre><code class="language-csharp">private List&lt;PlayerCharacter&gt; players = new();
+public IReadOnlyList&lt;PlayerCharacter&gt; Players =&gt; players;
+
+public void SpawnPlayers(Vector2Int[] spawnCells, Transform gridTransform)
+{
+    // ...spawning logic
+}
+</code></pre>
+                <p>
+                    This modular approach means that adding new player types or changing how turns work is much less
+                    risky.
+                </p>
+
+                <h2>PlayerPanel and GameLoader updates</h2>
+                <p>
+                    Another improvement is the introduction of a dedicated <strong>EventListener</strong> scene. By
+                    ensuring only one event listener is present in the game at any time, I've avoided the duplicate
+                    event handler errors that sometimes cropped up in earlier builds. This has made event management
+                    much more reliable and debugging a lot easier.
+                </p>
+                <h3>PlayerPanel Example</h3>
+                <pre><code class="language-csharp">public void SetPlayerInfo(Sprite characterSprite, string playerName, int currentHealth, int maxHealth)
+{
+    if (characterImage) characterImage.sprite = characterSprite;
+    if (playerNameText) playerNameText.text = playerName;
+    if (healthText) healthText.text = $"HP: {currentHealth}/{maxHealth}";
+}
+</code></pre>
+                <p>
+                    These scripts have helped keep responsibilities clear and the codebase tidy, especially as the
+                    game's complexity grows. It's also made it much easier to debug UI issues, since each panel is
+                    responsible for its own updates.
+                </p>
+
+                <h2>Gameplay UI Overhaul</h2>
+                <p>
+                    One of the biggest changes is the new gameplay UI. Players can now see their character info, the
+                    current round, a history of actions (notifications), and have dedicated buttons for attacking,
+                    playing a card, and moving. The move action now works by clicking a space and confirming the
+                    movement. Once all actions are used (3/3), the turn ends automatically, but players can also end
+                    their turn early with the end turn button.
+                </p>
+                <p>
+                    This UI overhaul has made the game much more user-friendly and has helped me learn a lot about
+                    Unity's UI system, event-driven programming, and keeping UI logic separate from game logic. I've
+                    also started using events and delegates to keep the UI responsive to changes in the game state,
+                    which has been a great learning experience.
+                </p>
+                <pre><code class="language-csharp">// Example: Notifying UI of action changes
+public event Action&lt;int&gt; OnActionsChanged;
+
+public void SpendAction(ActionType type)
+{
+    int idx = (int)type;
+    if (actionsRemaining &gt; 0 &amp;&amp; !actionsSpent[idx])
+    {
+        actionsSpent[idx] = true;
+        actionsRemaining--;
+        OnActionsChanged?.Invoke(actionsRemaining);
+    }
+}
+</code></pre>
+
+                <h2>Character Prefabs and Visuals</h2>
+                <p>
+                    Another big step forward: each character now has their own prefab. When spawning in the world, they
+                    appear as a placeholder capsule with their card art texture, making it easy to distinguish between
+                    characters. Andy has modelled Bobby Bullets, and I've added a skeletal mesh to that prefab, removing
+                    the capsule mesh renderer but keeping the component for collision - as is standard in Unity
+                    character setup.
+                </p>
+                <p>
+                    This approach means we can quickly swap out placeholder art for final models as they're completed,
+                    and ensures that each character is visually distinct from the start.
+                </p>
+                <h2>Script Changes and Best Practices</h2>
+                <p>
+                    Refactoring meant updating a lot of existing scripts to work with the new managers. I've started
+                    using <code>[SerializeField] private</code> instead of public variables, and where variables need to
+                    be accessed by other scripts, I've made them private with public read-only properties. This has
+                    improved encapsulation and made the codebase safer and easier to maintain.
+                </p>
+                <pre><code class="language-csharp">private int actionsRemaining;
+public int ActionsRemaining => actionsRemaining;
+</code></pre>
+                <p>
+                    I've also been learning about the importance of clear responsibilities and communication between
+                    scripts. By using events and method calls, rather than direct variable access, the code is more
+                    robust and less prone to bugs when things change.
+                </p>
+
+                <h2>Learning and Next Steps</h2>
+                <p>
+                    This iteration has been a real learning process - not just in Unity, but in software architecture.
+                    Splitting up responsibilities, using proper variable visibility, and building a
+                    modular UI has made the project feel much more professional. There's still plenty to do, but the
+                    foundation is much stronger now.
+                </p>
+                <p>
+                    Next up: I'll be refining the turn phase system and introducing dedicated cards for each player, so
+                    actions will be based on the value and suit of the card drawn rather than just the basic attack,
+                    card, and move buttons. This will add a lot more variety and strategy, with different effects for
+                    low, high, face, and ace cards. I'm also planning to setup proper animations for Bobby Bullets
+                    created by Andy, and we're hoping to experiment with cloth physics for his neckerchief. As always,
+                    there's plenty to polish, but I'm excited to see how these new features will bring the game to life!
+                </p>
+                <div class="video-wrapper">
+                    <iframe src="https://www.youtube.com/embed/WYPYlhsDU0M"
+                        title="Rooty Tooty (Working Title) | Gameplay UI and Actions Test 002"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowfullscreen>
+                    </iframe>
+                </div>
+                <footer>
+                    <nav>
+                        <a href="../../">← Back to Blog</a>
+                    </nav>
+                </footer>
+            </section>
+        </article>
+    </div>
+    <footer>
+        <div>
+            <div class="social-links">
+                <a href="http://linkedin.com/in/chadnippard" target="_blank">LinkedIn</a>
+                <a href="https://www.instagram.com/chad.nippard/" target="_blank">Instagram</a>
+                <a href="https://www.youtube.com/@ChadNippard" target="_blank">YouTube</a>
+            </div>
+            <p>&copy; 2025 Chad Nippard. All rights reserved.</p>
+            <p>Website created by Chad Nippard.</p>
+        </div>
+    </footer>
+</body>
+
+</html>
