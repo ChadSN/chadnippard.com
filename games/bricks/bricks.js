@@ -10,6 +10,11 @@ let leftDown_bool = false;          // Left Arrow Button Down
 let gameOver = true;                // Game over flag
 let score = 0;                      // Player score
 
+// Touch controls
+let touchStartX = 0;                // Touch start X position
+let touchCurrentX = 0;              // Current touch X position
+let isTouching = false;             // Touch active flag
+
 let ball = {                        // Ball object
     x: 0,                           // Ball x position
     y: 0,                           // Ball y position
@@ -58,6 +63,13 @@ function init() {
     window.addEventListener('keydown', doKeyDown, true);                // Add event listener for key down
     window.addEventListener('keyup', doKeyUp, true);                    // Add event listener for key up
     playButton.addEventListener('click', onPlayButtonClicked, true);    // Add event listener for play button click
+
+    // Add touch event listeners for mobile support
+    canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+    canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+    canvas.addEventListener('touchend', handleTouchEnd, { passive: false });
+    canvas.addEventListener('touchcancel', handleTouchEnd, { passive: false });
+
     paddle.x = WIDTH / 2;                                               // Set initial paddle position
     paddle.y = HEIGHT;                                                  // Set initial paddle position
     ball.x = WIDTH / 2;                                                 // Set initial ball position
@@ -133,6 +145,12 @@ function doKeyUp(evt) {
 function movePaddle() {
     if (leftDown_bool && paddle.x > 0 + paddle.radius) paddle.x -= paddle.speed;        // Move the paddle once per frame based on the current key state
     if (rightDown_bool && paddle.x < WIDTH - paddle.radius) paddle.x += paddle.speed;   // Move the paddle once per frame based on the current key state
+
+    // Touch controls
+    if (isTouching) {
+        // Set paddle X to touch position, clamped to canvas bounds
+        paddle.x = Math.max(paddle.radius, Math.min(WIDTH - paddle.radius, touchCurrentX));
+    }
 }
 
 // Render the game objects
@@ -331,4 +349,31 @@ function countRemainingBricks() {
 function onWinGame() {
     gameOver = true;            // Set game over to true
     playButton.value = "Restart";   // Change button text to "Restart"
+}
+
+// Handle touch start
+function handleTouchStart(evt) {
+    evt.preventDefault();                               // Prevent default touch behavior (scrolling, zooming)
+    const touch = evt.touches[0];                       // Get the first touch
+    const rect = canvas.getBoundingClientRect();        // Get canvas position
+    touchStartX = touch.clientX - rect.left;            // Store starting X position relative to canvas
+    touchCurrentX = touchStartX;                        // Initialize current position
+    isTouching = true;                                  // Set touching flag
+}
+
+// Handle touch move
+function handleTouchMove(evt) {
+    if (!isTouching) return;                            // If not touching, exit
+    evt.preventDefault();                               // Prevent scrolling
+    const touch = evt.touches[0];                       // Get the first touch
+    const rect = canvas.getBoundingClientRect();        // Get canvas position
+    touchCurrentX = touch.clientX - rect.left;          // Update current X position relative to canvas
+}
+
+// Handle touch end
+function handleTouchEnd(evt) {
+    evt.preventDefault();                               // Prevent default behavior
+    isTouching = false;                                 // Clear touching flag
+    touchStartX = 0;                                    // Reset start position
+    touchCurrentX = 0;                                  // Reset current position
 }
