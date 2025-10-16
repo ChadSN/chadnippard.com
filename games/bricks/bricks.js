@@ -1,7 +1,7 @@
-const BASE_WIDTH = 800;                  // Canvas width
-const BASE_HEIGHT = 450;                 // Canvas height
-let WIDTH = BASE_WIDTH;                  // Current canvas width
-let HEIGHT = BASE_HEIGHT;                // Current canvas height
+const BASE_WIDTH = 800;             // Canvas width
+const BASE_HEIGHT = 450;            // Canvas height
+let WIDTH = BASE_WIDTH;             // Current canvas width
+let HEIGHT = BASE_HEIGHT;           // Current canvas height
 let canvas;                         // canvas
 let ctx;                            // context
 let aniFrameID = 0;                 // Animation frame ID
@@ -32,7 +32,7 @@ let ball = {                        // Ball object
 let paddle = {                      // Paddle object
     x: 0,                           // Paddle x position
     y: 0,                           // Paddle y position
-    radius: WIDTH / 10,            // Paddle radius
+    radius: WIDTH / 10,             // Paddle radius
     speed: 5                        // Paddle speed
 };
 
@@ -56,7 +56,8 @@ window.addEventListener("load", (evt) => {
 function init() {
     gameOver = true;                                                    // Set game over to true
     fitToScreen();                                                      // Adjust canvas size to fit screen
-    bricks.brickWidth = (WIDTH / 5) - 1;                                // Brick width
+    bricks.brickWidth = (WIDTH / bricks.nCols) - bricks.padding;        // Update brick width based on new canvas width
+    
     canvas = document.querySelector("#canvas");                         // Get the canvas
     canvas.width = WIDTH;                                               // Set canvas width
     canvas.height = HEIGHT;                                             // Set canvas height
@@ -73,6 +74,9 @@ function init() {
     canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
     canvas.addEventListener('touchend', handleTouchEnd, { passive: false });
     canvas.addEventListener('touchcancel', handleTouchEnd, { passive: false });
+
+    window.addEventListener('resize', onResize, { passive: true });
+
 
     paddle.x = WIDTH / 2;                                               // Set initial paddle position
     paddle.y = HEIGHT;                                                  // Set initial paddle position
@@ -383,6 +387,38 @@ function handleTouchEnd(evt) {
 }
 
 function fitToScreen() {
-    WIDTH = Math.min(BASE_WIDTH, window.innerWidth);
-    HEIGHT = Math.round(WIDTH * (BASE_HEIGHT / BASE_WIDTH));
+    const aspect = BASE_HEIGHT / BASE_WIDTH;
+    let w = Math.min(BASE_WIDTH, window.innerWidth);
+    let h = Math.round(w * aspect);
+
+    // If height overflows viewport, fit by height instead
+    if (h > window.innerHeight) {
+        h = Math.min(BASE_HEIGHT, window.innerHeight);
+        w = Math.round(h / aspect);
+    }
+
+    WIDTH = w;
+    HEIGHT = h;
+
+    // Update size-dependent values
+    paddle.radius = WIDTH / 10;
+    bricks.brickWidth = (WIDTH / bricks.nCols) - bricks.padding;
+}
+
+function onResize() {
+    fitToScreen();
+
+    // Update canvas to new size
+    canvas.width = WIDTH;
+    canvas.height = HEIGHT;
+
+    // Keep paddle at bottom and within bounds
+    paddle.y = HEIGHT;
+    paddle.x = Math.max(paddle.radius, Math.min(WIDTH - paddle.radius, paddle.x));
+
+    // Clamp ball within new bounds
+    ball.x = Math.max(ball.radius, Math.min(WIDTH - ball.radius, ball.x));
+    ball.y = Math.max(ball.radius, Math.min(HEIGHT - ball.radius, ball.y));
+
+    render();
 }
