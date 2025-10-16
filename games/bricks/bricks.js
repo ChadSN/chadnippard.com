@@ -57,7 +57,7 @@ function init() {
     gameOver = true;                                                    // Set game over to true
     fitToScreen();                                                      // Adjust canvas size to fit screen
     bricks.brickWidth = (WIDTH / bricks.nCols) - bricks.padding;        // Update brick width based on new canvas width
-    
+
     canvas = document.querySelector("#canvas");                         // Get the canvas
     canvas.width = WIDTH;                                               // Set canvas width
     canvas.height = HEIGHT;                                             // Set canvas height
@@ -387,18 +387,36 @@ function handleTouchEnd(evt) {
 }
 
 function fitToScreen() {
-    const aspect = BASE_HEIGHT / BASE_WIDTH;
-    let w = Math.min(BASE_WIDTH, window.innerWidth);
-    let h = Math.round(w * aspect);
+    const aspect = BASE_HEIGHT / BASE_WIDTH; // h = w * aspect
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
 
-    // If height overflows viewport, fit by height instead
-    if (h > window.innerHeight) {
-        h = Math.min(BASE_HEIGHT, window.innerHeight);
-        w = Math.round(h / aspect);
+    const maxW = Math.min(BASE_WIDTH, vw);
+    const maxH = Math.min(BASE_HEIGHT, vh);
+
+    if (vh > vw) {
+        // Portrait: target ~75% of viewport height
+        const targetH = Math.floor(vh * 0.75);
+        const allowedH = Math.min(maxH, targetH);
+
+        let w = Math.min(maxW, Math.round(allowedH / aspect));
+        let h = Math.round(w * aspect);
+
+        WIDTH = w;
+        HEIGHT = h;
+
+        paddle.radius = WIDTH / 10;
+    } else {
+        // Landscape: fit by width, then clamp by height if needed
+        let w = maxW;
+        let h = Math.round(w * aspect);
+        if (h > maxH) {
+            h = maxH;
+            w = Math.round(h / aspect);
+        }
+        WIDTH = w;
+        HEIGHT = h;
     }
-
-    WIDTH = w;
-    HEIGHT = h;
 
     // Update size-dependent values
     paddle.radius = WIDTH / 10;
