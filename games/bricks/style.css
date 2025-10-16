@@ -49,3 +49,21 @@ div {                                    /* styles for the main container div */
     margin-right: 0;                    /* Ensure no right margin */
     justify-self: end;                  /* Align to the end of the grid cell */
 }
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 820px) {
+    #info {
+        width: 100%;                    /* Make info section full width */
+        grid-template-columns: 1fr auto 1fr; /* Maintain 3-column layout */
+        padding: 0 10px;                /* Add horizontal padding */
+    }
+
+    #canvas {
+        width: 100%;                    /* Make canvas full width */
+        height: auto;                   /* Adjust height automatically */
+    }
+
+    p {
+        font-size: 16px;                /* Reduce font size for smaller screens */
+    }
+}

@@ -395,17 +395,11 @@ function fitToScreen() {
     const maxH = Math.min(BASE_HEIGHT, vh);
 
     if (vh > vw) {
-        // Portrait: target ~75% of viewport height
-        const targetH = Math.floor(vh * 0.75);
-        const allowedH = Math.min(maxH, targetH);
-
-        let w = Math.min(maxW, Math.round(allowedH / aspect));
-        let h = Math.round(w * aspect);
-
-        WIDTH = w;
-        HEIGHT = h;
-
-        paddle.radius = WIDTH / 10;
+        let w = Math.round(vw);
+        let h = Math.round(vh * 0.75);                         // Calculate corresponding height
+        WIDTH = w; // Set new width
+        HEIGHT = h; // Set new height
+        paddle.radius = WIDTH / 10; // Update paddle radius
     } else {
         // Landscape: fit by width, then clamp by height if needed
         let w = maxW;
