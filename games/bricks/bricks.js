@@ -1,5 +1,7 @@
-const WIDTH = 800;                  // Canvas width
-const HEIGHT = 450;                 // Canvas height
+const BASE_WIDTH = 800;                  // Canvas width
+const BASE_HEIGHT = 450;                 // Canvas height
+let WIDTH = BASE_WIDTH;                  // Current canvas width
+let HEIGHT = BASE_HEIGHT;                // Current canvas height
 let canvas;                         // canvas
 let ctx;                            // context
 let aniFrameID = 0;                 // Animation frame ID
@@ -30,7 +32,7 @@ let ball = {                        // Ball object
 let paddle = {                      // Paddle object
     x: 0,                           // Paddle x position
     y: 0,                           // Paddle y position
-    radius: 80,                     // Paddle radius
+    radius: WIDTH / 10,            // Paddle radius
     speed: 5                        // Paddle speed
 };
 
@@ -53,6 +55,8 @@ window.addEventListener("load", (evt) => {
 // Init method - initialises the game
 function init() {
     gameOver = true;                                                    // Set game over to true
+    fitToScreen();                                                      // Adjust canvas size to fit screen
+    bricks.brickWidth = (WIDTH / 5) - 1;                                // Brick width
     canvas = document.querySelector("#canvas");                         // Get the canvas
     canvas.width = WIDTH;                                               // Set canvas width
     canvas.height = HEIGHT;                                             // Set canvas height
@@ -376,4 +380,9 @@ function handleTouchEnd(evt) {
     isTouching = false;                                 // Clear touching flag
     touchStartX = 0;                                    // Reset start position
     touchCurrentX = 0;                                  // Reset current position
+}
+
+function fitToScreen() {
+    WIDTH = Math.min(BASE_WIDTH, window.innerWidth);
+    HEIGHT = Math.round(WIDTH * (BASE_HEIGHT / BASE_WIDTH));
 }
