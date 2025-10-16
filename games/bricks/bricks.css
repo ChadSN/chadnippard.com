@@ -1,0 +1,51 @@
+body {
+    background-color: black;           /* Set background color to black */
+}
+
+p {                                      /* styles for paragraph elements */
+    color: white;                      /* Set text color to white */
+    font-family: Arial, sans-serif;      /* Use Arial font */
+    font-size: 20px;                     /* Set font size */
+}
+
+div {                                    /* styles for the main container div */
+    text-align: center;                  /* Center align text */
+    margin-top: 20px;                    /* Margin at the top */
+    display: flex;                       /* Use flexbox for layout */
+    flex-direction: column;              /* Arrange children in a column */
+    align-items: center;                 /* Center align items horizontally */
+}
+
+#info {                                  /* Use a 3-column grid: left | center (button) | right */
+    display: grid;                       /* changed from flex to grid */
+    grid-template-columns: 1fr auto 1fr; /* match canvas width so edges line up */
+    align-items: center;                 /* Center items vertically */
+    width: 800px;                        /* match canvas width so edges line up */
+}
+
+#canvas {                                /* styles for the canvas element */
+    border: 1px solid;                   /* Default border style */
+    border-color: white;               /* Set border color to white */
+}
+
+#playButton {                           /* styles for the play button */
+    margin-top: 10px;                   /* Margin at the top */
+    font-size: 16px;                    /* Font size */
+    background-color: cyan;           /* Button background color */
+    border: 2px solid white;          /* Button border */
+    cursor: pointer;                    /* Pointer cursor on hover */
+    font-weight: bold;                  /* Bold font */
+    width: 100px;                       /* Button width */
+}
+
+.alignLeft {                            /* styles for left-aligned text */                 
+    text-align: left;                   /* Align text to the left */
+    margin-left: 0;                     /* Ensure no left margin */
+    justify-self: start;                /* Align to the start of the grid cell */
+}
+
+.alignRight {                           /* styles for right-aligned text */
+    text-align: right;                  /* Align text to the right */
+    margin-right: 0;                    /* Ensure no right margin */
+    justify-self: end;                  /* Align to the end of the grid cell */
+}
