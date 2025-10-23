@@ -1,4 +1,4 @@
-import { Boot } from 'scenes/Boot.js';
+//import { Boot } from './scenes/Boot.js';
 import { Game } from './scenes/Game.js';
 import { GameOver } from './scenes/GameOver.js';
 import { Preloader } from './scenes/Preloader.js';
@@ -25,7 +25,7 @@ const config = {
         autoCenter: Phaser.Scale.CENTER_BOTH
     },
     scene: [
-        Boot,
+        //Boot,
         Preloader,
         Game,
         GameOver
