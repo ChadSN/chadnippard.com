@@ -1,7 +1,14 @@
+/*
 import { Boot } from './scenes/Boot.js';
 import { Game } from './scenes/Game.js';
 import { GameOver } from './scenes/GameOver.js';
 import { Preloader } from './scenes/Preloader.js';
+*/
+import { Boot } from '/games/flax2d/src/scenes/Boot.js';
+import { Game } from '/games/flax2d/src/scenes/Game.js';
+import { GameOver } from '/games/flax2d/src/scenes/GameOver.js';
+import { Preloader } from '/games/flax2d/src/scenes/Preloader.js';
+
 import { GRAVITY_Y } from './config.js';
 
 
