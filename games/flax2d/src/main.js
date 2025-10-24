@@ -1,7 +1,7 @@
 import { Boot } from './scenes/Boot.js';
+import { Preloader } from './scenes/Preloader.js';
 import { Game } from './scenes/Game.js';
 import { GameOver } from './scenes/GameOver.js';
-import { Preloader } from './scenes/Preloader.js';
 
 import { GRAVITY_Y } from './config.js';
 
