@@ -29,14 +29,14 @@ export class Preloader extends Phaser.Scene {
         this.load.image('ground', 'platform.png');
         this.load.image('dna', 'DNA_Collectable.png');
         this.load.image('bomb', 'bomb.png');
-        this.load.spritesheet('flax_Idle', 'flax_Idle.png', { frameWidth: 256, frameHeight: 256 });
-        this.load.spritesheet('flax_Run', 'flax_Run.png', { frameWidth: 256, frameHeight: 256 });
-        this.load.spritesheet('flax_Jump', 'flax_Jump.png', { frameWidth: 256, frameHeight: 256 });
-        this.load.spritesheet('flax_Falling', 'flax_Falling.png', { frameWidth: 256, frameHeight: 256 });
-        this.load.spritesheet('glizzard', 'Glizzard_flying.png', { frameWidth: 128, frameHeight: 105 });
-        this.load.spritesheet('muncher_Idle', 'muncher_Idle.png', { frameWidth: 128, frameHeight: 128 });
-        this.load.spritesheet('muncher_Walk', 'muncher_Walk.png', { frameWidth: 128, frameHeight: 128 });
-        this.load.spritesheet('muncher_Attack', 'muncher_Attack.png', { frameWidth: 128, frameHeight: 128 });
+        this.load.spritesheet('flax_Idle', '/Flax/SS_Flax_Idle.png', { frameWidth: 256, frameHeight: 256 });
+        this.load.spritesheet('flax_Run', '/Flax/SS_Flax_Run.png', { frameWidth: 256, frameHeight: 256 });
+        this.load.spritesheet('flax_Jump', '/Flax/SS_Flax_Jump.png', { frameWidth: 256, frameHeight: 256 });
+        this.load.spritesheet('flax_Falling', '/Flax/SS_Flax_Falling.png', { frameWidth: 256, frameHeight: 256 });
+        this.load.spritesheet('glizzard', '/Glizzard/SS_Glizzard_Fly.png', { frameWidth: 128, frameHeight: 105 });
+        this.load.spritesheet('muncher_Idle', '/Muncher/SS_Muncher_Idle.png', { frameWidth: 128, frameHeight: 128 });
+        this.load.spritesheet('muncher_Walk', '/Muncher/SS_Muncher_Walk.png', { frameWidth: 128, frameHeight: 128 });
+        this.load.spritesheet('muncher_Attack', '/Muncher/SS_Muncher_Attack.png', { frameWidth: 128, frameHeight: 128 });
     }
 
     create() {
