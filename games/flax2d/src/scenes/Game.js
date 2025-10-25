@@ -1,4 +1,6 @@
 import { Player } from '../../gameObjects/Player.js';
+import { Glizzard } from '../../gameObjects/Glizzard.js';
+import { Muncher } from '../../gameObjects/Muncher.js';
 
 export class Game extends Phaser.Scene {
 
@@ -8,28 +10,28 @@ export class Game extends Phaser.Scene {
 
     create() {
         this.add.image(960, 540, 'sky'); // Add the background image at the center of the game canvas
-        //this.add.sprite(960, 540, 'player'); // Add the player sprite at the center of the game canvas
-
-        this.platforms = this.physics.add.staticGroup();    // Create a static group for platforms
-        this.dnas = this.physics.add.group();               // Create a group for DNA collectables
-
-
-        // CREATE PLATFORMS
-        // Create ground platforms
-        for (let i = 0; i < 8; i++) {
-            this.platforms.create(256 * i, 1080 - 64, 'ground');
-        }
-
-        // Create some floating platforms
-        for (let i = 0; i < 5; i++) {
-            this.platforms.create(128 * i, 560, 'ground').setScale(0.5).refreshBody(); // refreshBody is needed after scaling to update the physics body
-        }
+        this.addInputKeys(); // Call the method to add input keys
 
         this.player = new Player(this, 100, 450); // Create a new player instance
 
-        this.addInputKeys(); // Call the method to add input keys
+        // CREATE PLATFORMS
+        this.platforms = this.physics.add.staticGroup();    // Create a static group for platforms
+        // Create ground platforms
+        for (let i = 0; i < 8; i++) {
+            this.platforms.create(256 * i, 1080, 'ground');
+        }
+
+        // Create some floating platforms
+        for (let i = 0; i < 10; i++) {
+            this.platforms.create(51 * i, 720, 'ground').setScale(0.2).refreshBody(); // refreshBody is needed after scaling to update the physics body
+        }
+
+        for (let i = 10; i > 0; i--) {
+            this.platforms.create(51 * i + 1400, 720, 'ground').setScale(0.2).refreshBody(); // refreshBody is needed after scaling to update the physics body
+        }
 
         // Create the DNA collectables
+        //this.dnas = this.physics.add.group();               // Create a group for DNA collectables
         this.dnas = this.physics.add.group({
             key: 'dna',                         // Key of the DNA collectable image
             repeat: 7,                         // Number of additional DNA collectables to create (total will be repeat + 1)
@@ -41,35 +43,53 @@ export class Game extends Phaser.Scene {
         });
         this.physics.add.collider(this.player, this.platforms); // Add collision between the player and the platforms
 
+
+        // DNA COLLECTABLES
         this.physics.add.collider(this.dnas, this.platforms);   // Add collision between the DNA collectables and the platforms
-
         this.physics.add.overlap(this.player, this.dnas, this.collectDNA, null, this); // Add overlap check between player and DNA collectables
-
-
-        this.score = 0; // Initialise score
-        this.scoreText = this.add.text(16, 16, 'Score: 0', { fontSize: '32px', fill: '#000' }); // Display score text
 
         // BOMBS
         this.bombs = this.physics.add.group(); // Create a group for bombs
         this.physics.add.collider(this.bombs, this.platforms); // Add collision between bombs and platforms
         this.physics.add.collider(this.player, this.bombs, this.hitBomb, null, this); // Add collision between player and bombs
-        ///
 
+        // GLIZZARD
+        this.glizzard = new Glizzard(this, 960, 300);
+
+        // MUNCHER
+        //this.munchers = new Muncher(this, 960, 800); // Create a new muncher instance
+        // this.physics.add.collider(this.muncher, this.platforms); // Add collision between the muncher and the platforms
+        // this.physics.add.collider(this.player, this.muncher, this.hitMuncher, null, this); // Add collision between player and muncher
+        this.munchers = this.physics.add.group({ runChildUpdate: true });
+        const m = new Muncher(this, 960, 800);
+        this.munchers.add(m);
+        this.physics.add.collider(this.munchers, this.platforms);   // Add collision between munchers and platforms
+        this.physics.add.collider(this.player, this.munchers); // Add collision between player and munchers
+
+        // UI ELEMENTS
+        // Score
+        this.score = 0; // Initialise score
+        this.scoreText = this.add.text(16, 16, 'Score: 0', { fontSize: '32px', fill: '#000' }); // Display score text
+        // Health
+        this.healthText = this.add.text(16, 50, 'Health: ' + this.player.health, { fontSize: '32px', fill: '#000' }); // Display health text
 
     }
 
     update() {
         if (this.cursors.left.isDown || this.keyA.isDown) {
             this.player.moveLeft();
-        } else if (this.cursors.right.isDown || this.keyD.isDown) {
+        }
+        else if (this.cursors.right.isDown || this.keyD.isDown) {
             this.player.moveRight();
-        } else {
+        }
+        else {
             this.player.idle();
         }
 
-        if (this.cursors.up.isDown || this.keyW.isDown || this.keySPACE.isDown) {
+        if (Phaser.Input.Keyboard.JustDown(this.cursors.up) || Phaser.Input.Keyboard.JustDown(this.keySPACE) || Phaser.Input.Keyboard.JustDown(this.keyW)) {
             this.player.jump();
         }
+        this.glizzard.update();
     }
 
     // Function to handle DNA collection
@@ -77,6 +97,9 @@ export class Game extends Phaser.Scene {
         dna.disableBody(true, true); // Remove the collected DNA
         this.score += 10; // Increase score by 10
         this.scoreText.setText('Score: ' + this.score); // Update score text
+        this.player.heal(1); // Heal the player
+        this.healthText.setText('Health: ' + this.player.health); // Update health text
+
 
         if (this.dnas.countActive(true) === 0) {
             this.dnas.children.iterate(function (child) {
@@ -84,6 +107,10 @@ export class Game extends Phaser.Scene {
             });
             this.releaseBomb();
         }
+    }
+
+    hitMuncher(player, muncher) {
+        //muncher.attackPlayer(player);
     }
 
     // Function to handle bomb collision
@@ -112,6 +139,20 @@ export class Game extends Phaser.Scene {
         this.keyW = this.input.keyboard.addKey('W');            // Add key W for jump
         this.keyS = this.input.keyboard.addKey('S');            // Add key S for crouch
         this.keySPACE = this.input.keyboard.addKey('SPACE');    // Add spacebar for jump
+    }
+
+    damagePlayer(amount, attacker) {
+        if (this.player.takeDamage) {
+            this.player.takeDamage(amount);
+            this.healthText.setText('Health: ' + this.player.health); // Update health text
+
+            this.player.setVelocityY(-600); // Knockback upwards
+            if (attacker.x < this.player.x) {
+                this.player.setVelocityX(600); // Knockback to the right
+            } else {
+                this.player.setVelocityX(-600); // Knockback to the left
+            }
+        }
     }
 }
 
