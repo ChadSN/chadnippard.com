@@ -27,8 +27,9 @@ export class Preloader extends Phaser.Scene {
         this.load.setPath('assets');
         this.load.image('sky', 'sky.png');
         this.load.image('ground', 'platform.png');
-        this.load.image('dna', 'DNA_Collectable.png');
         this.load.image('bomb', 'bomb.png');
+        //this.load.image('dna', 'DNA_Collectable.png'); // OLD DNA ASSET
+        this.load.spritesheet('dna', 'DNA_Anim.png', { frameWidth: 128, frameHeight: 128 }); 
         this.load.spritesheet('flax_Idle', '/Flax/SS_Flax_Idle.png', { frameWidth: 256, frameHeight: 256 });
         this.load.spritesheet('flax_Run', '/Flax/SS_Flax_Run.png', { frameWidth: 256, frameHeight: 256 });
         this.load.spritesheet('flax_Jump', '/Flax/SS_Flax_Jump.png', { frameWidth: 256, frameHeight: 256 });

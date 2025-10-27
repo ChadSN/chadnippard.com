@@ -1,6 +1,7 @@
 import { Player } from '../../gameObjects/Player.js';
 import { Glizzard } from '../../gameObjects/Glizzard.js';
 import { Muncher } from '../../gameObjects/Muncher.js';
+import { DNA } from '../../gameObjects/DNA.js';
 
 export class Game extends Phaser.Scene {
 
@@ -9,126 +10,26 @@ export class Game extends Phaser.Scene {
     }
 
     create() {
-        this.add.image(960, 540, 'sky'); // Add the background image at the center of the game canvas
-        this.addInputKeys(); // Call the method to add input keys
-
-        this.player = new Player(this, 100, 450); // Create a new player instance
-
-        // CREATE PLATFORMS
-        this.platforms = this.physics.add.staticGroup();    // Create a static group for platforms
-        // Create ground platforms
-        for (let i = 0; i < 8; i++) {
-            this.platforms.create(256 * i, 1080, 'ground');
-        }
-
-        // Create some floating platforms
-        for (let i = 0; i < 10; i++) {
-            this.platforms.create(51 * i, 720, 'ground').setScale(0.2).refreshBody(); // refreshBody is needed after scaling to update the physics body
-        }
-
-        for (let i = 10; i > 0; i--) {
-            this.platforms.create(51 * i + 1400, 720, 'ground').setScale(0.2).refreshBody(); // refreshBody is needed after scaling to update the physics body
-        }
-
-        // Create the DNA collectables
-        //this.dnas = this.physics.add.group();               // Create a group for DNA collectables
-        this.dnas = this.physics.add.group({
-            key: 'dna',                         // Key of the DNA collectable image
-            repeat: 7,                         // Number of additional DNA collectables to create (total will be repeat + 1)
-            setXY: { x: 64, y: 0, stepX: 256 }  // Positioning of the DNA collectables
-        });
-
-        this.dnas.children.iterate(function (child) {
-            child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
-        });
-        this.physics.add.collider(this.player, this.platforms); // Add collision between the player and the platforms
-
-
-        // DNA COLLECTABLES
-        this.physics.add.collider(this.dnas, this.platforms);   // Add collision between the DNA collectables and the platforms
-        this.physics.add.overlap(this.player, this.dnas, this.collectDNA, null, this); // Add overlap check between player and DNA collectables
-
-        // BOMBS
-        this.bombs = this.physics.add.group(); // Create a group for bombs
-        this.physics.add.collider(this.bombs, this.platforms); // Add collision between bombs and platforms
-        this.physics.add.collider(this.player, this.bombs, this.hitBomb, null, this); // Add collision between player and bombs
-
-        // GLIZZARD
-        this.glizzard = new Glizzard(this, 960, 300);
-
-        // MUNCHER
-        //this.munchers = new Muncher(this, 960, 800); // Create a new muncher instance
-        // this.physics.add.collider(this.muncher, this.platforms); // Add collision between the muncher and the platforms
-        // this.physics.add.collider(this.player, this.muncher, this.hitMuncher, null, this); // Add collision between player and muncher
-        this.munchers = this.physics.add.group({ runChildUpdate: true });
-        const m = new Muncher(this, 960, 800);
-        this.munchers.add(m);
-        this.physics.add.collider(this.munchers, this.platforms);   // Add collision between munchers and platforms
-        this.physics.add.collider(this.player, this.munchers); // Add collision between player and munchers
-
-        // UI ELEMENTS
-        // Score
-        this.score = 0; // Initialise score
-        this.scoreText = this.add.text(16, 16, 'Score: 0', { fontSize: '32px', fill: '#000' }); // Display score text
-        // Health
-        this.healthText = this.add.text(16, 50, 'Health: ' + this.player.health, { fontSize: '32px', fill: '#000' }); // Display health text
-
+        this.add.image(960, 540, 'sky');            // Add the background image at the center of the game canvas
+        this.addInputKeys();                        // Call the method to add input keys
+        this.player = new Player(this, 100, 450);   // Create a new player instance
+        this.spawnPlatforms();                      // Spawn platforms
+        this.spawnDNAs();                           // Spawn DNA collectables
+        this.spawnGlizzards();
+        this.spawnMunchers();                       // Spawn muncher enemies
+        this.createUI();                            // Create UI elements for score and health
     }
 
     update() {
-        if (this.cursors.left.isDown || this.keyA.isDown) {
-            this.player.moveLeft();
-        }
-        else if (this.cursors.right.isDown || this.keyD.isDown) {
-            this.player.moveRight();
-        }
-        else {
-            this.player.idle();
-        }
-
-        if (Phaser.Input.Keyboard.JustDown(this.cursors.up) || Phaser.Input.Keyboard.JustDown(this.keySPACE) || Phaser.Input.Keyboard.JustDown(this.keyW)) {
-            this.player.jump();
-        }
-        this.glizzard.update();
+        this.handlePlayerInput();
     }
 
     // Function to handle DNA collection
     collectDNA(player, dna) {
-        dna.disableBody(true, true); // Remove the collected DNA
-        this.score += 10; // Increase score by 10
-        this.scoreText.setText('Score: ' + this.score); // Update score text
-        this.player.heal(1); // Heal the player
-        this.healthText.setText('Health: ' + this.player.health); // Update health text
-
-
-        if (this.dnas.countActive(true) === 0) {
-            this.dnas.children.iterate(function (child) {
-                child.enableBody(true, child.x, 0, true, true);
-            });
-            this.releaseBomb();
-        }
-    }
-
-    hitMuncher(player, muncher) {
-        //muncher.attackPlayer(player);
-    }
-
-    // Function to handle bomb collision
-    hitBomb(player, bomb) {
-        this.physics.pause(); // Pause the game
-        player.setTint(0xff0000); // Change player color to red
-        this.time.delayedCall(2000, () => {
-            this.scene.start('GameOver'); // Restart the game after 2 seconds
-        });
-    }
-
-    releaseBomb() {
-        var x = (this.player.x < 400) ? Phaser.Math.Between(400, 800) : Phaser.Math.Between(0, 400);
-
-        var bomb = this.bombs.create(x, 16, 'bomb');
-        bomb.setBounce(1);
-        bomb.setCollideWorldBounds(true);
-        bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
+        if (this.player.health >= this.player.maxHealth) return;    // Don't collect if health is full
+        dna.disableBody(true, true);                                // Remove the collected DNA
+        this.updateScore(10);                                        // Increase score by 10
+        this.player.heal(1);                                        // Heal the player
     }
 
     // Add method for adding input keys
@@ -142,16 +43,104 @@ export class Game extends Phaser.Scene {
     }
 
     damagePlayer(amount, attacker) {
-        if (this.player.takeDamage) {
-            this.player.takeDamage(amount);
-            this.healthText.setText('Health: ' + this.player.health); // Update health text
+        this.player.takeDamage(amount);                                 // Reduce player health
+        this.player.setVelocityY(-600);                                 // Knockback upwards
+        if (attacker.x < this.player.x) this.player.setVelocityX(600);  // Knockback to the right
+        else this.player.setVelocityX(-600);                            // Knockback to the left
+    }
 
-            this.player.setVelocityY(-600); // Knockback upwards
-            if (attacker.x < this.player.x) {
-                this.player.setVelocityX(600); // Knockback to the right
-            } else {
-                this.player.setVelocityX(-600); // Knockback to the left
-            }
+    spawnDNAs() {
+        this.dnas = this.add.group();                   // Create a group for DNA collectables
+        const dnaPositions = [                          // Predefined positions for DNA collectables
+            { x: 400, y: 600 },
+            { x: 200, y: 850 },
+            { x: 1500, y: 600 },
+            { x: 1700, y: 850 }
+        ];
+        dnaPositions.forEach(pos => {                   // Iterate through each position
+            const dna = new DNA(this, pos.x, pos.y);    // Create a new DNA instance
+            this.dnas.add(dna);                         // Add the DNA to the group
+        });
+        this.physics.add.overlap(this.player, this.dnas, this.collectDNA, null, this);
+    }
+
+    spawnDamageBox(x, y, width, height, damage, duration = 100) {
+        const damageBox = this.add.rectangle(x, y, width, height, 0, 1);    // invisible rectangle
+        this.physics.add.existing(damageBox);                               // enable physics
+        damageBox.body.setAllowGravity(false);                              // no gravity
+        damageBox.body.setImmovable(true);                                  // don't move on collision
+        this.physics.add.overlap(this.player, damageBox, () => {            // on overlap
+            this.damagePlayer(damage, damageBox);                           // damage the player
+        }, null, this);
+        this.time.delayedCall(duration, () => {                             // wait duration
+            damageBox.destroy();                                            // destroy the damage box
+        });
+    }
+
+    updateScore(amount) {
+        this.score += amount;
+        this.scoreText.setText('Score: ' + this.score);
+    }
+
+    // Create UI elements for score and health
+    createUI() {
+        /// Score ---------------------------------------------------------
+        this.score = 0; // Initialise score
+        this.scoreText = this.add.text(96, 16, 'Score: 0', { fontSize: '32px', fill: '#000' }); // Display score text
+        /// ---------------------------------------------------------------
+
+        /// Health --------------------------------------------------------
+        this.healthIcon = this.add.sprite(16, 100, 'dna').setOrigin(0, 0.5).setScale(0.5);
+        this.healthText = this.add.text(96, 100, 'Health: ' + this.player.health, { fontSize: '32px', fill: '#000' }); // Display health text
+        this.healthText.setOrigin(0, 0.5); // Set origin to center left
+        /// ---------------------------------------------------------------
+    }
+
+    spawnPlatforms() {
+        // CREATE PLATFORMS
+        this.platforms = this.physics.add.staticGroup();    // Create a static group for platforms
+        // Create ground platforms
+        for (let i = 0; i < 8; i++) {
+            this.platforms.create(256 * i, 1080, 'ground');
+        }
+        // Create some floating platforms
+        for (let i = 0; i < 10; i++) {
+            this.platforms.create(51 * i, 720, 'ground').setScale(0.2).refreshBody(); // refreshBody is needed after scaling to update the physics body
+        }
+        for (let i = 10; i > 0; i--) {
+            this.platforms.create(51 * i + 1400, 720, 'ground').setScale(0.2).refreshBody(); // refreshBody is needed after scaling to update the physics body
+        }
+        this.physics.add.collider(this.player, this.platforms); // Add collision between the player and the platforms
+    }
+
+    spawnMunchers() {
+        this.munchers = this.physics.add.group({ runChildUpdate: true });
+        const m = new Muncher(this, 960, 800);
+        this.munchers.add(m);
+        this.physics.add.collider(this.munchers, this.platforms);   // Add collision between munchers and platforms
+        this.physics.add.collider(this.player, this.munchers); // Add collision between player and munchers
+    }
+
+    spawnGlizzards() {
+        this.glizzards = this.add.group({ runChildUpdate: true });  // create a group that will call update() on its children
+        const g = new Glizzard(this, 960, 300);                     // pass speed/patrolDistance only if needed
+        this.glizzards.add(g);                                      // add to the group
+    }
+
+    // best name for input method called on update
+    handlePlayerInput() {
+        if (this.cursors.left.isDown || this.keyA.isDown) {
+            this.player.moveLeft();
+        }
+        else if (this.cursors.right.isDown || this.keyD.isDown) {
+            this.player.moveRight();
+        }
+        else {
+            this.player.idle();
+        }
+
+        if (Phaser.Input.Keyboard.JustDown(this.cursors.up) || Phaser.Input.Keyboard.JustDown(this.keySPACE) || Phaser.Input.Keyboard.JustDown(this.keyW)) {
+            this.player.jump();
         }
     }
 }

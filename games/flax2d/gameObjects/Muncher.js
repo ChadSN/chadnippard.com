@@ -68,16 +68,18 @@ export class Muncher extends Phaser.Physics.Arcade.Sprite {
     }
 
     chasePlayer() {
-        const player = this.scene.player;
-        if (!player) return;
-        if (Math.abs(this.x - player.x) < this.chaseDistance) { // within chase range
-            if (this.x < player.x - 70 - this.width / 2)
-                this.walkRight();
-            else if (this.x > player.x + 70 + this.width / 2)
-                this.walkLeft();
-            else this.attackPlayer(); // close enough to attack
+        const player = this.scene.player;                                                       // Get the player reference
+        if (!player) return;                                                                    // no player to chase
+        if (Math.abs(this.x - player.x) < this.chaseDistance) {                                 // within chase range
+            if (this.x < player.x - 70 - this.width / 2)                                        // add some horizontal tolerance
+                this.walkRight();                                                               // continue chasing
+            else if (this.x > player.x + 70 + this.width / 2)                                   // add some horizontal tolerance
+                this.walkLeft();                                                                // continue chasing
+            else if (this.y > player.y - player.y.height || this.y < player.y + player.height)  // close enough vertically
+                this.attackPlayer();                                                            // attack
         }
     }
+
     attackPlayer() {
         if (!this.canAttack) return;                                                // prevent spamming attacks
         this.canAttack = false;                                                     // set canAttack to false
@@ -87,7 +89,7 @@ export class Muncher extends Phaser.Physics.Arcade.Sprite {
         const onAnimUpdate = (anim, frame) => {                                     // listen for animation updates
             if (anim.key !== 'muncher_Attack') return;                              // only care about attack anim
             if (frame.index === 5) {                                                // frame 5 is the attack frame
-                this.scene.damagePlayer(1, this);                                   // damage the player
+                this.scene.spawnDamageBox(this.x + this.direction * this.width / 2, this.y, this.width / 2, this.height, 1); // spawn damage box
                 this.off('animationupdate', onAnimUpdate);                          // remove listener after attack
             }
         };
