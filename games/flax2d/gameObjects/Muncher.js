@@ -75,7 +75,7 @@ export class Muncher extends Phaser.Physics.Arcade.Sprite {
                 this.walkRight();                                                               // continue chasing
             else if (this.x > player.x + 70 + this.width / 2)                                   // add some horizontal tolerance
                 this.walkLeft();                                                                // continue chasing
-            else if (this.y > player.y - player.y.height || this.y < player.y + player.height)  // close enough vertically
+            else if (this.y > player.y - player.y.height || this.y < player.y + player.height && !player.isDead)  // close enough vertically
                 this.attackPlayer();                                                            // attack
         }
     }

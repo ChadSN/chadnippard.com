@@ -10,6 +10,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         scene.physics.add.existing(this);   // Enable physics on the player
         this.body.setSize(70, 205);         // Set a custom collision rectangle from (100,0) to (170,205)
         this.body.setOffset(100, 50);       // Offset the collision rectangle to align with the sprite
+        this.setCollideWorldBounds(false);   // Prevent the player from going out of bounds
         this.speed = PLAYER_SPEED;          // Use default speed if not provided
         this.jumpVel = JUMP_VELOCITY;       // Use default jump velocity if not provided
         this.initAnimations();              // Initialise player animations
@@ -17,6 +18,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.health = this.maxHealth;       // current health
         this.invulnerable = false;          // short invuln after hit if you want
         this.canMove = true;                // flag to control if the player can move
+        this.isDead = false;                // flag to indicate if the player is dead
     }
 
     preUpdate(time, delta) {
@@ -55,6 +57,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         }
 
         this._wasOnGround = true; // update state
+
     }
 
 
@@ -137,11 +140,20 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     die() {
+        this.isDead = true;                        // Set isDead flag to true
         this.body.enable = false;                   // Disable player physics
         this.scene.physics.pause();                 // Pause the game
         this.setTint(0xff0000);                     // Change player color to red
         this.scene.time.delayedCall(2000, () => {   // Wait for 2 seconds
             this.scene.scene.start('GameOver');     // Restart the game scene
         });
+    }
+
+    outOfBoundsCheck() {
+        if (!this.isDead) {
+            if (this.y > 1080) {
+                this.die();
+            }
+        }
     }
 }
