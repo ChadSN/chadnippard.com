@@ -25,9 +25,8 @@ export class Preloader extends Phaser.Scene {
     preload() {
         //  Load the assets for the game - Replace with your own assets
         this.load.setPath('assets');
-        this.load.image('sky', 'sky.png');
+        this.load.image('sky', 'sky.webp');
         this.load.image('ground', 'platform.png');
-        this.load.image('bomb', 'bomb.png');
         //this.load.image('dna', 'DNA_Collectable.png'); // OLD DNA ASSET
         this.load.spritesheet('dna', 'DNA_Anim.png', { frameWidth: 128, frameHeight: 128 });
         this.load.spritesheet('flax_Idle', '/Flax/SS_Flax_Idle.png', { frameWidth: 256, frameHeight: 256, normalMap: '/Flax/NM_Flax_Idle.png' });
