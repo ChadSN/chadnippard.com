@@ -125,10 +125,17 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         // Implement crouch functionality if needed
     }
 
+    damagePlayer(amount, attacker) {
+        this.takeDamage(amount);                                 // Reduce player health
+        this.setVelocityY(-600);                                 // Knockback upwards
+        if (attacker.x < this.x) this.setVelocityX(600);  // Knockback to the right
+        else this.setVelocityX(-600);                            // Knockback to the left
+    }
+
     takeDamage(amount = 1) {
         if (this.health <= 0 || this.invulnerable) return;                              // Already dead
         this.health = Math.max(0, this.health - amount);                                // Decrease health but not below 0
-        this.scene.healthText.setText('Health: ' + this.health);                        // Update health text
+        this.scene.uiManager.updateHealth(this.health);                        // Update health text
         this.invulnerable = true;                                                       // set invulnerable
         this.scene.time.delayedCall(250, () => this.invulnerable = false, null, this);  // remove invulnerable after 250ms
         if (this.health === 0) this.die();                                              // Call die method if health reaches 0
@@ -136,7 +143,14 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     heal(amount = 1) {
         this.health = Math.min(this.maxHealth, this.health + amount);   // Increase health but not above maxHealth
-        this.scene.healthText.setText('Health: ' + this.health);        // Update health text
+        this.scene.uiManager.updateHealth(this.health);        // Update health text
+    }
+
+    // Function to handle DNA collection
+    collectDNA(dna) {
+        if (this.health >= this.maxHealth) return;   // Don't collect if health is full
+        dna.disableBody(true, true);                 // Remove the collected DNA
+        this.heal(1);                                // Heal the player
     }
 
     die() {
