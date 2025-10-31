@@ -99,7 +99,7 @@ export class Muncher extends Phaser.Physics.Arcade.Sprite {
         const onAnimUpdate = (anim, frame) => {                                     // listen for animation updates
             if (anim.key !== 'muncher_Attack') return;                              // only care about attack anim
             if (frame.index === 5) {                                                // frame 5 is the attack frame
-                this.scene.spawnDamageBox(this.x + this.direction * this.width / 2, this.y, this.width, this.height, 1); // spawn damage box
+                this.scene.spawnHitBox(this, this.x + this.direction * this.width / 2, this.y, this.width, this.height, 1); // spawn hit box
                 this.off('animationupdate', onAnimUpdate);                          // remove listener after attack
             }
         };

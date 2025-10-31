@@ -34,6 +34,7 @@ export class Preloader extends Phaser.Scene {
         this.load.spritesheet('flax_Run', '/Flax/SS_Flax_Run.png', { frameWidth: 256, frameHeight: 256 });
         this.load.spritesheet('flax_Jump', '/Flax/SS_Flax_Jump.png', { frameWidth: 256, frameHeight: 256 });
         this.load.spritesheet('flax_Falling', '/Flax/SS_Flax_Falling.png', { frameWidth: 256, frameHeight: 256 });
+        this.load.spritesheet('flax_Tailwhip', '/Flax/SS_Flax_Tailwhip.png', { frameWidth: 256, frameHeight: 256 });
 
         this.load.spritesheet('glizzard', '/Glizzard/SS_Glizzard_Fly.png', { frameWidth: 128, frameHeight: 105 });
         this.load.spritesheet('glizzardProjectile', '/Glizzard/Glizzard_Projectile.png', { frameWidth: 32, frameHeight: 32 });

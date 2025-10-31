@@ -19,11 +19,21 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.invulnerable = false;          // short invuln after hit if you want
         this.canMove = true;                // flag to control if the player can move
         this.isDead = false;                // flag to indicate if the player is dead
+        this.canTailWhip = true;            // flag to indicate if the player can tailwhip
+        this.isTailwhipping = false;        // flag to indicate if the player is currently tailwhipping
+        this.damageBox = null;              // reference to the DamageBox
     }
 
     preUpdate(time, delta) {
         super.preUpdate(time, delta);               // call the parent class preUpdate
         if (!this.body) return;                     // safety check
+
+        if (this.isTailwhipping) {
+            this.damageBox.setPosition(this.x, this.y + this.height / 5); // Sync position with player
+            // VISUAL AID
+            this.damageBox.rectangle.setPosition(this.x, this.y + this.height / 5); // Sync position with player
+            return;
+        }
 
         const onGround = this.body.blocked.down;    // is the player on the ground?
         const vy = this.body.velocity.y;            // vertical velocity   
@@ -55,11 +65,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                 this.anims.play('idle', true);                                      // play idle animation
             }
         }
-
         this._wasOnGround = true; // update state
-
     }
-
 
     // Define player animations
     initAnimations() {
@@ -97,6 +104,14 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                 repeat: -1                                                                      // Loop the animation
             });
 
+        if (!this.anims.exists('tailwhip'))
+            this.anims.create({
+                key: 'tailwhip',                                                                 // Animation for moving left
+                frames: this.anims.generateFrameNumbers('flax_Tailwhip', { start: 0, end: 8 }),  // Assuming frames 0-5 are for left movement
+                frameRate: 48,                                                                   // Adjust frameRate as needed
+                repeat: 1                                                                        // Loop the animation
+            });
+
     }
 
     moveLeft() {
@@ -121,21 +136,41 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         }
     }
 
+    tailwhip() {
+        if (!this.canTailWhip) return;                              // prevent tailwhip if canTailWhip is false
+        this.canTailWhip = false;                                   // set canTailWhip to false to prevent spamming
+        this.isTailwhipping = true;                                 // set isTailwhipping to true
+        this.play('tailwhip', true);                                // play tailwhip animation
+        this.damageBox.activate(250, 100, 1);                       // activate damage box
+        this.scene.handleDamageBoxOverlap(this, this.damageBox);    // set up overlap handling
+        this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, (animation) => {
+            if (animation.key === 'tailwhip') {                     // when tailwhip animation completes
+                this.canTailWhip = true;                            // allow tailwhip again
+                this.isTailwhipping = false;                        // set isTailwhipping to false
+                this.damageBox.deactivate();                        // reset damage box position
+            }
+        });
+
+        this.scene.time.delayedCall(500, () => {            // 500ms cooldown
+            if (!this.canTailWhip) this.canTailWhip = true; // allow tailwhip again
+        });
+    }
+
     crouch() {
         // Implement crouch functionality if needed
     }
 
     damagePlayer(amount, attacker) {
-        this.takeDamage(amount);                                 // Reduce player health
-        this.setVelocityY(-600);                                 // Knockback upwards
-        if (attacker.x < this.x) this.setVelocityX(600);  // Knockback to the right
-        else this.setVelocityX(-600);                            // Knockback to the left
+        this.takeDamage(amount);                            // Reduce player health
+        this.setVelocityY(-600);                            // Knockback upwards
+        if (attacker.x < this.x) this.setVelocityX(600);    // Knockback to the right
+        else this.setVelocityX(-600);                       // Knockback to the left
     }
 
     takeDamage(amount = 1) {
         if (this.health <= 0 || this.invulnerable) return;                              // Already dead
         this.health = Math.max(0, this.health - amount);                                // Decrease health but not below 0
-        this.scene.uiManager.updateHealth(this.health);                        // Update health text
+        this.scene.uiManager.updateHealth(this.health);                                 // Update health text
         this.invulnerable = true;                                                       // set invulnerable
         this.scene.time.delayedCall(250, () => this.invulnerable = false, null, this);  // remove invulnerable after 250ms
         if (this.health === 0) this.die();                                              // Call die method if health reaches 0
@@ -143,7 +178,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     heal(amount = 1) {
         this.health = Math.min(this.maxHealth, this.health + amount);   // Increase health but not above maxHealth
-        this.scene.uiManager.updateHealth(this.health);        // Update health text
+        this.scene.uiManager.updateHealth(this.health);                 // Update health text
     }
 
     // Function to handle DNA collection
@@ -154,7 +189,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     die() {
-        this.isDead = true;                        // Set isDead flag to true
+        this.isDead = true;                         // Set isDead flag to true
         this.body.enable = false;                   // Disable player physics
         this.scene.physics.pause();                 // Pause the game
         this.setTint(0xff0000);                     // Change player color to red
@@ -169,5 +204,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                 this.die();
             }
         }
+    }
+
+    setDamageBox(damageBox) {
+        this.damageBox = damageBox; // Assign the DamageBox to the player
     }
 }

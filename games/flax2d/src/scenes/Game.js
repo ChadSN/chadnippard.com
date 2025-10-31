@@ -2,8 +2,9 @@ import { Player } from '../../gameObjects/Player.js';
 import { Glizzard } from '../../gameObjects/Glizzard.js';
 import { Muncher } from '../../gameObjects/Muncher.js';
 import { DNA } from '../../gameObjects/DNA.js';
-import { InputKeys } from '../utils/InputKeys.js';
+import { InputManager } from '../utils/InputManager.js';
 import { UIManager } from '../utils/UIManager.js';
+import { DamageBox } from '../../gameObjects/damageBox.js';
 
 export class Game extends Phaser.Scene {
 
@@ -16,7 +17,7 @@ export class Game extends Phaser.Scene {
     create() {
         this.background = this.add.image(960, 540, 'sky');  // Add the background image at the center of the game canvas
         this.background.setScrollFactor(0);                 // Keep the background fixed on the camera
-        this.inputKeys = new InputKeys(this);                // Create an instance of InputKeys
+        this.inputManager = new InputManager(this);         // Create an instance of InputManager
         this.addLights();                                   // Add lighting effects
         this.spawnPlayer();                                 // Spawn the player character
         this.setupCamera();                                 // Setup camera to follow the player
@@ -34,24 +35,31 @@ export class Game extends Phaser.Scene {
     update() {
         this.handlePlayerInput();                           // Handle player input
         this.player.outOfBoundsCheck();                     // Check if player is out of bounds
-        //console.log(this.player.body.velocity.y);                          // Update player velocity
     }
 
     // Handle player input
     handlePlayerInput() {
-        if (this.inputKeys.cursors.left.isDown || this.inputKeys.keyA.isDown) {
+        if (this.inputManager.cursors.left.isDown || this.inputManager.keyA.isDown) {
             this.player.moveLeft();
-        } else if (this.inputKeys.cursors.right.isDown || this.inputKeys.keyD.isDown) {
+        } else if (this.inputManager.cursors.right.isDown || this.inputManager.keyD.isDown) {
             this.player.moveRight();
         } else {
             this.player.idle();
         }
 
         if (
-            Phaser.Input.Keyboard.JustDown(this.inputKeys.cursors.up) ||
-            Phaser.Input.Keyboard.JustDown(this.inputKeys.keySPACE) ||
-            Phaser.Input.Keyboard.JustDown(this.inputKeys.keyW)
+            Phaser.Input.Keyboard.JustDown(this.inputManager.cursors.up) ||
+            Phaser.Input.Keyboard.JustDown(this.inputManager.keySPACE) ||
+            Phaser.Input.Keyboard.JustDown(this.inputManager.keyW)
         ) this.player.jump();
+
+    }
+
+    pointerPressed() {
+        this.player.tailwhip();
+    }
+
+    pointerReleased() {
     }
 
     // Add lighting effects to the scene
@@ -74,8 +82,10 @@ export class Game extends Phaser.Scene {
 
     // Spawn the player character
     spawnPlayer() {
-        this.player = new Player(this, 128, 450);   // Create a new player instance at (128, 450)
-        this.player.setPipeline('Light2D');         // Enable lighting effects on the player
+        this.player = new Player(this, 128, 450);                   // Create a new player instance at (128, 450)
+        this.player.setPipeline('Light2D');                         // Enable lighting effects on the player
+        const playerDamageBox = new DamageBox(this, this.player);   // create damage box for player
+        this.player.setDamageBox(playerDamageBox);                  // assign damage box to player
     }
 
     // Setup camera to follow the player
@@ -165,18 +175,23 @@ export class Game extends Phaser.Scene {
         });
     }
 
-    // Function to spawn a temporary damage box
-    spawnDamageBox(x, y, width, height, damage, duration = 100) {
-        const damageBox = this.add.rectangle(x, y, width, height, 0, 0);    // invisible rectangle
-        this.physics.add.existing(damageBox);                               // enable physics
-        damageBox.body.setAllowGravity(false);                              // no gravity
-        damageBox.body.setImmovable(true);                                  // don't move on collision
-        this.physics.add.overlap(this.player, damageBox, () => {            // on overlap
-            this.player.damagePlayer(damage, damageBox);                           // damage the player
-        }, null, this);
-        this.time.delayedCall(duration, () => {                             // wait duration
-            damageBox.destroy();                                            // destroy the damage box
+
+    // DEPRECATED -- UPDATE MUNCHER ATTACK TO USE handleDamageBoxOverlap()
+    // Function to spawn a temporary hit box
+    spawnHitBox(attacker, x, y, width, height, damage, duration = 100) {
+        const hitBox = this.add.rectangle(x, y, width, height, 0, 1);    // invisible rectangle
+        this.physics.add.existing(hitBox);                               // enable physics
+        hitBox.body.setAllowGravity(false);                              // no gravity
+        hitBox.body.setImmovable(true);                                  // don't move on collision
+        this.time.delayedCall(duration, () => {                          // wait duration
+            hitBox.destroy();                                            // destroy the hit box
         });
+
+        if (attacker !== this.player) {
+            this.physics.add.overlap(this.player, hitBox, () => {       // on overlap
+                this.player.damagePlayer(damage, hitBox);               // damage the player
+            }, null, this);
+        }
     }
 
     // Adjust layer depths to control rendering order
@@ -185,5 +200,23 @@ export class Game extends Phaser.Scene {
         // Order: background, lights, platforms, dnas, glizzards, munchers, player, pointLight, UI
         layer.add([this.pointLight, this.player]);
     }
+
+    handleDamageBoxOverlap(parent, damageBox) {
+        if (parent === this.player) {
+            this.physics.add.overlap(damageBox, this.munchers, (damageBox, muncher) => {
+                muncher.death();
+            });
+
+            this.physics.add.overlap(damageBox, this.glizzards, (damageBox, glizzard) => {
+                glizzard.death();
+            });
+        } else {
+            this.physics.add.overlap(damageBox, this.player, (damageBox, player) => {
+                console.log("Hit detected on player:", player);
+                player.damagePlayer(damageBox.damage, damageBox); // Damage the player
+            });
+        }
+    }
 }
+
 
