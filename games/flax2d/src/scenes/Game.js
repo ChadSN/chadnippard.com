@@ -55,11 +55,18 @@ export class Game extends Phaser.Scene {
 
     }
 
-    pointerPressed() {
+    pointerLeftPressed() {
         this.player.tailwhip();
     }
 
-    pointerReleased() {
+    pointerLeftReleased() {
+    }
+
+    pointerRightPressed() {
+        this.player.glideSpin();
+    }
+
+    pointerRightReleased() {
     }
 
     // Add lighting effects to the scene
@@ -82,7 +89,7 @@ export class Game extends Phaser.Scene {
 
     // Spawn the player character
     spawnPlayer() {
-        this.player = new Player(this, 128, 450);                   // Create a new player instance at (128, 450)
+        this.player = new Player(this, 128, 0);                   // Create a new player instance at (128, 450)
         this.player.setPipeline('Light2D');                         // Enable lighting effects on the player
         const playerDamageBox = new DamageBox(this, this.player);   // create damage box for player
         this.player.setDamageBox(playerDamageBox);                  // assign damage box to player
@@ -116,7 +123,7 @@ export class Game extends Phaser.Scene {
         }
         // Create some floating platforms
         for (let i = 0; i < 10; i++) {
-            this.platforms.create(51 * i, 720, 'ground').setScale(0.2).refreshBody(); // refreshBody is needed after scaling to update the physics body
+            this.platforms.create(51 * i, 200, 'ground').setScale(0.2).refreshBody(); // refreshBody is needed after scaling to update the physics body
         }
         for (let i = 0; i < 10; i++) {
             this.platforms.create(51 * i + 560, 450, 'ground').setScale(0.2).refreshBody(); // refreshBody is needed after scaling to update the physics body
@@ -153,6 +160,8 @@ export class Game extends Phaser.Scene {
         this.munchers = this.physics.add.group({ runChildUpdate: true });
         const m = new Muncher(this, 960, 800);
         this.munchers.add(m);
+        const mDamageBox = new DamageBox(this, m);          // create damage box for muncher
+        m.setDamageBox(mDamageBox);                         // assign damage box to muncher
         this.physics.add.collider(this.munchers, this.platforms);   // Add collision between munchers and platforms
         this.physics.add.overlap(this.player, this.munchers, (player, muncher) => {
             if (player.y < muncher.y - muncher.height && player.body.velocity.y > 900) { // player is above muncher and falling fast
@@ -165,7 +174,7 @@ export class Game extends Phaser.Scene {
     // Spawn glizzard enemies
     spawnGlizzards() {
         this.glizzards = this.add.group({ runChildUpdate: true });  // create a group that will call update() on its children
-        const g = new Glizzard(this, 1500, 300);                    // pass speed/patrolDistance only if needed
+        const g = new Glizzard(this, 1500, 600);                    // pass speed/patrolDistance only if needed
         this.glizzards.add(g);                                      // add to the group
         this.physics.add.overlap(this.player, this.glizzards, (player, glizzard) => {
             if (player.y < glizzard.y - glizzard.height && player.body.velocity.y > 900) { // player is above glizzard and falling fast
@@ -173,25 +182,6 @@ export class Game extends Phaser.Scene {
                 glizzard.death();                                   // destroy the glizzard
             }
         });
-    }
-
-
-    // DEPRECATED -- UPDATE MUNCHER ATTACK TO USE handleDamageBoxOverlap()
-    // Function to spawn a temporary hit box
-    spawnHitBox(attacker, x, y, width, height, damage, duration = 100) {
-        const hitBox = this.add.rectangle(x, y, width, height, 0, 1);    // invisible rectangle
-        this.physics.add.existing(hitBox);                               // enable physics
-        hitBox.body.setAllowGravity(false);                              // no gravity
-        hitBox.body.setImmovable(true);                                  // don't move on collision
-        this.time.delayedCall(duration, () => {                          // wait duration
-            hitBox.destroy();                                            // destroy the hit box
-        });
-
-        if (attacker !== this.player) {
-            this.physics.add.overlap(this.player, hitBox, () => {       // on overlap
-                this.player.damagePlayer(damage, hitBox);               // damage the player
-            }, null, this);
-        }
     }
 
     // Adjust layer depths to control rendering order
@@ -204,15 +194,14 @@ export class Game extends Phaser.Scene {
     handleDamageBoxOverlap(parent, damageBox) {
         if (parent === this.player) {
             this.physics.add.overlap(damageBox, this.munchers, (damageBox, muncher) => {
-                muncher.death();
+                muncher.death(muncher.x < this.player.x ? -1 : 1);
             });
 
             this.physics.add.overlap(damageBox, this.glizzards, (damageBox, glizzard) => {
-                glizzard.death();
+                glizzard.death(glizzard.x < this.player.x ? -1 : 1);
             });
         } else {
             this.physics.add.overlap(damageBox, this.player, (damageBox, player) => {
-                console.log("Hit detected on player:", player);
                 player.damagePlayer(damageBox.damage, damageBox); // Damage the player
             });
         }

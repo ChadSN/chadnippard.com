@@ -22,6 +22,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.canTailWhip = true;            // flag to indicate if the player can tailwhip
         this.isTailwhipping = false;        // flag to indicate if the player is currently tailwhipping
         this.damageBox = null;              // reference to the DamageBox
+        this.isGliding = false;             // flag to indicate if the player is gliding
+        this.glideAngle = 95;
+        this.didStartGlide = false;
+        this.isGlidingSpin = false;
     }
 
     preUpdate(time, delta) {
@@ -38,20 +42,25 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         const onGround = this.body.blocked.down;    // is the player on the ground?
         const vy = this.body.velocity.y;            // vertical velocity   
 
-
         // airborne → choose jump (rising) or fall (descending)
         if (!onGround) {
+
             if (vy < 0) { // moving up
                 if (this.anims.currentAnim?.key !== 'jump') {   // avoid restarting
                     this.anims.play('jump', true);              // play jump animation
                 }
-            } else { // vy >= 0, moving down
+            } else if (vy > 0 && !this.isGliding) { // vy >= 0, moving down
                 if (this.anims.currentAnim?.key !== 'fall') {   // avoid restarting
                     this.anims.play('fall', true);              // play fall animation   
                 }
             }
+            if (this.isGliding && this.body.velocity.x === 0) this.glide(false);
+
             this._wasOnGround = false; // update state
             return;
+        }
+        if (onGround) {
+            this.glide(false);
         }
         // grounded -> choose run or idle
         if (Math.abs(this.body.velocity.x) > 0.1) {                                 // moving
@@ -111,19 +120,22 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                 frameRate: 48,                                                                   // Adjust frameRate as needed
                 repeat: 1                                                                        // Loop the animation
             });
-
     }
 
     moveLeft() {
-        if (!this.canMove) return;              // prevent movement if canMove is false
-        this.setVelocityX(-this.speed);         // Set horizontal velocity to move left
+        if (!this.canMove || this.isGlidingSpin) return;              // prevent movement if canMove is false
         this.setFlipX(true);                    // Flip the sprite to face left
+        this.setVelocityX(-this.speed);         // Set horizontal velocity to move left
+        if (this.isGliding && this.angle != -this.glideAngle && !this.didStartGlide)
+            this.startGlide(-this.glideAngle);
     }
 
     moveRight() {
-        if (!this.canMove) return;              // prevent movement if canMove is false
-        this.setVelocityX(this.speed);          // Set horizontal velocity to move right
+        if (!this.canMove || this.isGlidingSpin) return;              // prevent movement if canMove is false
         this.setFlipX(false);                   // Flip the sprite to face right
+        this.setVelocityX(this.speed);          // Set horizontal velocity to move right
+        if (this.isGliding && this.angle != this.glideAngle && !this.didStartGlide)
+            this.startGlide(this.glideAngle);
     }
 
     idle() {
@@ -134,25 +146,143 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         if (this.body.blocked.down) {           // only jump if on the ground
             this.setVelocityY(-this.jumpVel);   // negative y velocity to jump up
         }
+        else if (!this.isGliding && this.body.velocity.x != 0) {
+            this.glide(true);                       // start gliding if in air and not already gliding
+        }
     }
 
+    startGlide(glideAngle) {
+        this.didStartGlide = true;
+        this.scene.tweens.add({                 // tween to rotate and move down
+            targets: this,                      // target the muncher
+            angle: glideAngle,                         // rotate to 360 degrees
+            duration: 100,                      // Duration of the tween in milliseconds
+            ease: 'Linear',                     // Easing function
+            onComplete: () => {
+                this.didStartGlide = false;                  // destroy the muncher after the tween
+            }
+        });
+    }
+
+
+    glide(isGliding) {
+        if (isGliding) {
+            this.isGliding = true;
+            this.body.setVelocity(this.body.velocity.x, 0); // limit downward speed
+            this.body.setGravity(0, -3500);
+            this.speed = PLAYER_SPEED * 3 / 4;               // reduce horizontal speed while gliding
+        }
+        else {
+            this.isGliding = false;
+            this.body.setGravity(0);         // Re-enable normal gravity
+            this.angle = 0;                   // reset angle
+            this.speed = PLAYER_SPEED;        // reset speed
+        }
+    }
+
+    // glideSpin() {
+    //     if (this.isGlidingSpin) return;
+    //     if (!this.isGliding) return;
+    //     this.isGlidingSpin = true;
+
+    //     this.scene.tweens.add({                 // tween to rotate and move down
+    //         targets: this,                      // target the player
+    //         y: this.y - 200,                    // move up by 300 pixels
+    //         x: this.x + (this.flipX ? -200 : 200),                // move left or right based on facing direction
+    //         angle: this.angle + (this.flipX ? 90 : -90), // rotate by 180 degrees
+    //         duration: 250,                      // Duration of the tween in milliseconds
+    //         ease: 'Sine.easeInOut',
+    //         onComplete: () => {
+    //             this.scene.tweens.add({         // second tween to rotate again
+    //                 targets: this,
+    //                 x: this.x + (this.flipX ? 200 : -200),                // move left or right based on facing direction
+    //                 y: this.y - 200,                    // move up by 300 pixels
+    //                 angle: this.angle + (this.flipX ? 90 : -90), // rotate by another 180 degrees
+    //                 duration: 250,              // Duration of the second tween
+    //                 ease: 'Sine.easeInOut',
+    //                 onComplete: () => {
+    //                     this.scene.tweens.add({         // second tween to rotate again
+    //                         targets: this,
+    //                         x: this.x + (this.flipX ? 200 : -200),                // move left or right based on facing direction
+    //                         y: this.y + 200,                    // move up by 300 pixels
+    //                         angle: this.angle + (this.flipX ? 90 : -90), // rotate by another 180 degrees
+    //                         duration: 250,              // Duration of the second tween
+    //                         ease: 'Sine.easeInOut',
+    //                         onComplete: () => {
+    //                             this.scene.tweens.add({         // second tween to rotate again
+    //                                 targets: this,
+    //                                 x: this.x + (this.flipX ? -200 : 200),                // move left or right based on facing direction
+    //                                 y: this.y + 200,                    // move up by 300 pixels
+    //                                 angle: this.angle + (this.flipX ? 90 : -90), // rotate by another 180 degrees
+    //                                 duration: 250,              // Duration of the second tween
+    //                                 ease: 'Sine.easeInOut',
+    //                                 onComplete: () => {
+    //                                     this.isGlidingSpin = false;                  // destroy the muncher after the tween
+    //                                 }
+    //                             });
+    //                         }
+    //                     });
+    //                 }
+    //             });
+    //         }
+    //     });
+    // }
+
+    glideSpin() {
+        if (this.isGlidingSpin) return;
+        if (!this.isGliding) return;
+        this.isGlidingSpin = true;
+
+        const radius = 150;                                                     // Radius of the circular path
+        const duration = 1000;                                                  // Duration of the circular motion in milliseconds
+        const toAngle = this.flipX ? 360 : -360;                                // Total angle to rotate during the motion
+        const path = new Phaser.Curves.Ellipse(this.x, this.y, radius, radius); // Create a circular path around the player
+        const currentVel = this.body.velocity.clone();                          // Store current velocity
+        this.body.setVelocity(0, 0);                                            // Stop current movement
+
+        this.scene.tweens.add({                                                 // Create a tween to follow the path
+            targets: this,                                                      // Target the player
+            duration: duration,                                                 // Total duration of the circular motion
+            ease: 'Sine.easeInOut',                                             // Smooth easing
+            repeat: 0,                                                          // No repeats
+            angle: { from: this.angle, to: this.angle + toAngle },              // Rotate the player based on direction
+            onUpdate: (tween, target) => {                                      // Update the player's position along the path
+                const t = this.flipX ? tween.progress : -tween.progress;   // Progress of the tween (0 to 1)
+                const point = path.getPoint(t);                                 // Get the point on the path at progress `t`
+                target.setPosition(point.x, point.y);                           // Set the player's position
+            },
+            onComplete: () => {                                                 // When the circular motion is complete
+                this.isGlidingSpin = false;                                     // Reset the gliding spin flag
+                this.body.setVelocity(currentVel.x, currentVel.y);              // Restore original velocity
+            }
+        });
+    }
+
+
+
+
+
+    // FIX: TAILWHIP WHILE GLIDING BREAKS THE ANIMATION ON END....
     tailwhip() {
         if (!this.canTailWhip) return;                              // prevent tailwhip if canTailWhip is false
         this.canTailWhip = false;                                   // set canTailWhip to false to prevent spamming
         this.isTailwhipping = true;                                 // set isTailwhipping to true
+        this.body.setGravity(0, -1000);                             // Reduce gravity for the player
         this.play('tailwhip', true);                                // play tailwhip animation
-        this.damageBox.activate(250, 100, 1);                       // activate damage box
+        if (!this.isGliding) this.damageBox.activate(250, 100, 1);  // activate damage box
+        else this.damageBox.activate(250, 200, 1);                  // activate larger damage box when gliding
         this.scene.handleDamageBoxOverlap(this, this.damageBox);    // set up overlap handling
         this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, (animation) => {
             if (animation.key === 'tailwhip') {                     // when tailwhip animation completes
                 this.canTailWhip = true;                            // allow tailwhip again
                 this.isTailwhipping = false;                        // set isTailwhipping to false
                 this.damageBox.deactivate();                        // reset damage box position
+                this.body.setGravity(0);                            // Re-enable gravity
             }
         });
-
-        this.scene.time.delayedCall(500, () => {            // 500ms cooldown
-            if (!this.canTailWhip) this.canTailWhip = true; // allow tailwhip again
+        this.scene.time.delayedCall(500, () => {                    // 500ms cooldown
+            if (!this.canTailWhip) this.canTailWhip = true;         // allow tailwhip again
+            if (this.body.gravity.y != 0) this.body.setGravity(0);  // Re-enable gravity
         });
     }
 

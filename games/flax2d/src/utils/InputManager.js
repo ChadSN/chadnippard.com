@@ -8,11 +8,17 @@ export class InputManager {
         this.keyS = scene.input.keyboard.addKey('S');           // Add key S for crouch
         this.keySPACE = scene.input.keyboard.addKey('SPACE');   // Add spacebar for jump
 
-        this.scene.input.on("pointerdown", () => {              // Listen for pointer down
-            this.scene.pointerPressed();                        // Call the scene's pointerPressed method
+        this.scene.input.on("pointerdown", (pointer) => {              // Listen for pointer down
+            if (pointer.buttons === 1)                          // Left mouse button
+                this.scene.pointerLeftPressed();                // Call the scene's pointerPressed method
+            else if (pointer.buttons === 2)                     // Right mouse button
+                this.scene.pointerRightPressed();
         });
-        this.scene.input.on("pointerup", () => {                // Listen for pointer up
-            this.scene.pointerReleased();                       // Call the scene's pointerReleased method
+        this.scene.input.on("pointerup", (pointer) => {                // Listen for pointer up
+            if (pointer.buttons === 1)                          // Left mouse button
+                this.scene.pointerLeftReleased();               // Call the scene's pointerReleased method
+            else if (pointer.buttons === 2)                     // Right mouse button
+                this.scene.pointerRightReleased();
         });
     }
 }

@@ -9,7 +9,7 @@ export class Muncher extends Phaser.Physics.Arcade.Sprite {
         this.body.setAllowGravity(true);                    // Enable gravity for the muncher
 
         this.startX = x;                                    // Starting X position
-        this.chaseDistance = chaseDistance;               // Distance to patrol
+        this.chaseDistance = chaseDistance;                 // Distance to patrol
         this.speed = Math.abs(speed);                       // Speed of movement
         this.direction = 1;                                 // Initial direction (1 for right, -1 for left)
 
@@ -20,6 +20,9 @@ export class Muncher extends Phaser.Physics.Arcade.Sprite {
         this.initAnimations();                              // Initialise glizzard animations
         this.setVelocityX(this.speed * this.direction);     // Start moving
         this.play('muncher_Idle', true);                    // Play idle animation 
+
+        this.damageBox = null;                              // reference to the DamageBox
+
     }
 
     update() {
@@ -92,6 +95,8 @@ export class Muncher extends Phaser.Physics.Arcade.Sprite {
 
     attackPlayer() {
         if (!this.canAttack) return;
+
+
         this.canAttack = false;                                                     // set canAttack to false
         this.scene.time.delayedCall(1000, () => this.canAttack = true, null, this); // reset canAttack after 1 second
         this.setVelocityX(0);                                                       // stop moving
@@ -99,16 +104,27 @@ export class Muncher extends Phaser.Physics.Arcade.Sprite {
         const onAnimUpdate = (anim, frame) => {                                     // listen for animation updates
             if (anim.key !== 'muncher_Attack') return;                              // only care about attack anim
             if (frame.index === 5) {                                                // frame 5 is the attack frame
-                this.scene.spawnHitBox(this, this.x + this.direction * this.width / 2, this.y, this.width, this.height, 1); // spawn hit box
+                this.damageBox.activate(this.width, this.height, 1);                // Activate damage box with size and damage
+                this.damageBox.setPosition(this.x + this.width / 2 * this.direction, this.y);       // Sync position with muncher
+                // VISUAL AID
+                this.damageBox.rectangle.setPosition(this.x + this.width / 2 * this.direction, this.y);     // Sync position with muncher
+
+                this.scene.handleDamageBoxOverlap(this, this.damageBox);            // handle overlap
                 this.off('animationupdate', onAnimUpdate);                          // remove listener after attack
             }
         };
-        // ensure we don't duplicate listeners if attackPlayer is called repeatedly
         this.off('animationupdate', onAnimUpdate);                                  // remove existing listener if any
         this.on('animationupdate', onAnimUpdate, this);                             // add new listener
+        this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, (animation) => {
+            if (animation.key === 'muncher_Attack') {                               // when muncher_Attack animation completes
+                this.damageBox.deactivate();                                        // reset damage box position
+            }
+        });
+
+
     }
 
-    death() {
+    death(xVel = 0) {
         this.isDead = true;                     // set isDead to true
         this.body.enable = false;               // disable physics
         this.scene.uiManager.updateScore(10);   // update score
@@ -116,6 +132,7 @@ export class Muncher extends Phaser.Physics.Arcade.Sprite {
         this.scene.tweens.add({                 // tween to rotate and move down
             targets: this,                      // target the muncher
             y: this.y + 300,                    // move down by 300 pixels
+            x: this.x + 600 * xVel, // move left or right based on player position
             angle: 360,                         // rotate to 360 degrees
             duration: 500,                      // Duration of the tween in milliseconds
             ease: 'Linear',                     // Easing function
@@ -123,6 +140,10 @@ export class Muncher extends Phaser.Physics.Arcade.Sprite {
                 this.destroy();                 // destroy the muncher after the tween
             }
         });
+    }
+
+    setDamageBox(damageBox) {
+        this.damageBox = damageBox; // Assign the DamageBox to the player
     }
 }
 

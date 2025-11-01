@@ -110,13 +110,14 @@ export class Glizzard extends Phaser.Physics.Arcade.Sprite {
         });
     }
 
-    death() {
+    death(velX = 0) {
         this.isDead = true;                     // set isDead to true
         this.body.enable = false;               // disable physics
         this.scene.uiManager.updateScore(10);   // update score
         this.setTexture('glizzard', 1);
         this.scene.tweens.add({                 // tween to rotate and move down
             targets: this,                      // target the glizzard
+            x: this.x + 600 * velX,             // move left or right based on input
             y: this.y + 300,                    // move down by 300 pixels
             angle: 360,                         // rotate to 360 degrees
             duration: 500,                      // Duration of the tween in milliseconds
