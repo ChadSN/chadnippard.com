@@ -57,39 +57,39 @@ export class Muncher extends Phaser.Physics.Arcade.Sprite {
             });
     }
 
-    walkLeft() {
-        this.direction = -1;
-        this.setVelocityX(-this.speed);
-        this.setFlipX(true);
-        this.play('walk', true);
-    }
-
-    walkRight() {
-        this.direction = 1;
-        this.setVelocityX(this.speed);
-        this.setFlipX(false);
-        this.play('walk', true);
-    }
-
+    // Logic for chasing the player
     chasePlayer() {
-        if (!this.chase) return;
-        const player = this.scene.player;                                                       // Get the player reference
-        if (!player) return;                                                                    // no player to chase
-        if (Math.abs(this.x - player.x) < this.chaseDistance) {                                 // within chase range
-            if (this.x < player.x - 70 - this.width / 2)                                        // add some horizontal tolerance
-                this.walkRight();                                                               // continue chasing
-            else if (this.x > player.x + 70 + this.width / 2)                                   // add some horizontal tolerance
-                this.walkLeft();                                                                // continue chasing
-            else if (this.y > player.y - player.y.height || this.y < player.y + player.height && !player.isDead)  // close enough vertically
-                this.attackPlayer();                                                            // attack
+        if (!this.chase) return;                                        // chasing disabled
+        const player = this.scene.player;                               // Get the player reference
+        if (!player) return;                                            // no player to chase
+        if (Math.abs(this.x - player.x) < this.chaseDistance) {         // within chase range
+            if (this.x < player.x - 70 - this.width / 2)                // add some horizontal tolerance
+                this.setDirection(1);                                   // Chase right
+            else if (this.x > player.x + 70 + this.width / 2)           // add some horizontal tolerance
+                this.setDirection(-1);                                  // Chase left
+            else if (this.y > player.y - player.y.height ||             // close enough vertically
+                this.y < player.y + player.height && !player.isDead)
+                this.attackPlayer();                                    // attack
         }
         else {
-            if (this.x < this.startX - 70) this.walkRight();        // return to start position
-            else if (this.x > this.startX + 70) this.walkLeft();    // return to start position
-            else {
-                this.setVelocityX(0);                               // stop moving
-                this.play('muncher_Idle', true);                    // idle at start position
-            }
+            if (this.x < this.startX - 70) this.setDirection(1);        // return to start position
+            else if (this.x > this.startX + 70) this.setDirection(-1);  // return to start position
+            else this.setIdle();                                        // idle at start position
+        }
+    }
+
+    setDirection(direction) {
+        if (this.damageBox.active) this.damageBox.deactivate(); // deactivate damage box if active
+        this.direction = direction;
+        this.setVelocityX(this.speed * this.direction);
+        this.setFlipX(this.direction === -1);
+        this.play('walk', true); // Only set animation once
+    }
+
+    setIdle() {
+        if (this.body.velocity.x !== 0) {
+            this.setVelocityX(0); // Stop moving
+            this.play('muncher_Idle', true); // Only set animation once
         }
     }
 
@@ -106,11 +106,11 @@ export class Muncher extends Phaser.Physics.Arcade.Sprite {
             if (frame.index === 5) {                                                // frame 5 is the attack frame
                 this.damageBox.activate(this.width, this.height, 1);                // Activate damage box with size and damage
                 this.damageBox.setPosition(this.x + this.width / 2 * this.direction, this.y);       // Sync position with muncher
-                // VISUAL AID
-                this.damageBox.rectangle.setPosition(this.x + this.width / 2 * this.direction, this.y);     // Sync position with muncher
-
                 this.scene.handleDamageBoxOverlap(this, this.damageBox);            // handle overlap
                 this.off('animationupdate', onAnimUpdate);                          // remove listener after attack
+
+                // VISUAL AID - REMOVE LATER
+                this.damageBox.rectangle.setPosition(this.x + this.width / 2 * this.direction, this.y);
             }
         };
         this.off('animationupdate', onAnimUpdate);                                  // remove existing listener if any
@@ -120,8 +120,6 @@ export class Muncher extends Phaser.Physics.Arcade.Sprite {
                 this.damageBox.deactivate();                                        // reset damage box position
             }
         });
-
-
     }
 
     death(xVel = 0) {

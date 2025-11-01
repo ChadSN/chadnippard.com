@@ -4,7 +4,7 @@ export class DamageBox extends Phaser.Physics.Arcade.Sprite {
         this.parent = parent;                                               // Set parent reference
         this.damage = 0;                                                    // Set damage value
 
-        // VISUAL AID
+        // VISUAL AID - REMOVE LATER
         this.rectangle = scene.add.rectangle(0, 0, 0, 0, 0xff0000, 0.5);    // Visible rectangle for debuggingF
 
         scene.add.existing(this);                                           // Add this sprite to the scene
@@ -19,7 +19,7 @@ export class DamageBox extends Phaser.Physics.Arcade.Sprite {
         this.body.enable = true;                // Enable physics body
         this.body.setSize(width, height);       // Refresh body size
 
-        // VISUAL AID
+        // VISUAL AID - REMOVE LATER
         this.rectangle.setActive(true);         // Set active
         this.rectangle.setVisible(true);        // Set visible
         this.rectangle.setSize(width, height);  // Set size
@@ -28,7 +28,7 @@ export class DamageBox extends Phaser.Physics.Arcade.Sprite {
     deactivate() {
         this.body.enable = false;           // Disable physics body
 
-        // VISUAL AID
+        // VISUAL AID - REMOVE LATER
         this.rectangle.setActive(false);    // Set inactive
         this.rectangle.setVisible(false);   // Set invisible
     }

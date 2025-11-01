@@ -33,8 +33,13 @@ export class UIManager {
         this.healthDNA.children.iterate((dna, index) => {   // Iterate through each DNA in the health group
             if (index < health) {                           // If index is less than current health
                 dna.setVisible(true);                       // show the DNA
+
             } else {                                        // If index is greater than or equal to current health
-                dna.setVisible(false);                      // hide the DNA
+                dna.setTint(0xff0000);                      // set tint to red
+                this.scene.time.delayedCall(200, () => {    // after 0.2 seconds
+                    dna.clearTint();                        // clear the tint
+                    dna.setVisible(false);                  // hide the DNA
+                });
             }
         });
     }

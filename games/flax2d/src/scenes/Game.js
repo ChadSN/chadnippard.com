@@ -89,7 +89,7 @@ export class Game extends Phaser.Scene {
 
     // Spawn the player character
     spawnPlayer() {
-        this.player = new Player(this, 128, 0);                   // Create a new player instance at (128, 450)
+        this.player = new Player(this, 128, 500);                   // Create a new player instance at (128, 450)
         this.player.setPipeline('Light2D');                         // Enable lighting effects on the player
         const playerDamageBox = new DamageBox(this, this.player);   // create damage box for player
         this.player.setDamageBox(playerDamageBox);                  // assign damage box to player
@@ -123,7 +123,7 @@ export class Game extends Phaser.Scene {
         }
         // Create some floating platforms
         for (let i = 0; i < 10; i++) {
-            this.platforms.create(51 * i, 200, 'ground').setScale(0.2).refreshBody(); // refreshBody is needed after scaling to update the physics body
+            this.platforms.create(51 * i, 720, 'ground').setScale(0.2).refreshBody(); // refreshBody is needed after scaling to update the physics body
         }
         for (let i = 0; i < 10; i++) {
             this.platforms.create(51 * i + 560, 450, 'ground').setScale(0.2).refreshBody(); // refreshBody is needed after scaling to update the physics body
@@ -134,7 +134,9 @@ export class Game extends Phaser.Scene {
         for (let i = 10; i > 0; i--) {
             this.platforms.create(51 * i + 1400, 720, 'ground').setScale(0.2).refreshBody(); // refreshBody is needed after scaling to update the physics body
         }
-        this.physics.add.collider(this.player, this.platforms); // Add collision between the player and the platforms
+        this.physics.add.collider(this.player, this.platforms, (player, platform) => { // Add collision between player and platforms
+            player.handleCollision(); // Handle player collision effects
+        });
     }
 
     // Spawn DNA collectables
@@ -167,6 +169,7 @@ export class Game extends Phaser.Scene {
             if (player.y < muncher.y - muncher.height && player.body.velocity.y > 900) { // player is above muncher and falling fast
                 player.setVelocityY(-600);                 // bounce the player up
                 muncher.death();                           // destroy the muncher
+                this.player.handleCollision();             // handle player collision effects
             }
         });
     }
@@ -180,6 +183,7 @@ export class Game extends Phaser.Scene {
             if (player.y < glizzard.y - glizzard.height && player.body.velocity.y > 900) { // player is above glizzard and falling fast
                 player.setVelocityY(-600);                          // bounce the player up
                 glizzard.death();                                   // destroy the glizzard
+                this.player.handleCollision();                      // handle player collision effects
             }
         });
     }
