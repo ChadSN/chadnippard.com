@@ -39,6 +39,8 @@ export class Game extends Phaser.Scene {
 
     // Handle player input
     handlePlayerInput() {
+        if (this.player.disableMovement) return;        // prevent movement if canMove is false
+
         if (this.inputManager.cursors.left.isDown || this.inputManager.keyA.isDown) {
             this.player.moveLeft();
         } else if (this.inputManager.cursors.right.isDown || this.inputManager.keyD.isDown) {
@@ -46,7 +48,6 @@ export class Game extends Phaser.Scene {
         } else {
             this.player.idle();
         }
-
         if (
             Phaser.Input.Keyboard.JustDown(this.inputManager.cursors.up) ||
             Phaser.Input.Keyboard.JustDown(this.inputManager.keySPACE) ||

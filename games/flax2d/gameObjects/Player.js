@@ -25,7 +25,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.isGliding = false;             // flag to indicate if the player is gliding
         this.glideAngle = 95;               // angle to rotate to when starting glide
         this.didStartGlide = false;         // flag to indicate if glide has just started
-        this.isGlidingSpinning = false;         // flag to indicate if the player is performing a gliding spin
+        this.isGlidingSpinning = false;     // flag to indicate if the player is performing a gliding spin
+        this.disableMovement = false;       // flag to disable all player movement
     }
 
     preUpdate(time, delta) {
@@ -174,6 +175,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         });
     }
 
+
     glide() {
         this.isGliding = true;                          // set isGliding to true
         this.body.setVelocity(this.body.velocity.x, 0); // limit downward speed
@@ -183,30 +185,27 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
 
     stopGlide() {
-        this.isGliding = false;                         // set isGliding to false
-        this.isGlidingSpinning = false;                     // set isGlidingSpinning to false
-        this.body.setGravity(0);                        // Re-enable normal gravity
-        this.speed = PLAYER_SPEED;                      // reset speed
-        // add tween to rotate back to 0 angle
-
-        this.scene.tweens.add({
-            targets: this,                              // target the player
-            angle: 0,                                   // rotate back to 0 degrees
-            duration: 100,                              // Duration of the tween in milliseconds
-            ease: 'Linear'                             // Easing function
+        this.isGliding = false;         // set isGliding to false
+        this.isGlidingSpinning = false; // set isGlidingSpinning to false
+        this.body.setGravity(0);        // Re-enable normal gravity
+        this.speed = PLAYER_SPEED;      // reset speed
+        this.scene.tweens.add({         // tween to rotate back to 0 degrees
+            targets: this,              // target the player
+            angle: 0,                   // rotate back to 0 degrees
+            duration: 100,              // Duration of the tween in milliseconds
+            ease: 'Linear'              // Easing function
         });
     }
 
     glideSpin() {
-        if (this.isGlidingSpinning) return;
-        if (!this.isGliding) return;
-        this.isGlidingSpinning = true;
-
-        const radius = 150;                                                                 // Radius of the circular path
-        const duration = 1000;                                                              // Duration of the circular motion in milliseconds
-        const toAngle = this.flipX ? 360 : -360;                                            // Total angle to rotate during the motion
-        const path = new Phaser.Curves.Ellipse(this.x, this.y, radius, radius, this.glideAngle, 360 + this.glideAngle);    // Create a circular path around the player                                           // Stop current movement
-
+        if (this.isGlidingSpinning) return;                                     // prevent multiple spins
+        if (!this.isGliding) return;                                            // only allow gliding spin if currently gliding
+        this.isGlidingSpinning = true;                                          // set isGlidingSpinning to true
+        this.disableMovement = true;                                            // disable movement during spin
+        const radius = 150;                                                     // Radius of the circular path
+        const duration = 1000;                                                  // Duration of the circular motion in milliseconds
+        const toAngle = this.flipX ? 360 : -360;                                // Total angle to rotate during the motion
+        const path = new Phaser.Curves.Ellipse(this.x, this.y, radius, radius, this.glideAngle, 360 + this.glideAngle); // Create a circular path around the player
         this.activeTween = this.scene.tweens.add({                              // Create a tween to follow the path
             targets: this,                                                      // Target the player
             duration: duration,                                                 // Total duration of the circular motion
@@ -218,7 +217,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                 target.setPosition(point.x, point.y);                           // Set the player's position
             },
             onComplete: () => {                                                 // When the circular motion is complete
-                this.isGlidingSpinning = false;                                     // Reset the gliding spin flag
+                this.isGlidingSpinning = false;                                 // Reset the gliding spin flag
+                if (this.disableMovement) this.disableMovement = false;         // re-enable movement
             }
         });
     }
@@ -316,6 +316,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             if (this.angle != 0) this.angle = 0;                        // Reset the rotation
             if (this.body.gravity !== 0) this.body.setGravity(0);       // Re-enable normal gravity
             if (this.speed !== PLAYER_SPEED) this.speed = PLAYER_SPEED; // Reset the speed
+            if (this.disableMovement) this.disableMovement = false;       // re-enable movement
         }
     }
 }
