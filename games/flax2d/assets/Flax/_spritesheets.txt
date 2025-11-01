@@ -1,1 +1,3 @@
 SS_Flax_Tailwhip.png,256,256,9
+SS_Flax_Glide_Start.png,256,256,3
+SS_Flax_Glide.png,256,256,6

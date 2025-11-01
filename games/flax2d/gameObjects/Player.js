@@ -58,8 +58,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                 }
             }
             if (this.isGliding) {
-                if (this.anims.currentAnim?.key !== 'fall')     // avoid restarting
-                    this.anims.play('fall', true);              // play fall animation
+                if (this.anims.currentAnim?.key !== 'glide')     // avoid restarting
+                    this.anims.play('glide', true);              // play glide animation
                 if (this.body.velocity.x === 0)                 // not moving horizontally
                     this.stopGlide();                           // stop gliding
             }
@@ -127,11 +127,25 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                 frameRate: 48,                                                                   // Adjust frameRate as needed
                 repeat: 1                                                                        // Loop the animation
             });
+        if (!this.anims.exists('glide_Start'))
+            this.anims.create({
+                key: 'glide_Start',
+                frames: this.anims.generateFrameNumbers('flax_Start', { start: 0, end: 2 }),
+                frameRate: 12,
+                repeat: 0
+            });
+        if (!this.anims.exists('glide'))
+            this.anims.create({
+                key: 'glide',
+                frames: this.anims.generateFrameNumbers('flax_Glide', { start: 0, end: 5 }),
+                frameRate: 12,
+                repeat: 0
+            });
     }
 
     moveLeft() {
         if (!this.canMove || this.isGlidingSpinning) return;                                        // prevent movement if canMove is false
-        this.setFlipX(true);                                                                    // Flip the sprite to face left
+        if (!this.isGliding) this.setFlipX(true);                                                                    // Flip the sprite to face left
         this.setVelocityX(-this.speed);                                                         // Set horizontal velocity to move left
         if (this.isGliding)                                                                     // if currently gliding
             this.startGlide(-this.glideAngle);                                                  // Set horizontal velocity to move left
@@ -139,7 +153,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     moveRight() {
         if (!this.canMove || this.isGlidingSpinning) return;                                        // prevent movement if canMove is false
-        this.setFlipX(false);                                                                   // Flip the sprite to face right
+        if (!this.isGliding) this.setFlipX(false);                                                                   // Flip the sprite to face right
         this.setVelocityX(this.speed);                                                          // Set horizontal velocity to move right
         if (this.isGliding)                                                                     // if currently gliding
             this.startGlide(this.glideAngle);                                                   // Set horizontal velocity to move right
@@ -160,17 +174,20 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     startGlide(glideAngle) {
-        if (this.didStartGlide || this.isGlidingSpinning) return;             // prevent multiple glide starts
-        this.didStartGlide = true;                  // flag to indicate glide has started
-        this.activeTween = this.scene.tweens.add({  // tween to rotate and move down
-            targets: this,                          // target the muncher
-            angle: glideAngle,                      // rotate to 360 degrees
-            duration: 100,                          // Duration of the tween in milliseconds
-            ease: 'Linear',                         // Easing function
-            onComplete: () => {                     // when the tween is complete
-                this.didStartGlide = false;         // destroy the muncher after the tween
-                if (!this.isGliding)
-                    this.glide();                   // start gliding
+        if (this.didStartGlide || this.isGlidingSpinning) return;   // prevent multiple glide starts
+        this.didStartGlide = true;                                  // flag to indicate glide has started
+        if (!this.anims.isPlaying || this.anims.currentAnim?.key !== 'glide')
+            this.play('glide_Start', true);                         // play glide start animation
+        this.activeTween = this.scene.tweens.add({                  // tween to rotate and move down
+            targets: this,                                          // target the muncher
+            angle: glideAngle,                                      // rotate to 360 degrees
+            duration: 200,                                          // Duration of the tween in milliseconds
+            ease: 'Linear',                                         // Easing function
+            onComplete: () => {                                     // when the tween is complete
+                this.didStartGlide = false;                         // destroy the muncher after the tween
+                this.setFlipX(glideAngle < 0);                      // set flip based on glide angle
+                if (!this.isGliding)                                // if not already gliding
+                    this.glide();                                   // start gliding
             }
         });
     }
@@ -223,20 +240,27 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         });
     }
 
-    // FIX: TAILWHIP WHILE GLIDING BREAKS THE ANIMATION ON END....
+    // FIX: Timer resets regardless of tailwhipping again...
     tailwhip() {
-        if (!this.canTailWhip || this.isGlidingSpinning) return;                              // prevent tailwhip if canTailWhip is false
+        if (!this.canTailWhip || this.isGlidingSpinning) return;    // prevent tailwhip if canTailWhip is false
         this.canTailWhip = false;                                   // set canTailWhip to false to prevent spamming
         this.isTailwhipping = true;                                 // set isTailwhipping to true
         this.play('tailwhip', true);                                // play tailwhip animation
-        if (!this.isGliding) this.damageBox.activate(250, 100, 1);  // activate damage box
-        else this.damageBox.activate(250, 200, 1);                  // activate larger damage box when gliding
+        const originalVelocityY = this.body.velocity.y;             // store original vertical velocity
+        if (this.isGliding) this.damageBox.activate(250, 200, 1);   // activate damage box when gliding
+        else this.damageBox.activate(250, 100, 1);                  // activate larger damage box when gliding
         this.scene.handleDamageBoxOverlap(this, this.damageBox);    // set up overlap handling
         this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, (animation) => {
             if (animation.key === 'tailwhip') this.endTailwhip();   // If tailwhip animation completes, end tailwhip
+            if (this.isGliding)                                     // if gliding
+                this.body.setVelocityY(originalVelocityY);          // restore original vertical velocity if gliding
         });
         this.scene.time.delayedCall(500, () => {                    // 500ms cooldown
-            this.endTailwhip();
+            if (this.isTailwhipping)                                // If still tailwhipping after 500ms
+                this.endTailwhip();                                 // end tailwhip 
+            if (this.isGliding &&                                   // if gliding
+                this.body.velocity.y != originalVelocityY)          // and vertical velocity has changed
+                this.body.setVelocityY(originalVelocityY);          // restore original vertical velocity if gliding
         });
     }
 
