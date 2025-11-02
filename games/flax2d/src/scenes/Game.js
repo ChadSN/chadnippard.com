@@ -22,7 +22,6 @@ export class Game extends Phaser.Scene {
         this.addLights();                                   // Add lighting effects
         this.spawnPlayer();                                 // Spawn the player character
         this.setupCamera();                                 // Setup camera to follow the player
-        this.spawnLeftEdgeBlocker();                        // Spawn invisible blocker on left edge
         this.spawnPlatforms();                              // Spawn platforms
         this.spawnDNAs();                                   // Spawn DNA collectables
         // this.spawnGlizzards();                              // Spawn glizzard enemies
@@ -105,15 +104,6 @@ export class Game extends Phaser.Scene {
         cam.setDeadzone(cam.width / 4, 0);                  // Set deadzone to center quarter width and full height
     }
 
-    // Spawn invisible blocker on left edge to prevent player from going off-screen
-    spawnLeftEdgeBlocker() {
-        const blocker = this.add.rectangle(-50, 2500, 50, 5000, 0x000000f, 100);    // invisible rectangle *CHANGE ALPHA*
-        this.physics.add.existing(blocker);                                         // enable physics
-        blocker.body.setAllowGravity(false);                                        // no gravity
-        blocker.body.setImmovable(true);                                            // don't move on collision
-        this.physics.add.collider(this.player, blocker);                            // add collider with player
-    }
-
     // Spawn platforms in the game world
     spawnPlatforms() {
         // CREATE PLATFORMS
@@ -124,7 +114,7 @@ export class Game extends Phaser.Scene {
             this.platforms.create(256 * i, 1080, 'ground');
         }
         // Create some floating platforms
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < 20; i++) {
             this.platforms.create(51 * i, 720, 'ground').setScale(0.2).refreshBody(); // refreshBody is needed after scaling to update the physics body
         }
         // for (let i = 0; i < 10; i++) {
@@ -137,7 +127,7 @@ export class Game extends Phaser.Scene {
             this.platforms.create(51 * i + 1400, 0, 'ground').setScale(0.2).refreshBody(); // refreshBody is needed after scaling to update the physics body
         }
         this.physics.add.collider(this.player, this.platforms, (player, platform) => { // Add collision between player and platforms
-            player.handleCollision(); // Handle player collision effects
+            player.handleCollision(platform); // Handle player collision effects
         });
     }
 
