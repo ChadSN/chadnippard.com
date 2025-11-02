@@ -23,9 +23,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.isTailwhipping = false;        // flag to indicate if the player is currently tailwhipping
         this.damageBox = null;              // reference to the DamageBox
         this.isGliding = false;             // flag to indicate if the player is gliding
-        this.glideAngle = 95;               // angle to rotate to when starting glide
+        this.glideAngle = 100;               // angle to rotate to when starting glide
         this.didStartGlide = false;         // flag to indicate if glide has just started
         this.isGlidingSpinning = false;     // flag to indicate if the player is performing a gliding spin
+        this.isGlideTurning = false;        // flag to indicate if the player is performing a glide turn
         this.disableMovement = false;       // flag to disable all player movement
     }
 
@@ -86,108 +87,106 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     // Define player animations
     initAnimations() {
-
-        // Animation for moving left
         if (!this.anims.exists('idle'))
             this.anims.create({
-                key: 'idle',                                                                    // Animation for moving left
-                frames: this.anims.generateFrameNumbers('flax_Idle', { start: 0, end: 4 }),     // Assuming frames 0-5 are for left movement
-                frameRate: 4,                                                                   // Adjust frameRate as needed
-                repeat: -1                                                                      // Loop the animation
+                key: 'idle',                                                                        // Animation for idle state
+                frames: this.anims.generateFrameNumbers('flax_Idle', { start: 0, end: 4 }),         // Assuming frames 0-4 are for idle
+                frameRate: 4,                                                                       // Adjust frameRate as needed
+                repeat: -1                                                                          // Loop the animation
             });
 
         if (!this.anims.exists('run'))
             this.anims.create({
-                key: 'run',                                                                     // Animation for moving left
-                frames: this.anims.generateFrameNumbers('flax_Run', { start: 0, end: 11 }),     // Assuming frames 0-5 are for left movement
-                frameRate: 12,                                                                  // Adjust frameRate as needed
-                repeat: -1                                                                      // Loop the animation
+                key: 'run',                                                                         // Animation for running
+                frames: this.anims.generateFrameNumbers('flax_Run', { start: 0, end: 11 }),         // Assuming frames 0-11 are for running
+                frameRate: 12,                                                                      // Adjust frameRate as needed
+                repeat: -1                                                                          // Loop the animation
             });
 
         if (!this.anims.exists('jump'))
             this.anims.create({
-                key: 'jump',                                                                    // Animation for moving left
-                frames: this.anims.generateFrameNumbers('flax_Jump', { start: 0, end: 4 }),     // Assuming frames 0-5 are for left movement
-                frameRate: 24,                                                                  // Adjust frameRate as needed
-                repeat: 0                                                                       // Loop the animation
+                key: 'jump',                                                                        // Animation for jumping
+                frames: this.anims.generateFrameNumbers('flax_Jump', { start: 0, end: 4 }),         // Assuming frames 0-4 are for jumping
+                frameRate: 24,                                                                      // Adjust frameRate as needed
+                repeat: 0                                                                           // Loop the animation
             });
 
         if (!this.anims.exists('fall'))
             this.anims.create({
-                key: 'fall',                                                                    // Animation for moving left
-                frames: this.anims.generateFrameNumbers('flax_Falling', { start: 0, end: 2 }),  // Assuming frames 0-5 are for left movement
-                frameRate: 12,                                                                  // Adjust frameRate as needed
-                repeat: -1                                                                      // Loop the animation
+                key: 'fall',                                                                        // Animation for falling
+                frames: this.anims.generateFrameNumbers('flax_Falling', { start: 0, end: 2 }),      // Assuming frames 0-2 are for falling
+                frameRate: 12,                                                                      // Adjust frameRate as needed
+                repeat: -1                                                                          // Loop the animation
             });
 
         if (!this.anims.exists('tailwhip'))
             this.anims.create({
-                key: 'tailwhip',                                                                 // Animation for moving left
-                frames: this.anims.generateFrameNumbers('flax_Tailwhip', { start: 0, end: 8 }),  // Assuming frames 0-5 are for left movement
-                frameRate: 48,                                                                   // Adjust frameRate as needed
-                repeat: 1                                                                        // Loop the animation
+                key: 'tailwhip',                                                                    // Animation for tailwhip
+                frames: this.anims.generateFrameNumbers('flax_Tailwhip', { start: 0, end: 8 }),     // Assuming frames 0-8 are for tailwhip
+                frameRate: 48,                                                                      // Adjust frameRate as needed
+                repeat: 1                                                                           // Loop the animation
             });
         if (!this.anims.exists('glide_Start'))
             this.anims.create({
-                key: 'glide_Start',
-                frames: this.anims.generateFrameNumbers('flax_Start', { start: 0, end: 2 }),
-                frameRate: 12,
-                repeat: 0
+                key: 'glide_Start',                                                                 // Animation for glide start
+                frames: this.anims.generateFrameNumbers('flax_Start', { start: 0, end: 2 }),        // Assuming frames 0-2 are for glide start
+                frameRate: 12,                                                                      // Adjust frameRate as needed
+                repeat: 0                                                                           // Loop the animation
             });
         if (!this.anims.exists('glide'))
             this.anims.create({
-                key: 'glide',
-                frames: this.anims.generateFrameNumbers('flax_Glide', { start: 0, end: 5 }),
-                frameRate: 12,
-                repeat: 0
+                key: 'glide',                                                                       // Animation for gliding
+                frames: this.anims.generateFrameNumbers('flax_Glide', { start: 0, end: 5 }),        // Assuming frames 0-5 are for gliding
+                frameRate: 12,                                                                      // Adjust frameRate as needed
+                repeat: 0                                                                           // Loop the animation
             });
     }
 
     moveLeft() {
         if (!this.canMove || this.isGlidingSpinning) return;                                        // prevent movement if canMove is false
-        if (!this.isGliding) this.setFlipX(true);                                                                    // Flip the sprite to face left
-        this.setVelocityX(-this.speed);                                                         // Set horizontal velocity to move left
-        if (this.isGliding)                                                                     // if currently gliding
-            this.startGlide(-this.glideAngle);                                                  // Set horizontal velocity to move left
+        if (!this.isGliding) this.setFlipX(true);                                                   // Flip the sprite to face left
+        this.setVelocityX(-this.speed);                                                             // Set horizontal velocity to move left
+        if (this.isGliding)                                                                         // if currently gliding
+            this.glideTurn(false);                                                                       // Set horizontal velocity to move left
     }
 
     moveRight() {
         if (!this.canMove || this.isGlidingSpinning) return;                                        // prevent movement if canMove is false
-        if (!this.isGliding) this.setFlipX(false);                                                                   // Flip the sprite to face right
-        this.setVelocityX(this.speed);                                                          // Set horizontal velocity to move right
-        if (this.isGliding)                                                                     // if currently gliding
-            this.startGlide(this.glideAngle);                                                   // Set horizontal velocity to move right
+        if (!this.isGliding) this.setFlipX(false);                                                  // Flip the sprite to face right
+        this.setVelocityX(this.speed);                                                              // Set horizontal velocity to move right
+        if (this.isGliding)                                                                         // if currently gliding
+            this.glideTurn(true);                                                                       // Set horizontal velocity to move right
     }
 
     idle() {
-        this.setVelocityX(0);                                                                   // Stop horizontal movement
+        this.setVelocityX(0);                                                                       // Stop horizontal movement
     }
 
     jump() {
-        if (this.isGlidingSpinning) return;                                        // prevent jump if canMove is false
-        if (this.body.blocked.down) {                                                           // only jump if on the ground
-            this.setVelocityY(-this.jumpVel);                                                   // negative y velocity to jump up
+        if (this.isGlidingSpinning) return;                                                         // prevent jump if canMove is false
+        if (this.body.blocked.down) {                                                               // only jump if on the ground
+            this.setVelocityY(-this.jumpVel);                                                       // negative y velocity to jump up
         }
-        else if (!this.isGliding && this.body.velocity.x != 0) {                                // start gliding only if moving horizontally
-            this.startGlide(this.flipX ? -this.glideAngle : this.glideAngle);                   // start gliding at an angle based on facing direction
+        else if (!this.isGliding && this.body.velocity.x != 0) {                                    // start gliding only if moving horizontally
+            this.startGlide(this.flipX ? -this.glideAngle : this.glideAngle);                       // start gliding at an angle based on facing direction
         }
     }
 
     startGlide(glideAngle) {
-        if (this.didStartGlide || this.isGlidingSpinning) return;   // prevent multiple glide starts
-        this.didStartGlide = true;                                  // flag to indicate glide has started
+        if (this.didStartGlide || this.isGlidingSpinning) return;                                   // prevent multiple glide starts
+        this.didStartGlide = true;                                                                  // flag to indicate glide has started
         if (!this.anims.isPlaying || this.anims.currentAnim?.key !== 'glide')
-            this.play('glide_Start', true);                         // play glide start animation
-        this.activeTween = this.scene.tweens.add({                  // tween to rotate and move down
-            targets: this,                                          // target the muncher
-            angle: glideAngle,                                      // rotate to 360 degrees
-            duration: 200,                                          // Duration of the tween in milliseconds
-            ease: 'Linear',                                         // Easing function
-            onComplete: () => {                                     // when the tween is complete
-                this.didStartGlide = false;                         // destroy the muncher after the tween
-                this.setFlipX(glideAngle < 0);                      // set flip based on glide angle
-                if (!this.isGliding)                                // if not already gliding
-                    this.glide();                                   // start gliding
+            this.play('glide_Start', true);                                                         // play glide start animation
+        this.activeTween = this.scene.tweens.add({                                                  // tween to rotate and move down
+            targets: this,                                                                          // target the muncher
+            angle: glideAngle,                                                                      // rotate to 360 degrees
+            duration: 200,                                                                          // Duration of the tween in milliseconds
+            ease: 'Linear',                                                                         // Easing function
+            onComplete: () => {                                                                     // when the tween is complete
+                this.didStartGlide = false;                                                         // destroy the muncher after the tween
+                this.setFlipX(glideAngle < 0);                                                      // set flip based on glide angle
+                if (!this.isGliding)                                                                // if not already gliding
+                    this.glide();                                                                   // start gliding
             }
         });
     }
@@ -213,29 +212,64 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             ease: 'Linear'              // Easing function
         });
     }
-
+    // FIX: Check xVel and check angle
     glideSpin() {
-        if (this.isGlidingSpinning) return;                                     // prevent multiple spins
-        if (!this.isGliding) return;                                            // only allow gliding spin if currently gliding
+        if (this.isGlidingSpinning || !this.isGliding) return;                  // only allow gliding spin if currently gliding
         this.isGlidingSpinning = true;                                          // set isGlidingSpinning to true
         this.disableMovement = true;                                            // disable movement during spin
         const radius = 150;                                                     // Radius of the circular path
         const duration = 1000;                                                  // Duration of the circular motion in milliseconds
         const toAngle = this.flipX ? 360 : -360;                                // Total angle to rotate during the motion
-        const path = new Phaser.Curves.Ellipse(this.x, this.y, radius, radius, this.glideAngle, 360 + this.glideAngle); // Create a circular path around the player
+        const path = new Phaser.Curves.Ellipse(this.x, this.y, radius, radius, this.glideAngle, 360 + this.glideAngle, !this.flipX); // Create a circular path around the player
         this.activeTween = this.scene.tweens.add({                              // Create a tween to follow the path
             targets: this,                                                      // Target the player
             duration: duration,                                                 // Total duration of the circular motion
             repeat: 0,                                                          // No repeats
             angle: { from: this.angle, to: this.angle + toAngle },              // Rotate the player based on direction
             onUpdate: (tween, target) => {                                      // Update the player's position along the path
-                const t = this.flipX ? tween.progress : 1 - tween.progress;     // Progress of the tween (0 to 1)
+                const t = tween.progress;     // Progress of the tween (0 to 1)
                 const point = path.getPoint(t);                                 // Get the point on the path at progress `t`
                 target.setPosition(point.x, point.y);                           // Set the player's position
             },
             onComplete: () => {                                                 // When the circular motion is complete
                 this.isGlidingSpinning = false;                                 // Reset the gliding spin flag
                 if (this.disableMovement) this.disableMovement = false;         // re-enable movement
+            }
+        });
+    }
+
+    glideTurn(isFlipX) {
+        if (!this.isGliding || this.isGlidingSpinning ||                        // only allow glide turn if currently gliding, not spinning or already turning
+            this.isGlideTurning || this.didStartGlide) return;
+        if (this.flipX !== isFlipX) return;                                      // no need to turn if already facing the right direction
+        this.isGlideTurning = true;                                             // set glideTurning to true
+        this.disableMovement = true;                                            // disable movement during spin
+
+        const radius = 300;                                                      // Radius of the circular path
+        const duration = 2500;                                                   // Duration of the circular motion in milliseconds
+        const startAngle = 270;                                                 // Starting angle for the circular path at the top
+        const endAngle = isFlipX ? (startAngle + this.glideAngle) + 90 : (startAngle - this.glideAngle) - 90;
+        const path = new Phaser.Curves.Ellipse(this.x, this.y + radius, radius, radius, startAngle, endAngle, isFlipX); // Create a circular path around the player from
+        const toAngle = isFlipX ? this.angle - 90 - this.glideAngle : this.glideAngle + 180; // Total angle to rotate during the motion
+        console.log(toAngle);
+        // Debug - draw the path
+        const graphics = this.scene.add.graphics({ lineStyle: { width: 2, color: 0xff0000 } }); // Red line
+        path.draw(graphics);
+        this.activeTween = this.scene.tweens.add({                              // Create a tween to follow the path
+            targets: this,                                                      // Target the player
+            duration: duration,                                                 // Total duration of the circular motion
+            repeat: 0,                                                          // No repeats
+            angle: { from: this.angle, to: toAngle },              // Rotate the player based on direction
+            onUpdate: (tween, target) => {                                      // Update the player's position along the path
+                const t = tween.progress;                                       // Progress of the tween (0 to 1)
+                const point = path.getPoint(t);                                 // Get the point on the path at progress `t`
+                target.setPosition(point.x, point.y);                           // Set the player's position
+            },
+            onComplete: () => {                                                 // When the circular motion is complete
+                this.isGlideTurning = false;                                    // reset glideTurning flag
+                if (this.disableMovement) this.disableMovement = false;         // re-enable movement
+                if (!this.isGliding) this.glide();                              // if not gliding, start gliding
+                this.setFlipX(!isFlipX);                                         // set flip based on direction
             }
         });
     }
@@ -316,10 +350,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     outOfBoundsCheck() {
-        if (!this.isDead) {
-            if (this.y > 1080) {
-                this.die();
-            }
+        if (this.y > this.scene.worldHeight || this.y < -this.scene.worldHeight) {
+            this.die(); // Handle out-of-bounds death
         }
     }
 
@@ -341,6 +373,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             if (this.body.gravity !== 0) this.body.setGravity(0);       // Re-enable normal gravity
             if (this.speed !== PLAYER_SPEED) this.speed = PLAYER_SPEED; // Reset the speed
             if (this.disableMovement) this.disableMovement = false;       // re-enable movement
+            if (this.isGlideTurning) this.isGlideTurning = false;         // reset glideTurning flag
         }
     }
 }
