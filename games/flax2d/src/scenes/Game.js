@@ -24,8 +24,8 @@ export class Game extends Phaser.Scene {
         this.setupCamera();                                 // Setup camera to follow the player
         this.spawnPlatforms();                              // Spawn platforms
         this.spawnDNAs();                                   // Spawn DNA collectables
-        // this.spawnGlizzards();                              // Spawn glizzard enemies
-        //this.spawnMunchers();                               // Spawn muncher enemies
+        this.spawnGlizzards();                              // Spawn glizzard enemies
+        this.spawnMunchers();                               // Spawn muncher enemies
         this.uiManager = new UIManager(this);               // Create UI Manager
         this.uiManager.updateHealth(this.player.health);    // Initialise health display
         //this.relayer();                                   // Adjust layer depths
@@ -34,7 +34,6 @@ export class Game extends Phaser.Scene {
     // Game loop
     update() {
         this.handlePlayerInput();                           // Handle player input
-        this.player.outOfBoundsCheck();                     // Check if player is out of bounds
     }
 
     // Handle player input
@@ -90,7 +89,7 @@ export class Game extends Phaser.Scene {
 
     // Spawn the player character
     spawnPlayer() {
-        this.player = new Player(this, 1700, -300);                   // Create a new player instance at (128, 450)
+        this.player = new Player(this, 128, 0);                   // Create a new player instance at (128, 450)
         this.player.setPipeline('Light2D');                         // Enable lighting effects on the player
         const playerDamageBox = new DamageBox(this, this.player);   // create damage box for player
         this.player.setDamageBox(playerDamageBox);                  // assign damage box to player
@@ -117,12 +116,12 @@ export class Game extends Phaser.Scene {
         for (let i = 0; i < 20; i++) {
             this.platforms.create(51 * i, 720, 'ground').setScale(0.2).refreshBody(); // refreshBody is needed after scaling to update the physics body
         }
-        // for (let i = 0; i < 10; i++) {
-        //     this.platforms.create(51 * i + 560, 450, 'ground').setScale(0.2).refreshBody(); // refreshBody is needed after scaling to update the physics body
-        // }
-        // for (let i = 0; i < 10; i++) {
-        //     this.platforms.create(51 * i + 1080, 190, 'ground').setScale(0.2).refreshBody(); // refreshBody is needed after scaling to update the physics body
-        // }
+        for (let i = 0; i < 10; i++) {
+            this.platforms.create(51 * i + 560, 450, 'ground').setScale(0.2).refreshBody(); // refreshBody is needed after scaling to update the physics body
+        }
+        for (let i = 0; i < 10; i++) {
+            this.platforms.create(51 * i + 1080, 190, 'ground').setScale(0.2).refreshBody(); // refreshBody is needed after scaling to update the physics body
+        }
         for (let i = 10; i > 0; i--) {
             this.platforms.create(51 * i + 1400, 0, 'ground').setScale(0.2).refreshBody(); // refreshBody is needed after scaling to update the physics body
         }

@@ -34,8 +34,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         super.preUpdate(time, delta);               // call the parent class preUpdate
         if (!this.body) return;                     // safety check
 
-        if (this.x < 0 + this.body.width / 2)       // prevent going off left side
-            this.x = 0 + this.body.width / 2;
+
+
+        this.outOfBoundsCheck();                     // Check if player is out of bounds
 
         if (this.isTailwhipping) {                                          // during tailwhip
             const tailWhipOffset = this.isGliding ? 0 : this.height / 5;    // adjust offset based on gliding state
@@ -85,62 +86,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             }
         }
         this._wasOnGround = true; // update state
-    }
-
-    // Define player animations
-    initAnimations() {
-        if (!this.anims.exists('idle'))                                                             // check if animation already exists
-            this.anims.create({                                                                     // create idle animation
-                key: 'idle',                                                                        // Animation for idle state
-                frames: this.anims.generateFrameNumbers('flax_Idle', { start: 0, end: 4 }),         // Assuming frames 0-4 are for idle
-                frameRate: 4,                                                                       // Adjust frameRate as needed
-                repeat: -1                                                                          // Loop the animation
-            });
-
-        if (!this.anims.exists('run'))
-            this.anims.create({
-                key: 'run',
-                frames: this.anims.generateFrameNumbers('flax_Run', { start: 0, end: 11 }),
-                frameRate: 12,
-                repeat: -1
-            });
-
-        if (!this.anims.exists('jump'))
-            this.anims.create({
-                key: 'jump',
-                frames: this.anims.generateFrameNumbers('flax_Jump', { start: 0, end: 4 }),
-                frameRate: 24,
-                repeat: 0
-            });
-
-        if (!this.anims.exists('fall'))
-            this.anims.create({
-                key: 'fall',
-                frames: this.anims.generateFrameNumbers('flax_Falling', { start: 0, end: 2 }),
-                frameRate: 12,
-                repeat: -1
-            });
-
-        if (!this.anims.exists('tailwhip'))
-            this.anims.create({
-                key: 'tailwhip',
-                frames: this.anims.generateFrameNumbers('flax_Tailwhip', { start: 0, end: 8 }),
-                frameRate: 48,
-                repeat: 1
-            });
-        if (!this.anims.exists('glide_Start'))
-            this.anims.create({
-                key: 'glide_Start',
-                frames: this.anims.generateFrameNumbers('flax_Start', { start: 0, end: 2 }),
-                repeat: 0
-            });
-        if (!this.anims.exists('glide'))
-            this.anims.create({
-                key: 'glide',
-                frames: this.anims.generateFrameNumbers('flax_Glide', { start: 0, end: 5 }),
-                frameRate: 12,
-                repeat: 0
-            });
     }
 
     moveLeft() {
@@ -332,9 +277,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     // Function to handle DNA collection
     collectDNA(dna) {
-        if (this.health >= this.maxHealth) return;   // Don't collect if health is full
-        dna.disableBody(true, true);                 // Remove the collected DNA
-        this.heal(1);                                // Heal the player
+        if (this.health >= this.maxHealth) return;  // Don't collect if health is full
+        dna.disableBody(true, true);                // Remove the collected DNA
+        this.heal(1);                               // Heal the player
     }
 
     die() {
@@ -348,7 +293,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     outOfBoundsCheck() {
-        if (this.y > this.scene.worldHeight || this.y < -this.scene.worldHeight) {
+        if (this.x < 0 + this.body.width / 2)       // prevent going off left side
+            this.x = 0 + this.body.width / 2;
+
+        if (this.y > 1000) {  // if player falls below y = 1000
             this.die(); // Handle out-of-bounds death
         }
     }
@@ -358,11 +306,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     handleCollision(platform) {
-        if (this.activeTween) {                                         // if there's an active tween
-            this.activeTween.stop();                                    // Stop the active tween
-            this.activeTween = null;                                    // Clear the reference
+        if (this.activeTween) {                                     // if there's an active tween
+            this.activeTween.stop();                                // Stop the active tween
+            this.activeTween = null;                                // Clear the reference
         }
-        if (this.isGliding) this.stopGlide();                           // stop gliding
+        if (this.isGliding) this.stopGlide();                       // stop gliding
 
         if (this.isGlidingSpinning) {                               // if currently gliding spin
             this.isGlidingSpinning = false;                         // Reset the gliding spin flag
@@ -380,11 +328,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     setAbovePlatform(platform) {
-
-        if (this.body.bottom > platform.body.top &&         // if bottom of player is below top of platform
-            this.body.bottom < platform.body.bottom) {      // and bottom of player is above bottom of platform
-            this.y = platform.body.top - this.body.height;  // Position player above the platform
-            this.body.velocity.y = 0;                       // Reset vertical velocity
+        if (this.body.bottom > platform.body.top &&                 // if bottom of player is below top of platform
+            this.body.bottom < platform.body.bottom) {              // and bottom of player is above bottom of platform
+            this.y = platform.body.top - this.body.height;          // Position player above the platform
+            this.body.velocity.y = 0;                               // Reset vertical velocity
         }
     }
 
@@ -393,13 +340,63 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.scene.physics.overlap(this, this.scene.platforms, (player, platform) => {  // Check for overlap with platforms
             overlappingPlatform = platform;                                             // Assign the overlapping platform
         });
+        if (overlappingPlatform) this.handleCollision(overlappingPlatform);             // Handle collision if overlapping platform found
+    }
 
-        if (overlappingPlatform) {
-            this.handleCollision(overlappingPlatform);                                  // Call your collision handler with the platform
-            if (this.activeTween) {                                                     // Ensure activeTween is not null before stopping it
-                this.activeTween.stop();                                                // Stop the tween if a collision occurs
-            }
-        }
+    // Define player animations
+    initAnimations() {
+        if (!this.anims.exists('idle'))                                                             // check if animation already exists
+            this.anims.create({                                                                     // create idle animation
+                key: 'idle',                                                                        // Animation for idle state
+                frames: this.anims.generateFrameNumbers('flax_Idle', { start: 0, end: 4 }),         // Assuming frames 0-4 are for idle
+                frameRate: 4,                                                                       // Adjust frameRate as needed
+                repeat: -1                                                                          // Loop the animation
+            });
+
+        if (!this.anims.exists('run'))
+            this.anims.create({
+                key: 'run',
+                frames: this.anims.generateFrameNumbers('flax_Run', { start: 0, end: 11 }),
+                frameRate: 12,
+                repeat: -1
+            });
+
+        if (!this.anims.exists('jump'))
+            this.anims.create({
+                key: 'jump',
+                frames: this.anims.generateFrameNumbers('flax_Jump', { start: 0, end: 4 }),
+                frameRate: 24,
+                repeat: 0
+            });
+
+        if (!this.anims.exists('fall'))
+            this.anims.create({
+                key: 'fall',
+                frames: this.anims.generateFrameNumbers('flax_Falling', { start: 0, end: 2 }),
+                frameRate: 12,
+                repeat: -1
+            });
+
+        if (!this.anims.exists('tailwhip'))
+            this.anims.create({
+                key: 'tailwhip',
+                frames: this.anims.generateFrameNumbers('flax_Tailwhip', { start: 0, end: 8 }),
+                frameRate: 48,
+                repeat: 1
+            });
+        if (!this.anims.exists('glide_Start'))
+            this.anims.create({
+                key: 'glide_Start',
+                frames: this.anims.generateFrameNumbers('flax_Start', { start: 0, end: 2 }),
+                repeat: 0
+            });
+        if (!this.anims.exists('glide'))
+            this.anims.create({
+                key: 'glide',
+                frames: this.anims.generateFrameNumbers('flax_Glide', { start: 0, end: 5 }),
+                frameRate: 12,
+                repeat: 0
+            });
     }
 }
 
