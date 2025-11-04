@@ -37,6 +37,7 @@ export class Preloader extends Phaser.Scene {
         this.load.spritesheet('flax_Tailwhip', '/Flax/SS_Flax_Tailwhip.png', { frameWidth: 256, frameHeight: 256 });
         this.load.spritesheet('flax_Glide', '/Flax/SS_Flax_Glide.png', { frameWidth: 256, frameHeight: 256 });
         this.load.spritesheet('flax_Start', '/Flax/SS_Flax_Glide_Start.png', { frameWidth: 256, frameHeight: 256 });
+        this.load.spritesheet('flax_poleSwing', '/Flax/SS_Flax_Pole_Swinging.png', { frameWidth: 256, frameHeight: 256 });
 
         this.load.spritesheet('glizzard', '/Glizzard/SS_Glizzard_Fly.png', { frameWidth: 128, frameHeight: 105 });
         this.load.spritesheet('glizzardProjectile', '/Glizzard/Glizzard_Projectile.png', { frameWidth: 32, frameHeight: 32 });
@@ -46,6 +47,9 @@ export class Preloader extends Phaser.Scene {
         this.load.spritesheet('muncher_Idle', '/Muncher/SS_Muncher_Idle.png', { frameWidth: 128, frameHeight: 128 });
         this.load.spritesheet('muncher_Walk', '/Muncher/SS_Muncher_Walk.png', { frameWidth: 128, frameHeight: 128 });
         this.load.spritesheet('muncher_Attack', '/Muncher/SS_Muncher_Attack.png', { frameWidth: 128, frameHeight: 128 });
+
+        this.load.image('pole', '/pole.png');
+
     }
 
     create() {

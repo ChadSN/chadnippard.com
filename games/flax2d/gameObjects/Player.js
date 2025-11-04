@@ -1,54 +1,63 @@
 // The Player.js class file extends the Phaser.Physics.Arcade.Sprite and inherits all properties and methods.
 // To make the properties and methods of the Player class available to other files, the export keyword is added.
-import { PLAYER_SPEED, JUMP_VELOCITY } from '../src/config.js';
+import { JUMP_VELOCITY } from '../src/config.js';
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
 
     constructor(scene, x, y) {
-        super(scene, x, y);                 // Call the parent class constructor
-        scene.add.existing(this);           // Add the player to the scene
-        scene.physics.add.existing(this);   // Enable physics on the player
-        this.body.setSize(70, 205);         // Set a custom collision rectangle from (100,0) to (170,205)
-        this.body.setOffset(100, 50);       // Offset the collision rectangle to align with the sprite
-        this.setCollideWorldBounds(false);   // Prevent the player from going out of bounds
-        this.speed = PLAYER_SPEED;          // Use default speed if not provided
-        this.jumpVel = JUMP_VELOCITY;       // Use default jump velocity if not provided
-        this.initAnimations();              // Initialise player animations
-        this.maxHealth = 5;                 // maximum health
-        this.health = this.maxHealth;       // current health
-        this.invulnerable = false;          // short invuln after hit if you want
-        this.canMove = true;                // flag to control if the player can move
-        this.isDead = false;                // flag to indicate if the player is dead
-        this.damageBox = null;              // reference to the DamageBox
-        this.glideAngle = 100;               // angle to rotate to when starting glide
-        this.isGliding = false;             // flag to indicate if the player is gliding
-        this.didStartGlide = false;         // flag to indicate if glide has just started
-        this.isGlidingSpinning = false;     // flag to indicate if the player is performing a gliding spin
-        this.isGlideTurning = false;        // flag to indicate if the player is performing a glide turn
-        this.isTailwhipping = false;        // flag to indicate if the player is currently tailwhipping
-        this.disableMovement = false;       // flag to disable all player movement
+        super(scene, x, y);                             // Call the parent class constructor
+        scene.add.existing(this);                       // Add the player to the scene
+        const hitbox = scene.add.rectangle(x, y, 70, 200, 0x00ff00, 0.3); // create the hitbox rectangle
+        scene.physics.add.existing(hitbox);             // now hitbox.body is an Arcade.Body
+        this.hitbox = hitbox;                           // reference the hitbox from the player
+        this.hitbox.body.setAllowGravity(true);         // Enable gravity for the hitbox
+        this.hitbox.setOrigin(0.5, 0.5);                // Set origin to center for better alignment with hitbox
+        this.setOrigin(0.5, 0.6);                       // Set the sprite origin to better align with the hitbox
+        this.originalMoveSpeed = 4000;                  // original movement speed
+        this.currentMoveSpeed = this.originalMoveSpeed; // target movement speed
+        this.groundDrag = 12000;                        // ground drag. The higher the value, the quicker the stop
+        this.airDrag = 1000;                            // air drag
+        this.hitbox.body.setDragX(this.groundDrag);     // horizontal drag
+        this.hitbox.body.setMaxVelocity(1200, 2000);    // optional max speed cap
+        this.hitbox.body.setCollideWorldBounds(false);  // Prevent the player from going out of bounds
+        this.jumpVel = JUMP_VELOCITY;                   // Use default jump velocity if not provided
+        this.initAnimations();                          // Initialise player animations
+        this.maxHealth = 5;                             // maximum health
+        this.health = this.maxHealth;                   // current health
+        this.invulnerable = false;                      // short invuln after hit if you want
+        this.canMove = true;                            // flag to control if the player can move
+        this.isDead = false;                            // flag to indicate if the player is dead
+        this.damageBox = null;                          // reference to the DamageBox
+        this.glideAngle = 100;                          // angle to rotate to when starting glide
+        this.isGliding = false;                         // flag to indicate if the player is gliding
+        this.didStartGlide = false;                     // flag to indicate if glide has just started
+        this.isGlidingSpinning = false;                 // flag to indicate if the player is performing a gliding spin
+        this.isGlideTurning = false;                    // flag to indicate if the player is performing a glide turn
+        this.isTailwhipping = false;                    // flag to indicate if the player is currently tailwhipping
+        this.disableMovement = false;                   // flag to disable all player movement
+        this.isPoleSwinging = false;                    // flag to indicate if the player is pole swinging
+        this.activePole = null;                         // reference to the pole being swung on
     }
 
     // Update method called every frame
     preUpdate(time, delta) {
-        super.preUpdate(time, delta);               // call the parent class preUpdate
-        if (!this.body) return;                     // safety check
+        super.preUpdate(time, delta);                                               // call the parent class preUpdate
+        if (!this.hitbox.body) return;                                              // safety check
+        this.setPosition(this.hitbox.x, this.hitbox.y);                             // sync player sprite position with hitbox
+        this.angle = this.hitbox.angle;                                             // sync player sprite angle with hitbox
+        this.outOfBoundsCheck();                                                    // Check if player is out of bounds
 
-
-
-        this.outOfBoundsCheck();                     // Check if player is out of bounds
-
-        if (this.isTailwhipping) {                                          // during tailwhip
-            const tailWhipOffset = this.isGliding ? 0 : this.height / 5;    // adjust offset based on gliding state
-            this.damageBox.setPosition(this.x, this.y + tailWhipOffset);    // Sync position with player
+        if (this.isTailwhipping) {                                                  // during tailwhip
+            const tailWhipOffset = this.isGliding ? 0 : this.height / 5;            // adjust offset based on gliding state
+            this.damageBox.setPosition(this.x, this.y + tailWhipOffset);            // Sync position with player
 
             // VISUAL AID - REMOVE LATER
-            this.damageBox.rectangle.setPosition(this.x, this.y + tailWhipOffset); // Sync position with player
+            this.damageBox.rectangle.setPosition(this.x, this.y + tailWhipOffset);  // Sync position with player
             return;
         }
 
-        const onGround = this.body.blocked.down;    // is the player on the ground?
-        const vy = this.body.velocity.y;            // vertical velocity   
+        const onGround = this.hitbox.body.blocked.down;         // is the player on the ground?
+        const vy = this.hitbox.body.velocity.y;                 // vertical velocity   
 
         if (!onGround) {                                        // airborne
             if (vy < 0) {                                       // moving up
@@ -64,16 +73,18 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                 if (this.anims.currentAnim?.key !== 'glide' &&  // avoid restarting
                     this.anims.currentAnim?.key !== 'tailWhip')
                     this.anims.play('glide', true);             // play glide animation
-                if (this.body.velocity.x === 0)                 // not moving horizontally
+                if (this.hitbox.body.velocity.x === 0)          // not moving horizontally
                     this.stopGlide();                           // stop gliding
             }
+            this.hitbox.body.setDragX(this.airDrag);            // air = less friction
             this._wasOnGround = false;                          // update state
             return;                                             // exit early
         }
         if (onGround) {                                         // grounded
+            this.hitbox.body.setDragX(this.groundDrag);         // ground drag
             this.stopGlide();                                   // stop gliding
         }
-        if (Math.abs(this.body.velocity.x) > 0.1) {             // moving horizontally
+        if (Math.abs(this.hitbox.body.velocity.x) > 0.1) {      // moving horizontally
             if (this.anims.currentAnim?.key !== 'run' ||        // avoid restarting
                 !this.anims.isPlaying) {
                 this.anims.play('run', true);                   // play run animation
@@ -89,31 +100,32 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     moveLeft() {
-        if (!this.canMove || this.isGlidingSpinning) return;    // prevent movement if canMove is false
-        if (!this.isGliding) this.setFlipX(true);               // Flip the sprite to face left
-        this.setVelocityX(-this.speed);                         // Set horizontal velocity to move left
-        if (this.isGliding)                                     // if currently gliding
-            this.glideTurn(false);                              // Set horizontal velocity to move left
+        if (!this.canMove || this.isGlidingSpinning || this.isPoleSwinging) return;     // prevent movement if canMove is false
+        if (!this.isGliding) this.setFlipX(true);                                       // Flip the sprite to face left
+        this.hitbox.body.setAccelerationX(-this.currentMoveSpeed);                      // Set horizontal velocity to move left
+        if (this.isGliding)                                                             // if currently gliding
+            this.glideTurn(false);                                                      // Set horizontal velocity to move left
     }
 
     moveRight() {
-        if (!this.canMove || this.isGlidingSpinning) return;    // prevent movement if canMove is false
-        if (!this.isGliding) this.setFlipX(false);              // Flip the sprite to face right
-        this.setVelocityX(this.speed);                          // Set horizontal velocity to move right
-        if (this.isGliding)                                     // if currently gliding
-            this.glideTurn(true);                               // Set horizontal velocity to move right
+        if (!this.canMove || this.isGlidingSpinning || this.isPoleSwinging) return; // prevent movement if canMove is false
+        if (!this.isGliding) this.setFlipX(false);                                  // Flip the sprite to face right
+        this.hitbox.body.setAccelerationX(this.currentMoveSpeed);                   // Set horizontal velocity to move right
+        if (this.isGliding)                                                         // if currently gliding
+            this.glideTurn(true);                                                   // Set horizontal velocity to move right
     }
 
     idle() {
-        this.setVelocityX(0);                                   // Stop horizontal movement
+        this.hitbox.body.setAccelerationX(0);                                   // Stop horizontal movement
     }
 
     jump() {
         if (this.isGlidingSpinning) return;                                     // prevent jump if canMove is false
-        if (this.body.blocked.down) {                                           // only jump if on the ground
-            this.setVelocityY(-this.jumpVel);                                   // negative y velocity to jump up
+        if (this.isPoleSwinging) { this.stopPoleSwing(); return; }
+        if (this.hitbox.body.blocked.down) {                                           // only jump if on the ground
+            this.hitbox.body.setVelocityY(-this.jumpVel);                                   // negative y velocity to jump up
         }
-        else if (!this.isGliding && this.body.velocity.x != 0) {                // start gliding only if moving horizontally
+        else if (!this.isGliding && this.hitbox.body.velocity.x != 0) {                // start gliding only if moving horizontally
             this.startGlide(this.flipX ? -this.glideAngle : this.glideAngle);   // start gliding at an angle based on facing direction
         }
     }
@@ -124,38 +136,34 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         if (!this.anims.isPlaying || this.anims.currentAnim?.key !== 'glide')
             this.play('glide_Start', true);                                     // play glide start animation
         this.activeTween = this.scene.tweens.add({                              // tween to rotate and move down
-            targets: this,                                                      // target the muncher
+            targets: this.hitbox,                                                      // target the muncher
             angle: glideAngle,                                                  // rotate to 360 degrees
             duration: 200,                                                      // Duration of the tween in milliseconds
             ease: 'Linear',                                                     // Easing function
             onComplete: () => {                                                 // when the tween is complete
                 this.didStartGlide = false;                                     // destroy the muncher after the tween
                 this.setFlipX(glideAngle < 0);                                  // set flip based on glide angle
-                if (!this.isGliding)                                            // if not already gliding
-                    this.glide();                                               // start gliding
+                if (!this.isGliding) this.glide();                              // if not already gliding, start gliding
             }
         });
     }
 
 
     glide() {
-        this.isGliding = true;                          // set isGliding to true
-        this.body.setVelocity(this.body.velocity.x, 0); // limit downward speed
-        this.body.setGravity(0, -3500);                 // Reduce gravity for the player
-        this.speed = PLAYER_SPEED * 3 / 4;              // reduce horizontal speed while gliding
+        this.isGliding = true;                                              // set isGliding to true
+        this.hitbox.body.setVelocity(this.hitbox.body.velocity.x, 0);       // limit downward speed
+        this.hitbox.body.setGravity(0, -3500);                              // Reduce gravity for the player
+        const glideSpeed = this.originalMoveSpeed * 3 / 4;                  // calculate reduced horizontal speed while gliding
+        this.currentMoveSpeed = glideSpeed;                                 // reduce horizontal speed while gliding
     }
 
 
     stopGlide() {
-        this.isGliding = false;         // set isGliding to false
-        this.body.setGravity(0);        // Re-enable normal gravity
-        this.speed = PLAYER_SPEED;      // reset speed
-        this.scene.tweens.add({         // tween to rotate back to 0 degrees
-            targets: this,              // target the player
-            angle: 0,                   // rotate back to 0 degrees
-            duration: 100,              // Duration of the tween in milliseconds
-            ease: 'Linear'              // Easing function
-        });
+        this.isGliding = false;                         // set isGliding to false
+        this.hitbox.body.setGravity(0);                 // Re-enable normal gravity
+        this.currentMoveSpeed = this.originalMoveSpeed; // reset speed
+        this.tweenAngleToZero(this.hitbox, 100);        // tween angle back to zero over 100ms
+
     }
     // FIX: Check xVel and check angle
     glideSpin() {
@@ -167,15 +175,15 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         const toAngle = this.flipX ? 360 : -360;                                        // Total angle to rotate during the motion
         const path = new Phaser.Curves.Ellipse(this.x, this.y - radius, radius, radius, this.glideAngle, 360 + this.glideAngle, !this.flipX); // Create a circular path around the player
         this.activeTween = this.scene.tweens.add({                                      // Create a tween to follow the path
-            targets: this,                                                              // Target the player
+            targets: this.hitbox,                                                       // Target the hitbox
             duration: duration,                                                         // Total duration of the circular motion
             repeat: 0,                                                                  // No repeats
-            angle: { from: this.angle, to: this.angle + toAngle },                      // Rotate the player based on direction
-            onUpdate: (tween, target) => {                                              // Update the player's position along the path
+            angle: { from: this.hitbox.angle, to: this.hitbox.angle + toAngle },        // Rotate the hitbox based on direction
+            onUpdate: (tween, target) => {                                              // Update the hitbox's position along the path
                 const t = tween.progress;                                               // Progress of the tween (0 to 1)
                 const point = path.getPoint(t);                                         // Get the point on the path at progress `t`
-                target.setPosition(point.x, point.y);                                   // Set the player's position
-                this.checkPlatformCollision();
+                target.setPosition(point.x, point.y);                                   // Set the hitbox's position
+                this.checkPlatformCollision();                                          // Check for platform collision during the spin
             },
             onComplete: () => {                                                         // When the circular motion is complete
                 this.isGlidingSpinning = false;                                         // Reset the gliding spin flag
@@ -189,31 +197,41 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         if (this.flipX !== isFlipX) return;                                             // no need to turn if already facing the right direction
         this.isGlideTurning = true;                                                     // set glideTurning to true
         this.disableMovement = true;                                                    // disable movement during spin
+        const initialVelocityX = this.hitbox.body.velocity.x;                           // store initial horizontal velocity
         const radius = 150;                                                             // Radius of the circular path
         const duration = 300;                                                           // Duration of the circular motion in milliseconds
         const startAngle = 270;                                                         // Starting angle for the circular path at the top
-        const endAngle = isFlipX ? (startAngle + this.glideAngle) + 90 : (startAngle - this.glideAngle) - 90; // Ending angle based on turn direction
-        const path = new Phaser.Curves.Ellipse(this.x, this.y + radius, radius, radius, startAngle, endAngle, isFlipX); // Create a circular path around the player from
+        const endAngle = isFlipX                                                        // Ending angle based on turn direction
+            ? (startAngle + this.glideAngle) + 90                                       // clockwise
+            : (startAngle - this.glideAngle) - 90;                                      // counter-clockwise
+        const path = new Phaser.Curves.Ellipse(                                         // Create a circular path around the player
+            this.x, this.y + radius,                                                    // center of the ellipse
+            radius, radius,                                                             // radii
+            startAngle, endAngle,                                                       // angles
+            isFlipX);                                                                   // clockwise based on turn direction
         const toAngle = this.angle + (isFlipX ? -1 : 1) * (270 - this.glideAngle);      // Total angle to rotate during the motion
         // Debug - draw the path
         // const graphics = this.scene.add.graphics({ lineStyle: { width: 2, color: 0xff0000 } }); // Red line
         // path.draw(graphics); // Draw the path for debugging
         this.activeTween = this.scene.tweens.add({                                      // Create a tween to follow the path
-            targets: this,                                                              // Target the player
+            targets: this.hitbox,                                                       // Target the hitbox
             duration: duration,                                                         // Total duration of the circular motion
             repeat: 0,                                                                  // No repeats
-            angle: { from: this.angle, to: toAngle },                                   // Rotate the player based on direction
-            onUpdate: (tween, target) => {                                              // Update the player's position along the path
+            angle: { from: this.hitbox.angle, to: toAngle },                            // Rotate the hitbox based on direction
+            onUpdate: (tween, target) => {                                              // Update the hitbox's position along the path
                 const t = tween.progress;                                               // Progress of the tween (0 to 1)
                 const point = path.getPoint(t);                                         // Get the point on the path at progress `t`
-                target.setPosition(point.x, point.y);                                   // Set the player's position
-                this.checkPlatformCollision();                                           // Check for platform collision during the turn
+                target.setPosition(point.x, point.y);                                   // Set the hitbox's position
+                this.checkPlatformCollision();                                          // Check for platform collision during the turn
             },
             onComplete: () => {                                                         // When the circular motion is complete
                 this.isGlideTurning = false;                                            // reset glideTurning flag
-                if (this.disableMovement) this.disableMovement = false;                 // re-enable movement
+                this.disableMovement = false;                                           // re-enable movement
                 if (!this.isGliding) this.glide();                                      // if not gliding, start gliding
                 this.setFlipX(!isFlipX);                                                // set flip based on turn direction
+                this.hitbox.body.setVelocityX(isFlipX                                   // set horizontal velocity based on turn direction
+                    ? initialVelocityX
+                    : -initialVelocityX);
             }
         });
     }
@@ -221,33 +239,87 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     // FIX: Timer resets regardless of tailwhipping again...
     tailwhip() {
-        if (this.isGlidingSpinning || this.isTailwhipping || this.isGlideTurning) return;    // prevent tailwhip if canTailWhip is false
-        this.isTailwhipping = true;                                 // set isTailwhipping to true
-        this.play('tailwhip', true);                                // play tailwhip animation
-        const originalVelocityY = this.body.velocity.y;             // store original vertical velocity
-        if (this.isGliding) this.damageBox.activate(250, 200, 1);   // activate damage box when gliding
-        else this.damageBox.activate(250, 100, 1);                  // activate larger damage box when gliding
-        this.scene.handleDamageBoxOverlap(this, this.damageBox);    // set up overlap handling
+        if (this.isGlidingSpinning || this.isTailwhipping || this.isGlideTurning) return; // prevent tailwhip if canTailWhip is false
+        this.isTailwhipping = true;                                             // set isTailwhipping to true
+        this.play('tailwhip', true);                                            // play tailwhip animation
+        const originalVelocityY = this.hitbox.body.velocity.y;                  // store original vertical velocity
+        if (this.isGliding) this.damageBox.activate(250, 200, 1);               // activate damage box when gliding
+        else this.damageBox.activate(250, 100, 1);                              // activate larger damage box when gliding
+        this.scene.handleDamageBoxOverlap(this, this.damageBox);                // set up overlap handling
         this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, (animation) => {
-            if (animation.key === 'tailwhip') this.endTailwhip();   // If tailwhip animation completes, end tailwhip
-            if (this.isGliding)                                     // if gliding
-                this.body.setVelocityY(originalVelocityY);          // restore original vertical velocity if gliding
+            if (animation.key === 'tailwhip') this.endTailwhip();               // If tailwhip animation completes, end tailwhip
+            if (this.isGliding)                                                 // if gliding
+                this.hitbox.body.setVelocityY(originalVelocityY);               // restore original vertical velocity if gliding
         });
-        this.scene.time.delayedCall(500, () => {                    // 500ms cooldown
-            if (this.isTailwhipping)                                // If still tailwhipping after 500ms
-                this.endTailwhip();                                 // end tailwhip 
-            if (this.isGliding &&                                   // if gliding
-                this.body.velocity.y != originalVelocityY)          // and vertical velocity has changed
-                this.body.setVelocityY(originalVelocityY);          // restore original vertical velocity if gliding
+        this.scene.time.delayedCall(500, () => {                                // 500ms cooldown
+            if (this.isTailwhipping)                                            // If still tailwhipping after 500ms
+                this.endTailwhip();                                             // end tailwhip 
+            if (this.isGliding &&                                               // if gliding
+                this.hitbox.body.velocity.y != originalVelocityY)               // and vertical velocity has changed
+                this.hitbox.body.setVelocityY(originalVelocityY);               // restore original vertical velocity if gliding
         });
     }
 
     endTailwhip() {
-        if (this.isTailwhipping) this.isTailwhipping = false;                        // set isTailwhipping to false
-        if (this.body.gravity.y != 0) this.body.setGravity(0);  // Re-enable gravity
-        if (this.angle != 0 && !this.isGliding) this.angle = 0; // reset angle
-        if (this.isGliding) this.glide();                   // ensure gliding state is correct
-        if (this.damageBox) this.damageBox.deactivate();          // reset damage box position
+        if (this.isTailwhipping) this.isTailwhipping = false;                   // set isTailwhipping to false
+        if (this.hitbox.body.gravity.y != 0) this.hitbox.body.setGravity(0);    // Re-enable gravity
+        if (this.angle != 0 && !this.isGliding) this.angle = 0;                 // reset angle
+        if (this.isGliding) this.glide();                                       // ensure gliding state is correct
+        if (this.damageBox) this.damageBox.deactivate();                        // reset damage box position
+    }
+
+    poleSwing(pole) {
+        if (this.isPoleSwinging) return;                                // prevent multiple pole swings
+        this.activePole = pole;                                         // store reference to the pole being swung on
+        this.stopGlide();                                               // stop gliding
+        this.isPoleSwinging = true;                                     // set isPoleSwinging to true
+
+        // Set in order to position correctly
+        this.hitbox.body.setVelocity(0);                                // 1. Stop player movement      
+        this.hitbox.body.allowGravity = false;                          // 2. Disable gravity
+        this.hitbox.body.reset(this.activePole.x, this.activePole.y);   // 3. Position player at the pole
+        this.hitbox.setOrigin(0.5, 0);                                  // 4. Set origin to top center for swinging
+        this.setOrigin(0.5, 0.1);                                       // 5. Set sprite origin to top center for swinging
+        this.hitbox.body.setImmovable(true);                            // 6. Make the hitbox immovable
+        this.hitbox.angle = 0;                                          // 7. reset angle
+        this.activePole.angle = 0;                                      // 8. reset pole angle
+
+        this.play('poleSwing', true);                                   // play pole swing animation
+        this.activeTween = this.scene.tweens.add({                      // tween to rotate back and forth
+            targets: [this.hitbox, this.activePole],                    // target both the player hitbox and the pole
+            angle: (this.flipX ? '+=360' : '-=360'),                    // rotate both by -360 degrees
+            duration: 1000,                                             // Duration of the tween in milliseconds
+            repeat: -1,                                                 // repeat indefinitely
+            ease: 'Linear',                                             // Easing function
+        });
+    }
+
+    stopPoleSwing() {
+        this.stopActiveTween();
+        this.hitbox.setOrigin(0.5, 0.5);                                // Reset hitbox origin to center
+        this.setOrigin(0.5, 0.6);                                       // Reset sprite origin to top center
+        this.hitbox.body.setImmovable(false);                           // Make the hitbox movable again
+        this.hitbox.body.allowGravity = true;                           // Enable gravity
+        const angleRad = Phaser.Math.DegToRad(this.hitbox.angle) + 90;  // calculate launch angle
+        const launchSpeed = 3000;                                       // set launch speed
+        const launchSpeedX = Math.cos(angleRad) * launchSpeed;          // calculate launch velocity
+        const launchSpeedY = Math.sin(angleRad) * launchSpeed;          // set launch velocity
+        this.hitbox.body.setVelocity(launchSpeedX, launchSpeedY);       // launch player away from pole
+        this.scene.time.delayedCall(100, () => {                        // after 1 second
+            this.isPoleSwinging = false;                                // reset isPoleSwinging flag
+            this.tweenAngleToZero(this.activePole, 200);                // tween angle back to zero over 200ms
+            this.tweenAngleToZero(this.hitbox, 200);                    // tween angle back to zero over 200ms
+            this.activePole = null;                                     // clear active pole reference
+        }, null, this);
+    }
+
+    tweenAngleToZero(target, duration = 100) {
+        this.activeTween = this.scene.tweens.add({      // tween to rotate back to 0 degrees
+            targets: target,                            // target the player
+            angle: 0,                                   // rotate back to 0 degrees
+            duration: duration,                         // Duration of the tween in milliseconds
+            ease: 'Linear'                              // Easing function
+        });
     }
 
     crouch() {
@@ -284,7 +356,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     die() {
         this.isDead = true;                         // Set isDead flag to true
-        this.body.enable = false;                   // Disable player physics
+        this.hitbox.body.enable = false;            // Disable player physics
         this.scene.physics.pause();                 // Pause the game
         this.setTint(0xff0000);                     // Change player color to red
         this.scene.time.delayedCall(2000, () => {   // Wait for 2 seconds
@@ -293,10 +365,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     outOfBoundsCheck() {
-        if (this.x < 0 + this.body.width / 2)       // prevent going off left side
-            this.x = 0 + this.body.width / 2;
+        if (this.hitbox.x < 0 + this.hitbox.body.width / 2) {   // prevent going off left side
+            this.hitbox.x = 0 + this.hitbox.body.width / 2;
+            this.stopActiveTween();
+        }
 
-        if (this.y > 1000) {  // if player falls below y = 1000
+        if (this.hitbox.y > 1200) {
+            this.stopActiveTween();
             this.die(); // Handle out-of-bounds death
         }
     }
@@ -305,11 +380,16 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.damageBox = damageBox; // Assign the DamageBox to the player
     }
 
-    handleCollision(platform) {
-        if (this.activeTween) {                                     // if there's an active tween
-            this.activeTween.stop();                                // Stop the active tween
-            this.activeTween = null;                                // Clear the reference
+    // stop activeTween method
+    stopActiveTween() {
+        if (this.activeTween) {
+            this.activeTween.stop();
+            this.activeTween = null;
         }
+    }
+
+    handleCollision(platform) {
+        this.stopActiveTween();                                     // stop any active tween
         if (this.isGliding) this.stopGlide();                       // stop gliding
 
         if (this.isGlidingSpinning) {                               // if currently gliding spin
@@ -321,17 +401,18 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             this.setAbovePlatform(platform);                        // Position player above the platform
         }
         if (this.didStartGlide) this.didStartGlide = false;         // Reset the glide start flag
-        if (this.angle != 0) this.angle = 0;                        // Reset the rotation
-        if (this.body.gravity !== 0) this.body.setGravity(0);       // Re-enable normal gravity
-        if (this.speed !== PLAYER_SPEED) this.speed = PLAYER_SPEED; // Reset the speed
+        if (this.hitbox.angle != 0) this.hitbox.angle = 0;          // Reset the rotation
+        if (this.hitbox.body.gravity !== 0) this.hitbox.body.setGravity(0);       // Re-enable normal gravity
+        if (this.currentMoveSpeed !== this.originalMoveSpeed) this.currentMoveSpeed = this.originalMoveSpeed; // Reset the speed
         if (this.disableMovement) this.disableMovement = false;     // re-enable movement
     }
 
     setAbovePlatform(platform) {
-        if (this.body.bottom > platform.body.top &&                 // if bottom of player is below top of platform
-            this.body.bottom < platform.body.bottom) {              // and bottom of player is above bottom of platform
-            this.y = platform.body.top - this.body.height;          // Position player above the platform
-            this.body.velocity.y = 0;                               // Reset vertical velocity
+        if (this.hitbox.body.bottom > platform.body.top &&                      // if bottom of player is below top of platform
+            this.hitbox.body.bottom < platform.body.bottom) {                   // and bottom of player is above bottom of platform
+            this.hitbox.angle = 0;                                              // Reset angle
+            this.hitbox.y = platform.body.top - this.hitbox.body.height - 50;   // Position player above the platform
+            this.hitbox.body.velocity.y = 0;                                    // Reset vertical velocity
         }
     }
 
@@ -352,7 +433,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                 frameRate: 4,                                                                       // Adjust frameRate as needed
                 repeat: -1                                                                          // Loop the animation
             });
-
         if (!this.anims.exists('run'))
             this.anims.create({
                 key: 'run',
@@ -360,7 +440,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                 frameRate: 12,
                 repeat: -1
             });
-
         if (!this.anims.exists('jump'))
             this.anims.create({
                 key: 'jump',
@@ -368,7 +447,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                 frameRate: 24,
                 repeat: 0
             });
-
         if (!this.anims.exists('fall'))
             this.anims.create({
                 key: 'fall',
@@ -376,7 +454,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                 frameRate: 12,
                 repeat: -1
             });
-
         if (!this.anims.exists('tailwhip'))
             this.anims.create({
                 key: 'tailwhip',
@@ -396,6 +473,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                 frames: this.anims.generateFrameNumbers('flax_Glide', { start: 0, end: 5 }),
                 frameRate: 12,
                 repeat: 0
+            });
+        if (!this.anims.exists('poleSwing'))
+            this.anims.create({
+                key: 'poleSwing',
+                frames: this.anims.generateFrameNumbers('flax_poleSwing', { start: 0, end: 2 }),
+                frameRate: 12,
+                repeat: -1
             });
     }
 }

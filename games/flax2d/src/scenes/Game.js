@@ -18,11 +18,16 @@ export class Game extends Phaser.Scene {
         this.background = this.add.image(960, 540, 'sky');  // Add the background image at the center of the game canvas
         this.background.setScrollFactor(0);                 // Keep the background fixed on the camera
         this.inputManager = new InputManager(this);         // Create an instance of InputManager
-        this.physics.world.setBounds(0, -this.worldHeight, this.worldWidth, this.worldHeight * 2);
+        this.physics.world.setBounds(                       // Set world bounds
+            0,                                              // left
+            -this.worldHeight,                              // top
+            this.worldWidth,                                // right
+            0);                                             // bottom
         this.addLights();                                   // Add lighting effects
         this.spawnPlayer();                                 // Spawn the player character
         this.setupCamera();                                 // Setup camera to follow the player
         this.spawnPlatforms();                              // Spawn platforms
+        this.spawnPoles();                                  // Spawn poles for swinging
         this.spawnDNAs();                                   // Spawn DNA collectables
         this.spawnGlizzards();                              // Spawn glizzard enemies
         this.spawnMunchers();                               // Spawn muncher enemies
@@ -30,6 +35,8 @@ export class Game extends Phaser.Scene {
         this.uiManager.updateHealth(this.player.health);    // Initialise health display
         //this.relayer();                                   // Adjust layer depths
     }
+
+
 
     // Game loop
     update() {
@@ -39,6 +46,11 @@ export class Game extends Phaser.Scene {
     // Handle player input
     handlePlayerInput() {
         if (this.player.disableMovement) return;        // prevent movement if canMove is false
+        if (
+            Phaser.Input.Keyboard.JustDown(this.inputManager.cursors.up) ||
+            Phaser.Input.Keyboard.JustDown(this.inputManager.keySPACE) ||
+            Phaser.Input.Keyboard.JustDown(this.inputManager.keyW)
+        ) this.player.jump();
 
         if (this.inputManager.cursors.left.isDown || this.inputManager.keyA.isDown) {
             this.player.moveLeft();
@@ -47,15 +59,10 @@ export class Game extends Phaser.Scene {
         } else {
             this.player.idle();
         }
-        if (
-            Phaser.Input.Keyboard.JustDown(this.inputManager.cursors.up) ||
-            Phaser.Input.Keyboard.JustDown(this.inputManager.keySPACE) ||
-            Phaser.Input.Keyboard.JustDown(this.inputManager.keyW)
-        ) this.player.jump();
-
     }
 
     pointerLeftPressed() {
+        if (this.player.isPoleSwinging) return;
         this.player.tailwhip();
     }
 
@@ -89,7 +96,7 @@ export class Game extends Phaser.Scene {
 
     // Spawn the player character
     spawnPlayer() {
-        this.player = new Player(this, 128, 0);                   // Create a new player instance at (128, 450)
+        this.player = new Player(this, 128, -600);                   // Create a new player instance at (128, 450)
         this.player.setPipeline('Light2D');                         // Enable lighting effects on the player
         const playerDamageBox = new DamageBox(this, this.player);   // create damage box for player
         this.player.setDamageBox(playerDamageBox);                  // assign damage box to player
@@ -114,19 +121,42 @@ export class Game extends Phaser.Scene {
         }
         // Create some floating platforms
         for (let i = 0; i < 20; i++) {
-            this.platforms.create(51 * i, 720, 'ground').setScale(0.2).refreshBody(); // refreshBody is needed after scaling to update the physics body
+            this.platforms.create(51 * i, 0, 'ground').setScale(0.2).refreshBody(); // refreshBody is needed after scaling to update the physics body
         }
-        for (let i = 0; i < 10; i++) {
-            this.platforms.create(51 * i + 560, 450, 'ground').setScale(0.2).refreshBody(); // refreshBody is needed after scaling to update the physics body
-        }
-        for (let i = 0; i < 10; i++) {
-            this.platforms.create(51 * i + 1080, 190, 'ground').setScale(0.2).refreshBody(); // refreshBody is needed after scaling to update the physics body
-        }
-        for (let i = 10; i > 0; i--) {
-            this.platforms.create(51 * i + 1400, 0, 'ground').setScale(0.2).refreshBody(); // refreshBody is needed after scaling to update the physics body
-        }
-        this.physics.add.collider(this.player, this.platforms, (player, platform) => { // Add collision between player and platforms
-            player.handleCollision(platform); // Handle player collision effects
+        // for (let i = 0; i < 10; i++) {
+        //     this.platforms.create(51 * i + 560, 450, 'ground').setScale(0.2).refreshBody(); // refreshBody is needed after scaling to update the physics body
+        // }
+        // for (let i = 0; i < 10; i++) {
+        //     this.platforms.create(51 * i + 1080, 190, 'ground').setScale(0.2).refreshBody(); // refreshBody is needed after scaling to update the physics body
+        // }
+        // for (let i = 10; i > 0; i--) {
+        //     this.platforms.create(51 * i + 1400, 0, 'ground').setScale(0.2).refreshBody(); // refreshBody is needed after scaling to update the physics body
+        // }
+        this.physics.add.collider(this.player.hitbox, this.platforms, (hitbox, platform) => {
+            this.player.handleCollision(platform); // Use the Player instance to handle collision
+        });
+    }
+
+    spawnPoles() {
+        this.poles = this.physics.add.staticGroup()
+
+        this.poles.create(1000, -300, 'pole')
+            .setScale(2)
+            .setOrigin(0.5, 0.5)
+            .refreshBody();
+
+        this.poles.create(1750, -300, 'pole')
+            .setScale(2)
+            .setOrigin(0.5, 0.5)
+            .refreshBody();
+
+        this.poles.create(2500, -300, 'pole')
+            .setScale(2)
+            .setOrigin(0.5, 0.5)
+            .refreshBody();
+
+        this.physics.add.overlap(this.player.hitbox, this.poles, (hitbox, pole) => {
+            this.player.poleSwing(pole);
         });
     }
 
