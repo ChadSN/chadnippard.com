@@ -3,9 +3,7 @@ import { Preloader } from './scenes/Preloader.js';
 import { Game } from './scenes/Game.js';
 import { GameOver } from './scenes/GameOver.js';
 
-import { GRAVITY_Y } from './config.js';
-
-
+const gravityY = 3000;
 
 const config = {
     type: Phaser.AUTO,
@@ -17,7 +15,7 @@ const config = {
         default: 'arcade',
         arcade: {
             debug: false,
-            gravity: { y: GRAVITY_Y }
+            gravity: { y: gravityY }
         }
     },
     scale: {

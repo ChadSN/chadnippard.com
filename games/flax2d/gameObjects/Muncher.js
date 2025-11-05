@@ -59,17 +59,17 @@ export class Muncher extends Phaser.Physics.Arcade.Sprite {
 
     // Logic for chasing the player
     chasePlayer() {
-        if (!this.chase) return;                                        // chasing disabled
-        const player = this.scene.player;                               // Get the player reference
-        if (!player) return;                                            // no player to chase
-        if (Math.abs(this.x - player.x) < this.chaseDistance) {         // within chase range
-            if (this.x < player.x - 70 - this.width / 2)                // add some horizontal tolerance
-                this.setDirection(1);                                   // Chase right
-            else if (this.x > player.x + 70 + this.width / 2)           // add some horizontal tolerance
-                this.setDirection(-1);                                  // Chase left
-            else if (this.y > player.y - player.y.height ||             // close enough vertically
-                this.y < player.y + player.height && !player.isDead)
-                this.attackPlayer();                                    // attack
+        if (!this.chase) return;                                                                // chasing disabled
+        const playerHitbox = this.scene.player.hitbox;                                          // Get the player reference
+        if (!playerHitbox) return;                                                              // no player to chase
+        if (Math.abs(this.x - playerHitbox.x) < this.chaseDistance) {                           // within chase range
+            if (this.x < playerHitbox.x - playerHitbox.body.width / 2 - this.width / 2)         // add some horizontal tolerance
+                this.setDirection(1);                                                           // Chase right
+            else if (this.x > playerHitbox.x + playerHitbox.body.width / 2 + this.width / 2)    // add some horizontal tolerance
+                this.setDirection(-1);                                                          // Chase left
+            else if (this.y > playerHitbox.y - playerHitbox.body.height ||                      // close enough vertically
+                this.y < playerHitbox.y + playerHitbox.body.height && !playerHitbox.isDead)     // avoid attacking dead player
+                this.attackPlayer();                                                            // attack
         }
         else {
             if (this.x < this.startX - 70) this.setDirection(1);        // return to start position
@@ -95,8 +95,6 @@ export class Muncher extends Phaser.Physics.Arcade.Sprite {
 
     attackPlayer() {
         if (!this.canAttack) return;
-
-
         this.canAttack = false;                                                     // set canAttack to false
         this.scene.time.delayedCall(1000, () => this.canAttack = true, null, this); // reset canAttack after 1 second
         this.setVelocityX(0);                                                       // stop moving
