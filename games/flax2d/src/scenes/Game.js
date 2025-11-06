@@ -10,7 +10,7 @@ export class Game extends Phaser.Scene {
 
     constructor() {
         super('Game');
-        this.worldWidth = 5080;
+        this.worldWidth = 8000;
         this.worldHeight = 4000;
     }
 
@@ -134,6 +134,7 @@ export class Game extends Phaser.Scene {
         cam.setBounds(0, 0, this.worldWidth, this.worldHeight);         // Set camera bounds to the size of the level
         cam.startFollow(this.player, false, 0.08, 0.08);                // Make the camera follow the player smoothly
         cam.setDeadzone(cam.width / 4, 0);                              // Set deadzone to center quarter width and full height
+        this.cameras.main.roundPixels = true;                           // Prevent sub-pixel rendering to avoid blurriness
     }
 
     spawnPoles() {
