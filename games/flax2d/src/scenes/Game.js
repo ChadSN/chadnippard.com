@@ -35,7 +35,7 @@ export class Game extends Phaser.Scene {
 
     createTilemap() {
         this.map = this.make.tilemap({ key: 'tilemap', tileWidth: 64, tileHeight: 64 });   // key must match the key used in preload
-        const tileset = this.map.addTilesetImage('GrassTileSet', 'tiles');                       // Arg 1: tileset name in Tiled, Arg 2: key used in preload
+        const tileset = this.map.addTilesetImage('GroundTileSet', 'tiles');                       // Arg 1: tileset name in Tiled, Arg 2: key used in preload
         const groundLayer = this.map.createLayer('Ground', tileset, 0, 0);                       // Arg 1: layer name in Tiled, Arg 2: tileset object created above, Arg 3 & 4: x,y position.
         groundLayer.setCollisionByProperty({ collides: true });                             // Enable collision for tiles with the 'collides' property set to true
 
