@@ -26,7 +26,10 @@ export class Preloader extends Phaser.Scene {
         //  Load the assets for the game - Replace with your own assets
         this.load.setPath('assets');
         this.load.image('sky', 'sky.webp');
-        this.load.image('ground', 'platform.png');
+        this.load.image('title', 'Flax2D_Title.png');
+        this.load.image('startGameButton', 'StartGameButton.png');
+        this.load.image('cloud', 'Cloud.png');
+        //this.load.image('ground', 'platform.png');
         this.load.spritesheet('dna', 'DNA_Anim.png', { frameWidth: 64, frameHeight: 64 });
         this.load.image('healthPanel', 'Health_Panel.png');
 
@@ -51,7 +54,9 @@ export class Preloader extends Phaser.Scene {
         this.load.image('pole', '/pole.png');
 
         this.load.tilemapTiledJSON('tilemap', '/scene_1.json'); // Load the embedded JSON file
-        this.load.image('tiles', '/GrassTile.png');             // Load the tileset image 
+        this.load.image('tiles', 'GrassTile.png');             // Load the GrassTile tileset image.
+        this.load.image('tilesInside', 'GrassTile_Inside.png');      // Load the GrassTile_Inside tileset image.
+        this.load.image('objectTiles', 'ObjectsTileSet.png');    // Load the ObjectTileSet tileset image.
     }
 
     create() {
@@ -59,6 +64,6 @@ export class Preloader extends Phaser.Scene {
         //  For example, you can define global animations here, so we can use them in other scenes.
 
         //  Move to the MainMenu. You could also swap this for a Scene Transition, such as a camera fade.
-        this.scene.start('Game');
+        this.scene.start('MainMenu');
     }
 }
