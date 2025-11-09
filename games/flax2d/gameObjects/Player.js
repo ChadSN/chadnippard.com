@@ -4,97 +4,169 @@
 export class Player extends Phaser.Physics.Arcade.Sprite {
 
     constructor(scene, x, y) {
-        super(scene, x, y);                             // Call the parent class constructor
-        scene.add.existing(this);                       // Add the player to the scene
-        const hitbox = scene.add.rectangle(x, y, 50, 100, 0x00ff00, 0.3); // create the hitbox rectangle
-        scene.physics.add.existing(hitbox);             // now hitbox.body is an Arcade.Body
-        this.hitbox = hitbox;                           // reference the hitbox from the player
-        this.hitbox.body.setAllowGravity(true);         // Enable gravity for the hitbox
-        this.hitbox.setOrigin(0.5, 0.5);                // Set origin to center for better alignment with hitbox
-        this.setOrigin(0.5, 0.6);                       // Set the sprite origin to better align with the hitbox
-        this.originalMoveSpeed = 4000;                  // original movement speed
-        this.currentMoveSpeed = this.originalMoveSpeed; // target movement speed
-        this.jumpVel = 1000;                            // jump velocity
-        this.groundDrag = 6000;                         // ground drag. The higher the value, the quicker the stop
-        this.airDrag = 100;                             // air drag
-        this.hitbox.body.setDragX(this.groundDrag);     // horizontal drag
-        this.hitbox.body.setMaxVelocity(500, 1200);     // optional max speed cap
-        this.hitbox.body.setCollideWorldBounds(false);  // Prevent the player from going out of bounds
-        this.initAnimations();                          // Initialise player animations
-        this.maxHealth = 5;                             // maximum health
-        this.health = this.maxHealth;                   // current health
-        this.invulnerable = false;                      // short invuln after hit if you want
-        this.canMove = true;                            // flag to control if the player can move
-        this.isDead = false;                            // flag to indicate if the player is dead
-        this.damageBox = null;                          // reference to the DamageBox
-        this.glideAngle = 100;                          // angle to rotate to when starting glide
-        this.isGliding = false;                         // flag to indicate if the player is gliding
-        this.didStartGlide = false;                     // flag to indicate if glide has just started
-        this.isGlidingSpinning = false;                 // flag to indicate if the player is performing a gliding spin
-        this.isGlideTurning = false;                    // flag to indicate if the player is performing a glide turn
-        this.isTailwhipping = false;                    // flag to indicate if the player is currently tailwhipping
-        this.disableMovement = false;                   // flag to disable all player movement
-        this.isPoleSwinging = false;                    // flag to indicate if the player is pole swinging
-        this.activePole = null;                         // reference to the pole being swung on
+        super(scene, x, y);                                                             // Call the parent class constructor
+        scene.add.existing(this);                                                       // Add the player to the scene
+        const hitbox = scene.add.rectangle(x, y, 50, 100, 0x00ff00, 0.3);               // create the hitbox rectangle
+        scene.physics.add.existing(hitbox);                                             // now hitbox.body is an Arcade.Body
+        this.hitbox = hitbox;                                                           // reference the hitbox from the player
+        this.hitbox.body.setAllowGravity(true);                                         // Enable gravity for the hitbox
+        this.hitbox.setOrigin(0.5, 0.5);                                                // Set origin to center for better alignment with hitbox
+        this.setOrigin(0.5, 0.6);                                                       // Set the sprite origin to better align with the hitbox
+        this.originalMoveSpeed = 4000;                                                  // original movement speed
+        this.currentMoveSpeed = this.originalMoveSpeed;                                 // target movement speed
+        this.jumpVel = 1000;                                                            // jump velocity
+        this.groundDrag = 6000;                                                         // ground drag. The higher the value, the quicker the stop
+        this.airDrag = 100;                                                             // air drag
+        this.hitbox.body.setDragX(this.groundDrag);                                     // horizontal drag
+        this.hitbox.body.setMaxVelocity(500, 1200);                                     // optional max speed cap
+        this.hitbox.body.setCollideWorldBounds(false);                                  // Prevent the player from going out of bounds
+        this.initAnimations();                                                          // Initialise player animations
+        this.maxHealth = 5;                                                             // maximum health
+        this.health = this.maxHealth;                                                   // current health
+        this.invulnerable = false;                                                      // short invuln after hit if you want
+        this.canMove = true;                                                            // flag to control if the player can move
+        this.isDead = false;                                                            // flag to indicate if the player is dead
+        this.damageBox = null;                                                          // reference to the DamageBox
+        this.glideAngle = 100;                                                          // angle to rotate to when starting glide
+        this.isGliding = false;                                                         // flag to indicate if the player is gliding
+        this.didStartGlide = false;                                                     // flag to indicate if glide has just started
+        this.isGlidingSpinning = false;                                                 // flag to indicate if the player is performing a gliding spin
+        this.isGlideTurning = false;                                                    // flag to indicate if the player is performing a glide turn
+        this.isTailwhipping = false;                                                    // flag to indicate if the player is currently tailwhipping
+        this.disableMovement = false;                                                   // flag to disable all player movement
+        this.isPoleSwinging = false;                                                    // flag to indicate if the player is pole swinging
+        this.activePole = null;                                                         // reference to the pole being swung on
+        this.footstepGrassSound = this.scene.sound.add('footstepGrass', { volume: 1 }); // footstep sound
+        this.footstepDirtSound = this.scene.sound.add('footstepDirt', { volume: 0.3 }); // footstep dirt sound
+        this.tailwhipSound = this.scene.sound.add('tailwhipSound', { volume: 0.5 });    // tailwhip sound
+        this.poleSwingSound = this.scene.sound.add('poleSwingSound', { volume: 0.5 });   // pole swing sound
+        this.footstepGrassSoundIsPlaying = false;                                       // footstep sound playing flag
+        this.tilemap = this.scene.map;                                                  // Initialise the tilemap
+        this.groundLayer = this.scene.groundLayer;                                      // Initialise the ground layer
+        this.currentTileSoundType = null;                                               // current tile sound type
     }
+
 
     // Update method called every frame
     preUpdate(time, delta) {
-        super.preUpdate(time, delta);                                               // call the parent class preUpdate
-        if (!this.hitbox.body) return;                                              // safety check
-        this.setPosition(this.hitbox.x, this.hitbox.y);                             // sync player sprite position with hitbox
-        this.angle = this.hitbox.angle;                                             // sync player sprite angle with hitbox
-        this.outOfBoundsCheck();                                                    // Check if player is out of bounds
+        super.preUpdate(time, delta);                                                   // call the parent class preUpdate
+        if (!this.hitbox.body) return;                                                  // safety check
+        this.setPosition(this.hitbox.x, this.hitbox.y);                                 // sync player sprite position with hitbox
+        this.angle = this.hitbox.angle;                                                 // sync player sprite angle with hitbox
+        this.outOfBoundsCheck();
 
-        if (this.isTailwhipping) {                                                  // during tailwhip
-            const tailWhipOffset = this.isGliding ? 0 : this.height / 5;            // adjust offset based on gliding state
-            this.damageBox.setPosition(this.x, this.y + tailWhipOffset);            // Sync position with player
-            this.damageBox.angle = this.hitbox.angle;                               // Sync angle with player
+        if (this.isTailwhipping) {                                                      // during tailwhip
+            const tailWhipOffset = this.isGliding ? 0 : this.height / 5;                // adjust offset based on gliding state
+            this.damageBox.setPosition(this.x, this.y + tailWhipOffset);                // Sync position with player
+            this.damageBox.angle = this.hitbox.angle;                                   // Sync angle with player
 
-            // VISUAL AID - REMOVE LATER
-            this.damageBox.rectangle.setPosition(this.x, this.y + tailWhipOffset);  // Sync position with player
+            // VISUAL AID - REMOVE LATER    
+            this.damageBox.rectangle.setPosition(this.x, this.y + tailWhipOffset);      // Sync position with player
             return;
         }
 
-        const onGround = this.hitbox.body.blocked.down;                             // is the player on the ground?
-        const vy = this.hitbox.body.velocity.y;                                     // vertical velocity   
+        this.currentTileSoundType = this.getTileSoundType();                            // Update the current tile's soundType
+        this.playFootstepAnimationSound();                                              // Play footstep sound based on animation frame
+        const onGround = this.hitbox.body.blocked.down;                                 // Is the player on the ground?
+        if (onGround && !this._wasOnGround) this.onLanded();                            // If landed this frame, play landing sound
 
-        if (!onGround) {                                                            // airborne
-            if (vy < 0) {                                                           // moving up
-                if (this.anims.currentAnim?.key !== 'jump') {                       // avoid restarting
-                    this.anims.play('jump', true);                                  // play jump animation
+        const vy = this.hitbox.body.velocity.y;                                         // vertical velocity   
+
+        if (!onGround) {                                                                // airborne
+            if (vy < 0) {                                                               // moving up
+                if (this.anims.currentAnim?.key !== 'jump') {                           // avoid restarting
+                    this.anims.play('jump', true);                                      // play jump animation
                 }
-            } else if (vy > 0 && !this.isGliding) {                                 // moving down
-                if (this.anims.currentAnim?.key !== 'fall') {                       // avoid restarting
-                    this.anims.play('fall', true);                                  // play fall animation   
+            } else if (vy > 0 && !this.isGliding) {                                     // moving down
+                if (this.anims.currentAnim?.key !== 'fall') {                           // avoid restarting
+                    this.anims.play('fall', true);                                      // play fall animation   
                 }
             }
-            if (this.isGliding) {                                                   // currently gliding
-                if (this.anims.currentAnim?.key !== 'glide' &&                      // avoid restarting
+            if (this.isGliding) {                                                       // currently gliding
+                if (this.anims.currentAnim?.key !== 'glide' &&                          // avoid restarting
                     this.anims.currentAnim?.key !== 'tailWhip')
-                    this.anims.play('glide', true);                                 // play glide animation
-                if (this.hitbox.body.velocity.x === 0)                              // not moving horizontally
-                    this.stopGlide();                                               // stop gliding
+                    this.anims.play('glide', true);                                     // play glide animation
+                if (this.hitbox.body.velocity.x === 0)                                  // not moving horizontally
+                    this.stopGlide();                                                   // stop gliding
             }
-            this.hitbox.body.setDragX(this.airDrag);                                // air = less friction
-            this._wasOnGround = false;                                              // update state
-            return;                                                                 // exit early
+            this.hitbox.body.setDragX(this.airDrag);                                    // air = less friction
+            this._wasOnGround = false;                                                  // update state
+            return;                                                                     // exit early
         }
-        if (onGround) {                                                             // grounded
-            this.hitbox.body.setDragX(this.groundDrag);                             // ground drag
-            this.stopGlide();                                                       // stop gliding
+        if (onGround) {                                                                 // grounded
+            this.hitbox.body.setDragX(this.groundDrag);                                 // ground drag
+            this.stopGlide();                                                           // stop gliding
         }
-        if (Math.abs(this.hitbox.body.velocity.x) > 0.1) {                          // moving horizontally
-            if (this.anims.currentAnim?.key !== 'run' ||                            // avoid restarting
+        if (Math.abs(this.hitbox.body.velocity.x) > 0.1) {                              // moving horizontally
+            if (this.anims.currentAnim?.key !== 'run' ||                                // avoid restarting
                 !this.anims.isPlaying) {
-                this.anims.play('run', true);                                       // play run animation
+                this.anims.play('run', true);                                           // play run animation
             }
         }
-        else {                                                                      // not moving horizontally
-            if (this.anims.currentAnim?.key !== 'idle' ||                           // avoid restarting
-                !this.anims.isPlaying) this.anims.play('idle', true);               // play idle animation
+        else {                                                                          // not moving horizontally
+            if (this.anims.currentAnim?.key !== 'idle' ||                               // avoid restarting
+                !this.anims.isPlaying) this.anims.play('idle', true);                   // play idle animation
+            if (!this.footstepGrassSoundIsPlaying) {                                    // Only play if the sound isn't already playing
+                this.footstepGrassSound.stop();                                         // Stop any currently playing sound
+                this.footstepGrassSound.setDetune(Phaser.Math.Between(-100, 100));      // Add some variation to the sound
+                this.footstepGrassSound.play();                                         // Play the footstep sound
+                this.footstepGrassSoundIsPlaying = true;                                // Set the flag to true
+            }
         }
-        this._wasOnGround = true;                                                   // update state
+        this._wasOnGround = true;                                                       // update state
+    }
+
+    playFootstepAnimationSound() {
+        if (this.anims.currentAnim?.key === 'run') {
+            const frameIndex = this.anims.currentFrame.index;
+            if ([4, 10].includes(frameIndex)) {
+                if (this.currentTileSoundType === 'grass') {
+                    this.playFootstepSound(this.footstepGrassSound);
+                } else if (this.currentTileSoundType === 'dirt') {
+                    this.playFootstepSound(this.footstepDirtSound);
+                }
+            }
+        }
+    }
+
+    playFootstepSound(sound) {
+        if (!this.footStepSoundIsPlaying) {
+            sound.stop(); // Stop any currently playing sound
+            sound.setDetune(Phaser.Math.Between(-100, 100)); // Add some variation to the sound
+            sound.play(); // Play the footstep sound
+            this.footStepSoundIsPlaying = true; // Set the flag to true
+
+            sound.once('complete', () => {
+                this.footStepSoundIsPlaying = false;
+            });
+        }
+    }
+
+    getTileSoundType() {
+        const tile = this.getTileHit();
+
+        if (tile && tile.properties.soundType) {
+            return tile.properties.soundType; // Return the soundType string from the tile's properties
+        }
+        return null; // Default to null if no soundType is found
+    }
+
+    getTileHit() {
+        const tile = this.tilemap.getTileAtWorldXY(
+            this.hitbox.x,
+            this.hitbox.body.bottom,
+            true,
+            this.scene.cameras.main,
+            this.groundLayer);
+        return tile;
+    }
+
+    onLanded() {
+        if (this.currentTileSoundType === 'grass') {
+            this.playFootstepSound(this.footstepGrassSound);
+        } else if (this.currentTileSoundType === 'dirt') {
+            this.playFootstepSound(this.footstepDirtSound);
+        }
     }
 
     moveLeft() {
@@ -240,24 +312,26 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     // FIX: Timer resets regardless of tailwhipping again...
     tailwhip() {
-        if (this.isGlidingSpinning || this.isTailwhipping || this.isGlideTurning) return; // prevent tailwhip if canTailWhip is false
-        this.isTailwhipping = true;                                             // set isTailwhipping to true
-        this.play('tailwhip', true);                                            // play tailwhip animation
-        const originalVelocityY = this.hitbox.body.velocity.y;                  // store original vertical velocity
-        if (this.isGliding) this.damageBox.activate(64, 100, 1);               // activate damage box when gliding
-        else this.damageBox.activate(128, 64, 1);                              // activate larger damage box when gliding
-        this.scene.handleDamageBoxOverlap(this, this.damageBox);                // set up overlap handling
+        if (this.isGlidingSpinning || this.isTailwhipping || this.isGlideTurning) return;   // prevent tailwhip if canTailWhip is false
+        this.tailwhipSound.stop();                                                          // stop any currently playing tailwhip sound
+        this.tailwhipSound.play();                                                          // play tailwhip sound
+        this.isTailwhipping = true;                                                         // set isTailwhipping to true
+        this.play('tailwhip', true);                                                        // play tailwhip animation
+        const originalVelocityY = this.hitbox.body.velocity.y;                              // store original vertical velocity
+        if (this.isGliding) this.damageBox.activate(64, 100, 1);                            // activate damage box when gliding
+        else this.damageBox.activate(128, 64, 1);                                           // activate larger damage box when gliding
+        this.scene.handleDamageBoxOverlap(this, this.damageBox);                            // set up overlap handling
         this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, (animation) => {
-            if (animation.key === 'tailwhip') this.endTailwhip();               // If tailwhip animation completes, end tailwhip
-            if (this.isGliding)                                                 // if gliding
-                this.hitbox.body.setVelocityY(originalVelocityY);               // restore original vertical velocity if gliding
+            if (animation.key === 'tailwhip') this.endTailwhip();                           // If tailwhip animation completes, end tailwhip
+            if (this.isGliding)                                                             // if gliding
+                this.hitbox.body.setVelocityY(originalVelocityY);                           // restore original vertical velocity if gliding
         });
-        this.scene.time.delayedCall(500, () => {                                // 500ms cooldown
-            if (this.isTailwhipping)                                            // If still tailwhipping after 500ms
-                this.endTailwhip();                                             // end tailwhip 
-            if (this.isGliding &&                                               // if gliding
-                this.hitbox.body.velocity.y != originalVelocityY)               // and vertical velocity has changed
-                this.hitbox.body.setVelocityY(originalVelocityY);               // restore original vertical velocity if gliding
+        this.scene.time.delayedCall(500, () => {                                            // 500ms cooldown
+            if (this.isTailwhipping)                                                        // If still tailwhipping after 500ms
+                this.endTailwhip();                                                         // end tailwhip 
+            if (this.isGliding &&                                                           // if gliding
+                this.hitbox.body.velocity.y != originalVelocityY)                           // and vertical velocity has changed
+                this.hitbox.body.setVelocityY(originalVelocityY);                           // restore original vertical velocity if gliding
         });
     }
 
@@ -293,6 +367,14 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             duration: 1000,                                             // Duration of the tween in milliseconds
             repeat: -1,                                                 // repeat indefinitely
             ease: 'Linear',                                             // Easing function
+            onUpdate: () => {                                           // on each update
+                if (Phaser.Math.Within(this.hitbox.angle, 90, 5)) {     // at +90 degrees
+                    if (!this.poleSwingSound.isPlaying) {               // prevent overlapping sounds
+                        this.poleSwingSound.stop();                     // stop any currently playing sound
+                        this.poleSwingSound.play();                     // play swing sound at peak angles
+                    }
+                }
+            }
         });
     }
 
@@ -410,12 +492,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     setAbovePlatform(platform) {
-        // Get the tilemap and ground layer from the scene
-        const tilemap = this.scene.make.tilemap({ key: 'tilemap' }); // Ensure the tilemap key matches your setup
-        const groundLayer = tilemap.getLayer('Ground').tilemapLayer;
-
         // Get the tile at the player's current position
-        const tile = tilemap.getTileAtWorldXY(this.hitbox.x, this.hitbox.body.bottom, true, this.scene.cameras.main, groundLayer);
+        const tile = this.getTileHit();
 
         if (tile) {
             // Position the player above the tile

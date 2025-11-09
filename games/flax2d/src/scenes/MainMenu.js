@@ -4,13 +4,17 @@ export class MainMenu extends Phaser.Scene {
 
     constructor() {
         super('MainMenu');
+
     }
+
     create() {
         this.background = this.add.image(960, 540, 'sky').setDepth(0);          // Add the background image at the center of the game canvas and set depth to 0
         this.title = this.add.image(960, 300, 'title').setScale(2).setDepth(2); // Add the title image at the center top and set depth to 2
         this.createStartButton();                                               // Create the start button
         this.cloudSpawner = new CloudSpawner(this);                             // Create a CloudSpawner instance
         this.cloudSpawner.spawnClouds(1, 50, 400);                              // Spawn clouds in the background with depth 1 for use in other levels
+        this.menuMusic = this.sound.add('mainMenuMusic', { loop: true, volume: 2 });
+        this.menuMusic.play();
     }
 
     createStartButton() {
@@ -43,6 +47,7 @@ export class MainMenu extends Phaser.Scene {
     }
 
     startGame() {
+        this.menuMusic.stop();      // Stop the main menu music when starting the game
         this.scene.start('Game'); // Transition to the Game scene
     }
 }

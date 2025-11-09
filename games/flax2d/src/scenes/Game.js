@@ -13,7 +13,9 @@ export class Game extends Phaser.Scene {
         super('Game');
         this.worldWidth = 8000;
         this.worldHeight = 4000;
-        this.map = null;                                    // Tilemap object
+        this.map = null;                                    // Tilemap reference
+        this.groundLayer = null;                            // Layer for ground areas
+        this.groundInsideLayer = null;                      // Layer for ground inside areas
         this.isOverlappingGroundInsideLayer = false;        // Flag to track overlap state
         this.currentAmbientColor = 0xffffff;                // Current ambient light color set to 
     }
@@ -34,6 +36,9 @@ export class Game extends Phaser.Scene {
         this.uiManager = new UIManager(this);               // Create UI Manager
         this.uiManager.updateHealth(this.player.health);    // Initialise health display
         //this.relayer();                                   // Adjust layer depths
+        // add level1music
+        this.level1Music = this.sound.add('level1Music', { loop: true, volume: 0.5 });
+        this.level1Music.play();
     }
 
     update() {
@@ -45,36 +50,38 @@ export class Game extends Phaser.Scene {
 
         // CREATE GROUND LAYER
         const groundTileSet = this.map.addTilesetImage('GroundTileSet', 'tiles');                       // Arg 1: tileset name in Tiled, Arg 2: key used in preload
-        const groundLayer = this.map.createLayer('Ground', groundTileSet, 0, 0);                        // Arg 1: layer name in Tiled, Arg 2: tileset object created above, Arg 3 & 4: x,y position.
-        groundLayer.setCollisionByProperty({ collides: true });                                         // Enable collision for tiles with the 'collides' property set to true
+        this.groundLayer = this.map.createLayer('Ground', groundTileSet, 0, 0).setDepth(2);             // Arg 1: layer name in Tiled, Arg 2: tileset object created above, Arg 3 & 4: x,y position.
+        this.groundLayer.setCollisionByProperty({ collides: true });                                    // Enable collision for tiles with the 'collides' property set to true
 
         // CREATE GROUND INSIDE LAYER
         const groundTileSetInside = this.map.addTilesetImage('GroundTileSet_Inside', 'tilesInside');    // Arg 1: tileset name in Tiled, Arg 2: key used in preload
-        const groundInsideLayer = this.map.createLayer('Ground_Inside', groundTileSetInside, 0, 0);     // Arg 1: layer name in Tiled, Arg 2: tileset object created above, Arg 3 & 4: x,y position.
-        groundInsideLayer.setCollisionByProperty({ overlaps: true });                                   // Enable collision for tiles with the 'collides' property set to true
+        this.groundInsideLayer = this.map
+            .createLayer('Ground_Inside', groundTileSetInside, 0, 0)                                    // Arg 1: layer name in Tiled, Arg 2: tileset object created above, Arg 3 & 4: x,y position.
+            .setDepth(2);                                                                               // Set depth to ensure it's above the ground layer
+        this.groundInsideLayer.setCollisionByProperty({ overlaps: true });                              // Enable collision for tiles with the 'collides' property set to true
 
         // CREATE OBJECT LAYER
         const objectTileSet = this.map.addTilesetImage('ObjectTileSet', 'objectTiles');                 // Arg 1: tileset name in Tiled, Arg 2: key used in preload
-        const objectLayer = this.map.createLayer('ObjectTiles', objectTileSet, 0, 0);                   // Arg 1: layer name in Tiled, Arg 2: tileset object created above, Arg 3 & 4: x,y position.
+        const objectLayer = this.map.createLayer('ObjectTiles', objectTileSet, 0, 0).setDepth(2);       // Arg 1: layer name in Tiled, Arg 2: tileset object created above, Arg 3 & 4: x,y position.
 
         // ENABLE LIGHTING ON LAYERS
-        groundLayer.setPipeline('Light2D');
-        groundInsideLayer.setPipeline('Light2D');
+        this.groundLayer.setPipeline('Light2D');
+        this.groundInsideLayer.setPipeline('Light2D');
         objectLayer.setPipeline('Light2D');
 
         // PLAYER SETUP
-        const spawnPoint = this.map.findObject("Objects", obj => obj.name === "spawnPoint");     // Find the spawn point object in the Tiled map
-        this.spawnPlayer(spawnPoint.x, spawnPoint.y);                                       // Spawn the player at the spawn point
+        const spawnPoint = this.map.findObject("Objects", obj => obj.name === "spawnPoint");            // Find the spawn point object in the Tiled map
+        this.spawnPlayer(spawnPoint.x, spawnPoint.y);                                                   // Spawn the player at the spawn point
 
         // COLLISIONS SETUP FOR PLAYER WITH GROUND LAYER
-        this.physics.add.collider(this.player.hitbox, groundLayer, (hitbox, tile) => {
+        this.physics.add.collider(this.player.hitbox, this.groundLayer, (hitbox, tile) => {
             if (tile && tile.properties.collides) {
                 this.player.handleCollision(tile); // Use the Player instance to handle collision
             }
         });
 
         // COLLISIONS SETUP FOR PLAYER WITH GROUND INSIDE LAYER
-        this.physics.add.overlap(this.player.hitbox, groundInsideLayer, (hitbox, tile) => {
+        this.physics.add.overlap(this.player.hitbox, this.groundInsideLayer, (hitbox, tile) => {
             if (tile && tile.properties.overlaps) {
                 if (!this.isOverlappingGroundInsideLayer) {
                     this.isOverlappingGroundInsideLayer = true;
@@ -218,10 +225,10 @@ export class Game extends Phaser.Scene {
 
     // Spawn the player character
     spawnPlayer(x, y) {
-        this.player = new Player(this, x, y);    // atlas and misa-front means use the texture atlas and the frame named misa-front. The frame is defined in preload.js
-        this.player.setPipeline('Light2D');                             // Enable lighting effects on the player
-        const playerDamageBox = new DamageBox(this, this.player);       // create damage box for player
-        this.player.setDamageBox(playerDamageBox);                      // assign damage box to player
+        this.player = new Player(this, x, y).setDepth(3);                       // Spawn player and set depth
+        this.player.setPipeline('Light2D');                                     // Enable lighting effects on the player
+        const playerDamageBox = new DamageBox(this, this.player);   // create damage box for player
+        this.player.setDamageBox(playerDamageBox);                              // assign damage box to player
     }
 
     // Setup camera to follow the player

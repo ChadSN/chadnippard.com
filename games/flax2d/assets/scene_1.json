@@ -61,7 +61,7 @@
             0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 17, 18, 18, 18, 18, 19, 1, 0, 0, 21, 0, 0, 0, 4, 2, 2, 2, 3, 0, 0, 14, 18, 16, 0, 0, 0, 0, 0, 0, 1, 59, 60, 1, 1, 60, 0, 0, 47, 26, 26, 26, 26, 26, 26, 27, 0, 0, 0, 17, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 11, 0, 0, 17, 18, 18, 18, 18, 49, 11, 0, 0, 14, 3, 0, 0, 0, 0, 0, 0, 0, 0, 6, 18, 18, 16, 1, 1, 1, 59, 60, 60, 9, 10, 10, 10, 10, 11, 0, 0, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 17, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             1, 59, 1, 1, 60, 59, 1, 1, 59, 17, 19, 1, 59, 17, 18, 18, 18, 18, 18, 19, 60, 59, 21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14, 18, 18, 18, 10, 10, 10, 10, 10, 10, 50, 18, 18, 18, 18, 19, 0, 0, 20, 0, 0, 0, 0, 0, 0, 0, 123, 65, 124, 17, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            10, 10, 10, 10, 10, 10, 10, 10, 10, 50, 49, 10, 10, 50, 18, 18, 18, 18, 18, 49, 10, 10, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 19, 0, 60, 20, 0, 0, 0, 0, 0, 0, 9, 10, 10, 10, 50, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            10, 10, 10, 10, 10, 10, 10, 10, 10, 50, 49, 10, 10, 50, 18, 18, 18, 18, 18, 49, 10, 10, 18, 7, 7, 7, 7, 7, 7, 7, 7, 7, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 19, 0, 60, 20, 0, 0, 0, 0, 0, 0, 9, 10, 10, 10, 50, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 19, 0, 33, 64, 0, 0, 0, 33, 34, 34, 58, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 19, 0, 0, 20, 0, 0, 0, 0, 0, 0, 17, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 19, 0, 0, 20, 0, 0, 0, 0, 0, 0, 17, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -366,8 +366,8 @@
                  "type":"",
                  "visible":true,
                  "width":0,
-                 "x":3359.53125,
-                 "y":3673.53125
+                 "x":3359.53,
+                 "y":3673.53
                 }, 
                 {
                  "height":0,
@@ -378,8 +378,8 @@
                  "type":"",
                  "visible":true,
                  "width":0,
-                 "x":3551.61277173913,
-                 "y":3417.8097826087
+                 "x":3551.61,
+                 "y":3417.81
                 }, 
                 {
                  "height":0,
@@ -390,8 +390,8 @@
                  "type":"",
                  "visible":true,
                  "width":0,
-                 "x":3359.49166666667,
-                 "y":3161.45277777778
+                 "x":3359.49,
+                 "y":3161.45
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -425,6 +425,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":false
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":""
                         }]
                 }, 
                 {
@@ -434,6 +439,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":"dirt"
                         }]
                 }, 
                 {
@@ -443,6 +453,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":"dirt"
                         }]
                 }, 
                 {
@@ -452,6 +467,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":"dirt"
                         }]
                 }, 
                 {
@@ -461,6 +481,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":""
                         }]
                 }, 
                 {
@@ -470,6 +495,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":"dirt"
                         }]
                 }, 
                 {
@@ -479,6 +509,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":"dirt"
                         }]
                 }, 
                 {
@@ -488,6 +523,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":"dirt"
                         }]
                 }, 
                 {
@@ -497,6 +537,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":"grass"
                         }]
                 }, 
                 {
@@ -506,6 +551,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":"grass"
                         }]
                 }, 
                 {
@@ -515,6 +565,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":"grass"
                         }]
                 }, 
                 {
@@ -524,6 +579,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":"grass"
                         }]
                 }, 
                 {
@@ -533,6 +593,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":"dirt"
                         }]
                 }, 
                 {
@@ -542,6 +607,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":""
                         }]
                 }, 
                 {
@@ -551,6 +621,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":"dirt"
                         }]
                 }, 
                 {
@@ -560,6 +635,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":""
                         }]
                 }, 
                 {
@@ -569,6 +649,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":""
                         }]
                 }, 
                 {
@@ -578,6 +663,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":""
                         }]
                 }, 
                 {
@@ -587,6 +677,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":""
                         }]
                 }, 
                 {
@@ -596,6 +691,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":""
                         }]
                 }, 
                 {
@@ -605,6 +705,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":""
                         }]
                 }, 
                 {
@@ -614,6 +719,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":""
                         }]
                 }, 
                 {
@@ -623,6 +733,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":""
                         }]
                 }, 
                 {
@@ -632,6 +747,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":""
                         }]
                 }, 
                 {
@@ -641,6 +761,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":""
                         }]
                 }, 
                 {
@@ -650,6 +775,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":""
                         }]
                 }, 
                 {
@@ -659,6 +789,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":""
                         }]
                 }, 
                 {
@@ -668,6 +803,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":""
                         }]
                 }, 
                 {
@@ -677,6 +817,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":"grass"
                         }]
                 }, 
                 {
@@ -686,6 +831,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":"grass"
                         }]
                 }, 
                 {
@@ -695,6 +845,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":"grass"
                         }]
                 }, 
                 {
@@ -704,6 +859,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":"grass"
                         }]
                 }, 
                 {
@@ -713,6 +873,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":"grass"
                         }]
                 }, 
                 {
@@ -722,6 +887,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":"grass"
                         }]
                 }, 
                 {
@@ -731,6 +901,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":"grass"
                         }]
                 }, 
                 {
@@ -740,6 +915,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":"grass"
                         }]
                 }, 
                 {
@@ -749,6 +929,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":""
                         }]
                 }, 
                 {
@@ -758,6 +943,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":""
                         }]
                 }, 
                 {
@@ -767,6 +957,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":""
                         }]
                 }, 
                 {
@@ -776,6 +971,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":""
                         }]
                 }, 
                 {
@@ -785,6 +985,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":""
                         }]
                 }, 
                 {
@@ -794,6 +999,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":""
                         }]
                 }, 
                 {
@@ -803,6 +1013,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":""
                         }]
                 }, 
                 {
@@ -812,6 +1027,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":""
                         }]
                 }, 
                 {
@@ -821,6 +1041,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":""
                         }]
                 }, 
                 {
@@ -830,6 +1055,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":""
                         }]
                 }, 
                 {
@@ -839,6 +1069,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":""
                         }]
                 }, 
                 {
@@ -848,6 +1083,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":""
                         }]
                 }, 
                 {
@@ -857,6 +1097,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":""
                         }]
                 }, 
                 {
@@ -866,6 +1111,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":""
                         }]
                 }, 
                 {
@@ -875,6 +1125,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":""
                         }]
                 }, 
                 {
@@ -884,6 +1139,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":""
                         }]
                 }, 
                 {
@@ -893,6 +1153,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":""
                         }]
                 }, 
                 {
@@ -902,6 +1167,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":""
                         }]
                 }, 
                 {
@@ -911,6 +1181,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":""
                         }]
                 }, 
                 {
@@ -920,6 +1195,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":""
                         }]
                 }, 
                 {
@@ -929,6 +1209,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":""
                         }]
                 }, 
                 {
@@ -938,6 +1223,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":""
                         }]
                 }, 
                 {
@@ -947,6 +1237,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":false
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":""
                         }]
                 }, 
                 {
@@ -956,6 +1251,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":false
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":""
                         }]
                 }, 
                 {
@@ -965,6 +1265,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":""
                         }]
                 }, 
                 {
@@ -974,6 +1279,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":"grass"
                         }]
                 }, 
                 {
@@ -983,6 +1293,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":""
                         }]
                 }, 
                 {
@@ -992,6 +1307,11 @@
                          "name":"collides",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"soundType",
+                         "type":"string",
+                         "value":""
                         }]
                 }],
          "tilewidth":64
