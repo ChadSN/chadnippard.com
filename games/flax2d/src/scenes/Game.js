@@ -17,7 +17,7 @@ export class Game extends Phaser.Scene {
         this.groundLayer = null;                            // Layer for ground areas
         this.groundInsideLayer = null;                      // Layer for ground inside areas
         this.isOverlappingGroundInsideLayer = false;        // Flag to track overlap state
-        this.currentAmbientColor = 0xffffff;                // Current ambient light color set to 
+        this.currentAmbientColor = 0xcccccc;                // Current ambient light color set to a neutral color
     }
 
     create() {
@@ -39,6 +39,7 @@ export class Game extends Phaser.Scene {
         // add level1music
         this.level1Music = this.sound.add('level1Music', { loop: true, volume: 0.5 });
         this.level1Music.play();
+        this.caveAmbience = this.sound.add('caveAmbience', { loop: true, volume: 0.1 });
     }
 
     update() {
@@ -86,12 +87,18 @@ export class Game extends Phaser.Scene {
                 if (!this.isOverlappingGroundInsideLayer) {
                     this.isOverlappingGroundInsideLayer = true;
                     this.tweenAmbientLight(0x222222); // Dim light
+                    if (!this.caveAmbience.isPlaying) {
+                        this.caveAmbience.stop();
+                        this.caveAmbience.play();
+                    }
                 }
 
             } else {
                 if (this.isOverlappingGroundInsideLayer) {
                     this.isOverlappingGroundInsideLayer = false;
                     this.tweenAmbientLight(0xFFFFFF); // Full white light
+
+                    if (this.caveAmbience.isPlaying) this.caveAmbience.stop();
                 }
             }
         });
@@ -187,12 +194,15 @@ export class Game extends Phaser.Scene {
     addLights() {
         this.lights.enable(); // Enable Lights Manager
 
-        // // 0x555555  dim twilight, 0xAAAAAA  bright daylight, 0xFFFFFF  full white, no shadows visible, 0x222222  dark night
+        // 0x555555  dim twilight, 
+        // 0xAAAAAA  bright daylight,
+        // 0xFFFFFF  full white, no shadows visible, 
+        // 0x222222  dark night
         this.lights.setAmbientColor(this.currentAmbientColor);  // Set ambient light color for the scene
-        this.lights.addLight(this.cameras.main.x, 0, 3000) // Light position and radius
-            .setColor(0xFFFACD)
-            .setIntensity(1.2)   // Simulated sunlight
-            .setScrollFactor(1, 0); // Make the light follow the camera. Arg1: x scroll factor, Arg2: y scroll factor
+        this.lights.addLight(this.cameras.main.x, 0, 3000)      // Light position and radius
+            .setColor(0xFFFACD)                                 // Light color
+            .setIntensity(1.2)                                  // Simulated sunlight
+            .setScrollFactor(1, 0);                             // Make the light follow the camera. Arg1: x scroll factor, Arg2: y scroll factor
 
         // Add flickering lights at designated light points
         const lightPoints = this.map.filterObjects("Objects", obj => obj.name === "lightPoint");
@@ -225,10 +235,10 @@ export class Game extends Phaser.Scene {
 
     // Spawn the player character
     spawnPlayer(x, y) {
-        this.player = new Player(this, x, y).setDepth(3);                       // Spawn player and set depth
-        this.player.setPipeline('Light2D');                                     // Enable lighting effects on the player
-        const playerDamageBox = new DamageBox(this, this.player);   // create damage box for player
-        this.player.setDamageBox(playerDamageBox);                              // assign damage box to player
+        this.player = new Player(this, x, y).setDepth(3);               // Spawn player and set depth
+        this.player.setPipeline('Light2D');                             // Enable lighting effects on the player
+        const playerDamageBox = new DamageBox(this, this.player);       // create damage box for player
+        this.player.setDamageBox(playerDamageBox);                      // assign damage box to player
     }
 
     // Setup camera to follow the player
@@ -249,7 +259,8 @@ export class Game extends Phaser.Scene {
             const pole = this.poles.create(polePoint.x, polePoint.y, 'pole')
                 .setScale(2)
                 .setOrigin(0.5, 0.5)
-                .refreshBody();
+                .refreshBody()
+                .setDepth(4);
         });
 
         this.physics.add.overlap(this.player.hitbox, this.poles, (hitbox, pole) => {

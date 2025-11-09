@@ -28,8 +28,8 @@ export class Preloader extends Phaser.Scene {
         this.load.image('startGameButton', 'StartGameButton.png');
         this.load.image('cloud', 'Cloud.png');
         // add music file 
-        this.load.audio('mainMenuMusic', 'Song 2 09.11.25.mp3');
-        this.load.audio('level1Music', 'Piano Song.mp3');
+        this.load.audio('mainMenuMusic', '/audio/Song 2 09.11.25.mp3');
+        this.load.audio('level1Music', '/audio/Piano Song.mp3');
         //this.load.image('ground', 'platform.png');
         this.load.spritesheet('dna', 'DNA_Anim.png', { frameWidth: 64, frameHeight: 64 });
         this.load.image('healthPanel', 'Health_Panel.png');
@@ -43,10 +43,11 @@ export class Preloader extends Phaser.Scene {
         this.load.spritesheet('flax_Start', '/Flax/GlideStart_128.png', { frameWidth: 128, frameHeight: 128 });
         this.load.spritesheet('flax_poleSwing', '/Flax/PoleSwinging_128.png', { frameWidth: 128, frameHeight: 128 });
 
-        this.load.audio('footstepGrass', 'footstep-grass.wav');
-        this.load.audio('footstepDirt', 'Steps-Dirt_3a.ogg');
-        this.load.audio('tailwhipSound', 'woosh(edited).mp3');
-        this.load.audio('poleSwingSound', 'Fast Whoosh.wav');
+        this.load.audio('footstepGrass', '/audio/footstep-grass.wav');
+        this.load.audio('footstepDirt', '/audio/Steps-Dirt_3a.ogg');
+        this.load.audio('tailwhipSound', '/audio/woosh(edited).mp3');
+        this.load.audio('poleSwingSound', '/audio/Fast Whoosh.wav');
+        this.load.audio('caveAmbience', '/audio/ambience cave (edited).mp3');
 
         this.load.spritesheet('glizzard', '/Glizzard/Glizzard_flying.png', { frameWidth: 64, frameHeight: 64 });
         this.load.spritesheet('glizzardProjectile', '/Glizzard/Glizzard_Projectile.png', { frameWidth: 16, frameHeight: 16 });
