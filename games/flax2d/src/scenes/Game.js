@@ -11,59 +11,63 @@ export class Game extends Phaser.Scene {
 
     constructor() {
         super('Game');
-        this.worldWidth = 8000;
-        this.worldHeight = 4000;
-        this.map = null;                                    // Tilemap reference
-        this.groundLayer = null;                            // Layer for ground areas
-        this.groundInsideLayer = null;                      // Layer for ground inside areas
-        this.isOverlappingGroundInsideLayer = false;        // Flag to track overlap state
-        this.currentAmbientColor = 0xcccccc;                // Current ambient light color set to a neutral color
+        this.worldWidth = 8000;                                                                         // Set world width
+        this.worldHeight = 4000;                                                                        // Set world height
+        this.map = null;                                                                                // Tilemap reference
+        this.groundLayer = null;                                                                        // Layer for ground areas
+        this.groundInsideLayer = null;                                                                  // Layer for ground inside areas
+        this.isOverlappingGroundInsideLayer = false;                                                    // Flag to track overlap state
+        this.currentAmbientColour = 0xCCCCCC;                                                           // Current ambient light color set to a neutral color
+        this.daylightAmbientColour = this.currentAmbientColour;                                         // Daylight color
+        this.nightAmbientColour = 0x222222;                                                             // Night color
     }
 
     create() {
-        this.physics.world.TILE_BIAS = 64;                  // Increase the tile bias to prevent tunneling
-        this.background = this.add.image(960, 540, 'sky')   // Add the background image at the center of the game canvas
-            .setDepth(0)                                    // Set depth to ensure it's behind other game objects
-            .setScrollFactor(0);                            // Make the background static relative to the camera
-        this.inputManager = new InputManager(this);         // Create an instance of InputManager
-        this.physics.world.setBounds(                       // Set world bounds
-            0,                                              // left
-            0,                                              // top
-            this.worldWidth,                                // right
-            this.worldHeight);                              // bottom
+        this.physics.world.TILE_BIAS = 64;                                                              // Increase the tile bias to prevent tunneling
+        this.background = this.add.image(960, 540, 'sky')                                               // Add the background image at the center of the game canvas
+            .setDepth(0)                                                                                // Set depth to ensure it's behind other game objects
+            .setScrollFactor(0);                                                                        // Make the background static relative to the camera
+        this.inputManager = new InputManager(this);                                                     // Create an instance of InputManager
+        this.physics.world.setBounds(                                                                   // Set world bounds
+            0,                                                                                          // left
+            0,                                                                                          // top
+            this.worldWidth,                                                                            // right
+            this.worldHeight);                                                                          // bottom
         this.createTilemap();
-        this.setupCamera();                                 // Setup camera to follow the player
-        this.uiManager = new UIManager(this);               // Create UI Manager
-        this.uiManager.updateHealth(this.player.health);    // Initialise health display
-        //this.relayer();                                   // Adjust layer depths
-        // add level1music
-        this.level1Music = this.sound.add('level1Music', { loop: true, volume: 0.5 });
-        this.level1Music.play();
-        this.caveAmbience = this.sound.add('caveAmbience', { loop: true, volume: 0.1 });
+        this.setupCamera();                                                                             // Setup camera to follow the player
+        this.uiManager = new UIManager(this);                                                           // Create UI Manager
+        this.uiManager.updateHealth(this.player.health);                                                // Initialise health display
+        //this.relayer();                                                                               // Adjust layer depths
+        this.level1Music = this.sound.add('level1Music', { loop: true, volume: 0.5 });                  // Load and play level 1 music
+        this.level1Music.play();                                                                        // Play the level 1 music
+        this.caveAmbience = this.sound.add('caveAmbience', { loop: true, volume: 0.05 });               // Load cave ambience sound
+        this.cameras.main.fadeIn(1000, 0, 0, 0);                                                        // Fade in the screen
     }
 
     update() {
-        this.handlePlayerInput();                           // Handle player input
+        this.handlePlayerInput();                                                                       // Handle player input
     }
 
     createTilemap() {
         this.map = this.make.tilemap({ key: 'tilemap', tileWidth: 64, tileHeight: 64 });                // key must match the key used in preload
 
         // CREATE GROUND LAYER
-        const groundTileSet = this.map.addTilesetImage('GroundTileSet', 'tiles');                       // Arg 1: tileset name in Tiled, Arg 2: key used in preload
-        this.groundLayer = this.map.createLayer('Ground', groundTileSet, 0, 0).setDepth(2);             // Arg 1: layer name in Tiled, Arg 2: tileset object created above, Arg 3 & 4: x,y position.
+        const groundTileSet = this.map.addTilesetImage('GroundTileSet', 'tiles');                       // Arg 1: tileset name in Tiled.    2: key used in preload
+        this.groundLayer = this.map.createLayer('Ground', groundTileSet, 0, 0)                          // Arg 1: layer name in Tiled.      2: tileset object created above.    Arg 3 & 4: x,y position.
+            .setDepth(2);                                                                               // Set depth to ensure it's above the background
         this.groundLayer.setCollisionByProperty({ collides: true });                                    // Enable collision for tiles with the 'collides' property set to true
 
         // CREATE GROUND INSIDE LAYER
-        const groundTileSetInside = this.map.addTilesetImage('GroundTileSet_Inside', 'tilesInside');    // Arg 1: tileset name in Tiled, Arg 2: key used in preload
-        this.groundInsideLayer = this.map
-            .createLayer('Ground_Inside', groundTileSetInside, 0, 0)                                    // Arg 1: layer name in Tiled, Arg 2: tileset object created above, Arg 3 & 4: x,y position.
-            .setDepth(2);                                                                               // Set depth to ensure it's above the ground layer
+        const groundTileSetInside = this.map.addTilesetImage('GroundTileSet_Inside', 'tilesInside');    // Arg 1: tileset name in Tiled.    2: key used in preload
+        this.groundInsideLayer = this.map.createLayer('Ground_Inside', groundTileSetInside, 0, 0)       // Arg 1: layer name in Tiled.      2: tileset object created above.    Arg 3 & 4: x,y position.
+
+            .setDepth(2);                                                                               // Set depth to ensure it's above the background
         this.groundInsideLayer.setCollisionByProperty({ overlaps: true });                              // Enable collision for tiles with the 'collides' property set to true
 
         // CREATE OBJECT LAYER
-        const objectTileSet = this.map.addTilesetImage('ObjectTileSet', 'objectTiles');                 // Arg 1: tileset name in Tiled, Arg 2: key used in preload
-        const objectLayer = this.map.createLayer('ObjectTiles', objectTileSet, 0, 0).setDepth(2);       // Arg 1: layer name in Tiled, Arg 2: tileset object created above, Arg 3 & 4: x,y position.
+        const objectTileSet = this.map.addTilesetImage('ObjectTileSet', 'objectTiles');                 // Arg 1: tileset name in Tiled.    2: key used in preload
+        const objectLayer = this.map.createLayer('ObjectTiles', objectTileSet, 0, 0)                    // Arg 1: layer name in Tiled.      2: tileset object created above.    Arg 3 & 4: x,y position.
+            .setDepth(2);                                                                               // Set depth to ensure it's above the background
 
         // ENABLE LIGHTING ON LAYERS
         this.groundLayer.setPipeline('Light2D');
@@ -76,38 +80,37 @@ export class Game extends Phaser.Scene {
 
         // COLLISIONS SETUP FOR PLAYER WITH GROUND LAYER
         this.physics.add.collider(this.player.hitbox, this.groundLayer, (hitbox, tile) => {
-            if (tile && tile.properties.collides) {
-                this.player.handleCollision(tile); // Use the Player instance to handle collision
+            if (tile && tile.properties.collides) {                                                     // Check if the tile has the 'collides' property
+                this.player.handleCollision(tile);                                                      // Use the Player instance to handle collision
             }
         });
 
         // COLLISIONS SETUP FOR PLAYER WITH GROUND INSIDE LAYER
         this.physics.add.overlap(this.player.hitbox, this.groundInsideLayer, (hitbox, tile) => {
-            if (tile && tile.properties.overlaps) {
-                if (!this.isOverlappingGroundInsideLayer) {
-                    this.isOverlappingGroundInsideLayer = true;
-                    this.tweenAmbientLight(0x222222); // Dim light
-                    if (!this.caveAmbience.isPlaying) {
-                        this.caveAmbience.stop();
-                        this.caveAmbience.play();
+            if (tile && tile.properties.overlaps) {                                                     // Check if the tile has the 'overlaps' property
+                if (!this.isOverlappingGroundInsideLayer) {                                             // Only trigger once when starting to overlap
+                    this.isOverlappingGroundInsideLayer = true;                                         // Set flag to true
+                    this.tweenAmbientLight(this.nightAmbientColour);                                    // Dim light
+                    if (!this.caveAmbience.isPlaying) {                                                 // Play cave ambience if not already playing
+                        this.caveAmbience.stop();                                                       // Ensure it's stopped before playing again
+                        this.caveAmbience.play();                                                       // Play cave ambience
                     }
                 }
 
             } else {
-                if (this.isOverlappingGroundInsideLayer) {
-                    this.isOverlappingGroundInsideLayer = false;
-                    this.tweenAmbientLight(0xFFFFFF); // Full white light
-
-                    if (this.caveAmbience.isPlaying) this.caveAmbience.stop();
+                if (this.isOverlappingGroundInsideLayer) {                                              // Only trigger once when stopping overlap
+                    this.isOverlappingGroundInsideLayer = false;                                        // Set flag to false
+                    this.tweenAmbientLight(this.daylightAmbientColour);                                 // Full white light
+                    if (this.caveAmbience.isPlaying) this.caveAmbience.stop();                          // Stop cave ambience
                 }
             }
         });
 
-        this.spawnPoles();                                  // Spawn poles for swinging
-        this.spawnGlizzards();                              // Spawn glizzard enemies
-        this.spawnMunchers();                               // Spawn muncher enemies
-        this.spawnDNAs();                                   // Spawn DNA collectables
-        this.addLights();                                   // Add lighting effects
+        this.spawnPoles();                                                                              // Spawn poles for swinging
+        this.spawnGlizzards();                                                                          // Spawn glizzard enemies
+        this.spawnMunchers();                                                                           // Spawn muncher enemies
+        this.spawnDNAs();                                                                               // Spawn DNA collectables
+        this.addLights();                                                                               // Add lighting effects
         this.spawnClouds();
 
         // DEBUG RENDERING OF COLLISION LAYERS
@@ -128,7 +131,7 @@ export class Game extends Phaser.Scene {
 
     tweenAmbientLight(targetColour) {
         if (this.currentAmbientColour === targetColour) return;                                             // No need to tween if already at target color
-        const start = Phaser.Display.Color.ValueToColor(this.currentAmbientColor);                          // Current ambient color
+        const start = Phaser.Display.Color.ValueToColor(this.currentAmbientColour);                         // Current ambient color
         const end = Phaser.Display.Color.ValueToColor(targetColour);                                        // Target ambient color
         const colorObj = { t: 0 };                                                                          // Tweened value 0 - 1
         this.tweens.add({
@@ -140,39 +143,36 @@ export class Game extends Phaser.Scene {
                 const colour = Phaser.Display.Color.Interpolate.ColorWithColor(start, end, 1, colorObj.t);  // Interpolate between start and end colors
                 const hex = Phaser.Display.Color.GetColor(colour.r, colour.g, colour.b);                    // Convert to hex
                 this.lights.setAmbientColor(hex);                                                           // Update ambient color
-                this.currentAmbientColor = hex;                                                             // Update current ambient color
+                this.currentAmbientColour = hex;                                                            // Update current ambient color
 
             },
             onComplete: () => {
                 this.lights.setAmbientColor(targetColour);                                                  // Final set to target color
-                this.currentAmbientColor = targetColour;                                                    // Update current ambient color
+                this.currentAmbientColour = targetColour;                                                   // Update current ambient color
             }
         });
     }
 
     spawnClouds() {
-        const CloudYMinPoint = this.map.filterObjects("Objects", obj => obj.name === "CloudYMin")[0]; // Match the exact name
-        const CloudYMaxPoint = this.map.filterObjects("Objects", obj => obj.name === "CloudYMax")[0];
-        this.cloudSpawner = new CloudSpawner(this); // Create a CloudSpawner instance
-        this.cloudSpawner.spawnClouds(1, CloudYMinPoint.y, CloudYMaxPoint.y); // Spawn clouds in the background with depth 1
+        const CloudYMinPoint = this.map.filterObjects("Objects", obj => obj.name === "CloudYMin")[0];       // Get cloud Y min point 
+        const CloudYMaxPoint = this.map.filterObjects("Objects", obj => obj.name === "CloudYMax")[0];       // Get cloud Y max point
+        this.cloudSpawner = new CloudSpawner(this);                                                         // Create a CloudSpawner instance
+        this.cloudSpawner.spawnClouds(1, CloudYMinPoint.y, CloudYMaxPoint.y);                               // Spawn clouds in the background with depth 1
     }
 
     // Handle player input
     handlePlayerInput() {
-        if (this.player.disableMovement) return;        // prevent movement if canMove is false
-        if (
-            Phaser.Input.Keyboard.JustDown(this.inputManager.cursors.up) ||
-            Phaser.Input.Keyboard.JustDown(this.inputManager.keySPACE) ||
-            Phaser.Input.Keyboard.JustDown(this.inputManager.keyW)
-        ) this.player.jump();
-
-        if (this.inputManager.cursors.left.isDown || this.inputManager.keyA.isDown) {
-            this.player.moveLeft();
-        } else if (this.inputManager.cursors.right.isDown || this.inputManager.keyD.isDown) {
-            this.player.moveRight();
-        } else {
-            this.player.idle();
-        }
+        if (this.player.disableMovement) return;                                                            // prevent movement if canMove is false
+        if (                                                                                                // Jump input
+            Phaser.Input.Keyboard.JustDown(this.inputManager.cursors.up) ||                                 // Up arrow
+            Phaser.Input.Keyboard.JustDown(this.inputManager.keySPACE) ||                                   // Space bar
+            Phaser.Input.Keyboard.JustDown(this.inputManager.keyW)                                          // W key
+        ) this.player.jump();                                                                               // Make the player jump
+        if (this.inputManager.cursors.left.isDown || this.inputManager.keyA.isDown)                         // Left arrow or A key
+            this.player.moveLeft();                                                                         // Move player left
+        else if (this.inputManager.cursors.right.isDown || this.inputManager.keyD.isDown)                   // Right arrow or D key
+            this.player.moveRight();                                                                        // Move player right
+        else this.player.idle();                                                                            // No horizontal input, Player idle
     }
 
     pointerLeftPressed() {
@@ -192,62 +192,45 @@ export class Game extends Phaser.Scene {
 
     // Add lighting effects to the scene
     addLights() {
-        this.lights.enable(); // Enable Lights Manager
-
-        // 0x555555  dim twilight, 
-        // 0xAAAAAA  bright daylight,
-        // 0xFFFFFF  full white, no shadows visible, 
-        // 0x222222  dark night
-        this.lights.setAmbientColor(this.currentAmbientColor);  // Set ambient light color for the scene
-        this.lights.addLight(this.cameras.main.x, 0, 3000)      // Light position and radius
-            .setColor(0xFFFACD)                                 // Light color
-            .setIntensity(1.2)                                  // Simulated sunlight
-            .setScrollFactor(1, 0);                             // Make the light follow the camera. Arg1: x scroll factor, Arg2: y scroll factor
+        this.lights.enable();                                                                   // Enable Lights Manager
+        this.lights.setAmbientColor(this.daylightAmbientColour);                                // Set ambient light color for the scene
+        this.lights.addLight(this.cameras.main.x, 0, 3000)                                      // Light position and radius
+            .setColor(0xFFFACD)                                                                 // Light color
+            .setIntensity(1.2)                                                                  // Simulated sunlight
+            .setScrollFactor(1, 0);                                                             // Make the light follow the camera. Arg1: x scroll factor. 2: y scroll factor
 
         // Add flickering lights at designated light points
         const lightPoints = this.map.filterObjects("Objects", obj => obj.name === "lightPoint");
         lightPoints.forEach(point => {
-            const light = this.lights.addLight(point.x, point.y, 200)   // Light position and radius
-                .setColor(0xFFD580)                                     // Warm light color
-                .setIntensity(1.5);                                     // Random brightness of the light
+            const light = this.lights.addLight(point.x, point.y, 200)                           // Light position and radius
+                .setColor(0xFFD580)                                                             // Warm light color
+                .setIntensity(1.5);                                                             // Random brightness of the light
             this.tweens.add({
-                targets: light,                                         // Animate the Phaser Light object
-                intensity: { from: 1.5, to: 2 },                        // Flicker intensity between 1.5 and 2
-                radius: { from: 200, to: 250 },                         // Flicker radius between 200 and 250
-                duration: 1500,                                         // Duration of one flicker cycle
-                yoyo: true,                                             // Flicker back and forth
-                repeat: -1                                              // Repeat indefinitely
+                targets: light,                                                                 // Animate the Phaser Light object
+                intensity: { from: 1.5, to: 2 },                                                // Flicker intensity between 1.5 and 2
+                radius: { from: 200, to: 250 },                                                 // Flicker radius between 200 and 250
+                duration: 1500,                                                                 // Duration of one flicker cycle
+                yoyo: true,                                                                     // Flicker back and forth
+                repeat: -1                                                                      // Repeat indefinitely
             });
         });
-
-        //this.lights.addLight(2000, -1000, 3000).setColor(0xFFFACD).setIntensity(1.2);   // Simulated sunlight
-        // // Visible intense light 
-        // this.lights.addLight(400, 600, 300)
-        //     .setColor(0xFFD580)
-        //     .setIntensity(2);
-        // // Adding a light sprite
-        // this.add.sprite(400, 600, '')
-        //     .setBlendMode(Phaser.BlendModes.ADD)
-        //     .setAlpha(0.6);
-        // // Add a visible point light
-        // this.pointLight = this.lights.addPointLight(400, 600, 0xfffffff, 50, 1, 0.1);
     }
 
     // Spawn the player character
     spawnPlayer(x, y) {
-        this.player = new Player(this, x, y).setDepth(3);               // Spawn player and set depth
-        this.player.setPipeline('Light2D');                             // Enable lighting effects on the player
-        const playerDamageBox = new DamageBox(this, this.player);       // create damage box for player
-        this.player.setDamageBox(playerDamageBox);                      // assign damage box to player
+        this.player = new Player(this, x, y).setDepth(3);                                       // Spawn player and set depth
+        this.player.setPipeline('Light2D');                                                     // Enable lighting effects on the player
+        const playerDamageBox = new DamageBox(this, this.player);                               // create damage box for player
+        this.player.setDamageBox(playerDamageBox);                                              // assign damage box to player
     }
 
-    // Setup camera to follow the player
+    // Setup camera to follow the player                        
     setupCamera() {
-        const cam = this.cameras.main;                                  // get main camera
-        cam.setBounds(0, 0, this.worldWidth, this.worldHeight);         // Set camera bounds to the size of the level
-        cam.startFollow(this.player, false, 0.08, 0.08);                // Make the camera follow the player smoothly
-        cam.setDeadzone(cam.width / 4, 0);                              // Set deadzone to center quarter width and full height
-        this.cameras.main.roundPixels = true;                           // Prevent sub-pixel rendering to avoid blurriness
+        const cam = this.cameras.main;                                                          // get main camera
+        cam.setBounds(0, 0, this.worldWidth, this.worldHeight);                                 // Set camera bounds to the size of the level
+        cam.startFollow(this.player, false, 0.08, 0.08);                                        // Make the camera follow the player smoothly
+        cam.setDeadzone(cam.width / 4, 0);                                                      // Set deadzone to center quarter width and full height
+        this.cameras.main.roundPixels = true;                                                   // Prevent sub-pixel rendering to avoid blurriness
     }
 
     spawnPoles() {
@@ -276,7 +259,7 @@ export class Game extends Phaser.Scene {
 
         dnaPoints.forEach(dnaPoint => {
             const dna = new DNA(this, dnaPoint.x, dnaPoint.y);
-            this.dnas.add(dna);
+            this.dnas.add(dna).setDepth(4);
         });
 
         this.physics.add.overlap(this.player, this.dnas, (player, dna) => {
@@ -290,7 +273,7 @@ export class Game extends Phaser.Scene {
         const muncherPoints = this.map.filterObjects("Objects", obj => obj.name === "muncherPoint");    // Find all muncher spawn points
         muncherPoints.forEach(muncherPoint => {                                                         // Iterate through each muncherPoint and create a Muncher at its position
             const muncher = new Muncher(this, muncherPoint.x, muncherPoint.y);                          // create muncher at point
-            this.munchers.add(muncher);                                                                 // add to the group
+            this.munchers.add(muncher).setDepth(4);                                                                 // add to the group
             const damageBox = new DamageBox(this, muncher);                                             // create damage box for muncher
             muncher.setDamageBox(damageBox);                                                            // assign damage box to muncher
         });
@@ -310,7 +293,7 @@ export class Game extends Phaser.Scene {
         const glizzardPoints = this.map.filterObjects("Objects", obj => obj.name === "glizzardPoint");  // Find all glizzard spawn points
         glizzardPoints.forEach(glizzardPoint => {                                                       // Iterate through each glizzardPoint and create a Glizzard at its position
             const glizzard = new Glizzard(this, glizzardPoint.x, glizzardPoint.y);                      // create glizzard at point
-            this.glizzards.add(glizzard);                                                               // add to the group
+            this.glizzards.add(glizzard).setDepth(4);                                                               // add to the group
         });
         this.physics.add.overlap(this.player.hitbox, this.glizzards, (player, glizzard) => {            // player stomps glizzard
             if (player.y < glizzard.y - glizzard.height && player.body.velocity.y > 900) {              // player is above glizzard and falling fast
