@@ -54,7 +54,7 @@ export class MainMenu extends Phaser.Scene {
     }
 
     startGame() {
-        const duration = 1000;                                          // Duration of the fade out and music fade
+        const duration = 500;                                          // Duration of the fade out and music fade
         this.startButton.disableInteractive();                          // Disable further interaction with the start button
         this.cameras.main.fadeOut(duration, 0, 0, 0);                   // Fade out the screen
         this.tweens.add({                                               // Create a tween to fade out the music

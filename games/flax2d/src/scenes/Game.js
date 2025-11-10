@@ -54,7 +54,7 @@ export class Game extends Phaser.Scene {
         // CREATE GROUND LAYER
         const groundTileSet = this.map.addTilesetImage('GroundTileSet', 'tiles');                       // Arg 1: tileset name in Tiled.    2: key used in preload
         this.groundLayer = this.map.createLayer('Ground', groundTileSet, 0, 0)                          // Arg 1: layer name in Tiled.      2: tileset object created above.    Arg 3 & 4: x,y position.
-            .setDepth(2);                                                                               // Set depth to ensure it's above the background
+            .setDepth(3);                                                                               // Set depth to ensure it's above the background
         this.groundLayer.setCollisionByProperty({ collides: true });                                    // Enable collision for tiles with the 'collides' property set to true
 
         // CREATE GROUND INSIDE LAYER
@@ -67,7 +67,9 @@ export class Game extends Phaser.Scene {
         // CREATE OBJECT LAYER
         const objectTileSet = this.map.addTilesetImage('ObjectTileSet', 'objectTiles');                 // Arg 1: tileset name in Tiled.    2: key used in preload
         const objectLayer = this.map.createLayer('ObjectTiles', objectTileSet, 0, 0)                    // Arg 1: layer name in Tiled.      2: tileset object created above.    Arg 3 & 4: x,y position.
-            .setDepth(2);                                                                               // Set depth to ensure it's above the background
+            .setDepth(3);
+        const objectLayer2 = this.map.createLayer('ObjectTilesLayer2', objectTileSet, 0, 0)                    // Arg 1: layer name in Tiled.      2: tileset object created above.    Arg 3 & 4: x,y position.
+            .setDepth(3);                                                                               // Set depth to ensure it's above the background
 
         // ENABLE LIGHTING ON LAYERS
         this.groundLayer.setPipeline('Light2D');
@@ -106,12 +108,18 @@ export class Game extends Phaser.Scene {
             }
         });
 
+        this.spawnSigns();
+
         this.spawnPoles();                                                                              // Spawn poles for swinging
         this.spawnGlizzards();                                                                          // Spawn glizzard enemies
         this.spawnMunchers();                                                                           // Spawn muncher enemies
         this.spawnDNAs();                                                                               // Spawn DNA collectables
         this.addLights();                                                                               // Add lighting effects
         this.spawnClouds();
+
+
+
+
 
         // DEBUG RENDERING OF COLLISION LAYERS
         // const debugGraphics = this.add.graphics().setAlpha(0.75);
@@ -127,6 +135,27 @@ export class Game extends Phaser.Scene {
         //     collidingTileColor: new Phaser.Display.Color(243, 134, 48, 255), // Color of colliding tiles
         //     faceColor: new Phaser.Display.Color(40, 39, 37, 255) // Color of colliding face edges
         // });
+    }
+
+    spawnSigns() {
+        // Find all sign objects in the Tiled map
+        const signPoints = this.map.filterObjects("Objects", obj => obj.name === "signPoint");
+        // Iterate through each signPoint and create a sign with text
+        signPoints.forEach(signPoint => {
+            const textProperty = signPoint.properties.find(prop => prop.name === 'text');
+            const textSizeProperty = signPoint.properties.find(prop => prop.name === 'size');
+            const textWrapProperty = signPoint.properties.find(prop => prop.name === 'wrapWidth') || { value: 128 };
+
+            const signText = this.add.text(signPoint.x, signPoint.y, textProperty.value, {
+                font: `${textSizeProperty.value}px Impact`,
+                fill: '#000000',
+                align: 'center',
+                wordWrap: { width: textWrapProperty.value },
+                lineSpacing: 0,
+            })
+                .setOrigin(0.5) // Center horizontally, align bottom
+                .setDepth(4);      // Set depth to render above the sign
+        });
     }
 
     tweenAmbientLight(targetColour) {
@@ -218,7 +247,7 @@ export class Game extends Phaser.Scene {
 
     // Spawn the player character
     spawnPlayer(x, y) {
-        this.player = new Player(this, x, y).setDepth(3);                                       // Spawn player and set depth
+        this.player = new Player(this, x, y).setDepth(10);                                       // Spawn player and set depth
         this.player.setPipeline('Light2D');                                                     // Enable lighting effects on the player
         const playerDamageBox = new DamageBox(this, this.player);                               // create damage box for player
         this.player.setDamageBox(playerDamageBox);                                              // assign damage box to player
