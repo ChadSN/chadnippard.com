@@ -26,14 +26,14 @@ export class Preloader extends Phaser.Scene {
         this.load.setPath('assets');
 
         // MAIN MENU ASSETS
-        this.load.image('sky', 'sky.webp');
-        this.load.image('title', 'Flax2D_Title.png');
-        this.load.image('startGameButton', 'StartGameButton.png');
-        this.load.image('cloud', 'Cloud.png');
+        this.load.image('sky', '/levels/sky.webp');
+        this.load.image('title', '/UI/Flax2D_Title.png');
+        this.load.image('startGameButton', '/UI/StartGameButton.png');
+        this.load.image('cloud', '/levels/Cloud.png');
 
         // UI ASSETS
-        this.load.spritesheet('dna', 'DNA_Anim.png', { frameWidth: 64, frameHeight: 64 });
-        this.load.image('healthPanel', 'Health_Panel.png');
+        this.load.spritesheet('dna', '/Objects/DNA_Anim.png', { frameWidth: 64, frameHeight: 64 });
+        this.load.image('healthPanel', '/UI/Health_Panel.png');
 
         // PLAYER ASSETS
         this.load.spritesheet('flax_Idle', '/Flax/Idle_128.png', { frameWidth: 128, frameHeight: 128 });
@@ -56,13 +56,13 @@ export class Preloader extends Phaser.Scene {
         this.load.spritesheet('muncher_Attack', '/Muncher/Attack_64.png', { frameWidth: 64, frameHeight: 64 });
 
         // TILES AND TILEMAPS
-        this.load.tilemapTiledJSON('tilemap', '/scene_1.json');     // Load the embedded JSON file
-        this.load.image('tiles', 'GrassTile.png');                  // Load the GrassTile tileset image.
-        this.load.image('tilesInside', 'GrassTile_Inside.png');     // Load the GrassTile_Inside tileset image.
-        this.load.image('objectTiles', 'ObjectsTileSet.png');       // Load the ObjectTileSet tileset image.
+        this.load.tilemapTiledJSON('tilemap', '/levels/scene_1.json');     // Load the embedded JSON file
+        this.load.image('tiles', '/levels/GrassTile.png');                  // Load the GrassTile tileset image.
+        this.load.image('tilesInside', '/levels/GrassTile_Inside.png');     // Load the GrassTile_Inside tileset image.
+        this.load.image('objectTiles', '/levels/ObjectsTileSet.png');       // Load the ObjectTileSet tileset image.
 
         // OBJECTS ASSETS
-        this.load.image('pole', '/pole.png');
+        this.load.image('pole', '/Objects/pole.png');
 
         // AUDIO
         this.load.audio('mainMenuMusic', '/audio/Song 2 09.11.25.mp3');

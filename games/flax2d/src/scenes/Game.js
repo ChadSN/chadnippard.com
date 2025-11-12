@@ -13,13 +13,14 @@ export class Game extends Phaser.Scene {
         super('Game');
         this.worldWidth = 8000;                                                                         // Set world width
         this.worldHeight = 4000;                                                                        // Set world height
+        this.levelKey = null;                                                                           // Level key for loading specific levels
         this.map = null;                                                                                // Tilemap reference
         this.groundLayer = null;                                                                        // Layer for ground areas
         this.groundInsideLayer = null;                                                                  // Layer for ground inside areas
         this.isOverlappingGroundInsideLayer = false;                                                    // Flag to track overlap state
         this.currentAmbientColour = 0xCCCCCC;                                                           // Current ambient light color set to a neutral color
         this.daylightAmbientColour = this.currentAmbientColour;                                         // Daylight color
-        this.nightAmbientColour = 0x222222;                                                             // Night color
+        this.nightAmbientColour = 0x222222;                                                             // Nighttime color
     }
 
     create() {
@@ -27,6 +28,7 @@ export class Game extends Phaser.Scene {
         this.background = this.add.image(960, 540, 'sky')                                               // Add the background image at the center of the game canvas
             .setDepth(0)                                                                                // Set depth to ensure it's behind other game objects
             .setScrollFactor(0);                                                                        // Make the background static relative to the camera
+        this.setupCamera();                                                                             // Setup camera to follow the player
         this.inputManager = new InputManager(this);                                                     // Create an instance of InputManager
         this.physics.world.setBounds(                                                                   // Set world bounds
             0,                                                                                          // left
@@ -34,9 +36,7 @@ export class Game extends Phaser.Scene {
             this.worldWidth,                                                                            // right
             this.worldHeight);                                                                          // bottom
         this.createTilemap();
-        this.setupCamera();                                                                             // Setup camera to follow the player
-        this.uiManager = new UIManager(this);                                                           // Create UI Manager
-        this.uiManager.updateHealth(this.player.health);                                                // Initialise health display
+        this.initUIManager();                                                                           // Initialise UI Manager
         //this.relayer();                                                                               // Adjust layer depths
         this.level1Music = this.sound.add('level1Music', { loop: true, volume: 0.5 });                  // Load and play level 1 music
         this.level1Music.play();                                                                        // Play the level 1 music
@@ -47,6 +47,13 @@ export class Game extends Phaser.Scene {
     update() {
         this.handlePlayerInput();                                                                       // Handle player input
     }
+
+    initUIManager() {
+        this.uiManager = new UIManager(this);                                                           // Create UI Manager
+        this.uiManager.updateHealth(this.player.health);                                                // Initialise health display
+        this.uiManager.startTimerEvent(0);                                                                  // Start the timer event
+    }
+
 
     createTilemap() {
         this.map = this.make.tilemap({ key: 'tilemap', tileWidth: 64, tileHeight: 64 });                // key must match the key used in preload
@@ -108,18 +115,19 @@ export class Game extends Phaser.Scene {
             }
         });
 
-        this.spawnSigns();
+        this.physics.add.overlap(this.player.hitbox, objectLayer, (hitbox, tile) => {                   // Check overlap with object layer
+            if (tile && tile.properties.exit) {                                                         // Check if the tile has the 'exit' property
+                console.log('Level Complete!');                                                         // Log level complete
+            }
+        });
 
+        this.spawnSigns();                                                                              // Spawn signs with text
         this.spawnPoles();                                                                              // Spawn poles for swinging
         this.spawnGlizzards();                                                                          // Spawn glizzard enemies
         this.spawnMunchers();                                                                           // Spawn muncher enemies
         this.spawnDNAs();                                                                               // Spawn DNA collectables
         this.addLights();                                                                               // Add lighting effects
         this.spawnClouds();
-
-
-
-
 
         // DEBUG RENDERING OF COLLISION LAYERS
         // const debugGraphics = this.add.graphics().setAlpha(0.75);
@@ -137,24 +145,24 @@ export class Game extends Phaser.Scene {
         // });
     }
 
-    spawnSigns() {
-        // Find all sign objects in the Tiled map
-        const signPoints = this.map.filterObjects("Objects", obj => obj.name === "signPoint");
-        // Iterate through each signPoint and create a sign with text
-        signPoints.forEach(signPoint => {
-            const textProperty = signPoint.properties.find(prop => prop.name === 'text');
-            const textSizeProperty = signPoint.properties.find(prop => prop.name === 'size');
-            const textWrapProperty = signPoint.properties.find(prop => prop.name === 'wrapWidth') || { value: 128 };
 
-            const signText = this.add.text(signPoint.x, signPoint.y, textProperty.value, {
-                font: `${textSizeProperty.value}px Impact`,
-                fill: '#000000',
-                align: 'center',
-                wordWrap: { width: textWrapProperty.value },
-                lineSpacing: 0,
-            })
-                .setOrigin(0.5) // Center horizontally, align bottom
-                .setDepth(4);      // Set depth to render above the sign
+
+    spawnSigns() {
+        const signPoints = this.map.filterObjects("Objects", obj => obj.name === "signPoint");          // Find all sign objects in the Tiled map
+        signPoints.forEach(signPoint => {                                                               // Iterate through each signPoint and create a sign with text
+            const textProperty = signPoint.properties.find(prop => prop.name === 'text');               // Get the text property
+            const textSizeProperty = signPoint.properties.find(prop => prop.name === 'size');           // Get the text size property
+            const textWrapProperty = signPoint.properties.find(prop => prop.name === 'wrapWidth')       // Get the text wrap width property
+                || { value: 128 };                                                                      // Default wrap width if not specified
+            const signText = this.add.text(signPoint.x, signPoint.y, textProperty.value)                // Create text object at sign position
+                .setFontFamily('Impact')                                                                // Set font family
+                .setFontSize(`${textSizeProperty.value}px`)                                             // Set font size
+                .setColor('#000000')                                                                 // Set text color
+                .setAlign('center')                                                                     // Set text alignment
+                .setWordWrapWidth(textWrapProperty.value)                                               // Set word wrap width
+                .setLineSpacing(0)                                                                      // Set line spacing
+                .setOrigin(0.5)                                                                         // Center horizontally, align bottom
+                .setDepth(4);                                                                           // Set depth above ground layer
         });
     }
 
@@ -251,13 +259,13 @@ export class Game extends Phaser.Scene {
         this.player.setPipeline('Light2D');                                                     // Enable lighting effects on the player
         const playerDamageBox = new DamageBox(this, this.player);                               // create damage box for player
         this.player.setDamageBox(playerDamageBox);                                              // assign damage box to player
+        this.cameras.main.startFollow(this.player, false, 0.08, 0.08);                                        // Make the camera follow the player smoothly
     }
 
     // Setup camera to follow the player                        
     setupCamera() {
         const cam = this.cameras.main;                                                          // get main camera
         cam.setBounds(0, 0, this.worldWidth, this.worldHeight);                                 // Set camera bounds to the size of the level
-        cam.startFollow(this.player, false, 0.08, 0.08);                                        // Make the camera follow the player smoothly
         cam.setDeadzone(cam.width / 4, 0);                                                      // Set deadzone to center quarter width and full height
         this.cameras.main.roundPixels = true;                                                   // Prevent sub-pixel rendering to avoid blurriness
     }

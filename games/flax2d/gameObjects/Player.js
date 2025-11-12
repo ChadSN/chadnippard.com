@@ -193,7 +193,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         if (this.isGlidingSpinning) return;                                             // prevent jump if canMove is false
         if (this.isPoleSwinging) { this.stopPoleSwing(); return; }                      // stop pole swing if swinging
         if (this.hitbox.body.blocked.down) {                                            // only jump if on the ground
-            this.hitbox.body.setVelocityY(-this.jumpVel);                               // negative y velocity to jump up
+            this.hitbox.body.setVelocityY(-this.jumpVel);  
         }
         else if (!this.isGliding && this.hitbox.body.velocity.x != 0) {                 // start gliding only if moving horizontally
             this.startGlide(this.flipX ? -this.glideAngle : this.glideAngle);           // start gliding at an angle based on facing direction
