@@ -56,13 +56,14 @@ export class Preloader extends Phaser.Scene {
         this.load.spritesheet('muncher_Attack', '/Muncher/Attack_64.png', { frameWidth: 64, frameHeight: 64 });
 
         // TILES AND TILEMAPS
-        this.load.tilemapTiledJSON('tilemap', '/levels/scene_1.json');     // Load the embedded JSON file
+        this.load.tilemapTiledJSON('tilemap', '/levels/level1.json');     // Load the embedded JSON file
         this.load.image('tiles', '/levels/GrassTile.png');                  // Load the GrassTile tileset image.
         this.load.image('tilesInside', '/levels/GrassTile_Inside.png');     // Load the GrassTile_Inside tileset image.
         this.load.image('objectTiles', '/levels/ObjectsTileSet.png');       // Load the ObjectTileSet tileset image.
 
         // OBJECTS ASSETS
         this.load.image('pole', '/Objects/pole.png');
+        this.load.spritesheet('crate', '/Objects/crate.png', { frameWidth: 64, frameHeight: 64 });
 
         // AUDIO
         this.load.audio('mainMenuMusic', '/audio/Song 2 09.11.25.mp3');
@@ -72,6 +73,7 @@ export class Preloader extends Phaser.Scene {
         this.load.audio('tailwhipSound', '/audio/woosh(edited).mp3');
         this.load.audio('poleSwingSound', '/audio/Fast Whoosh.wav');
         this.load.audio('caveAmbience', '/audio/ambience cave (edited).mp3');
+        this.load.audio('breakingCrate', '/audio/443293__deathscyp__wood-break.wav');
     }
 
     create() {

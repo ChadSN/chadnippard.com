@@ -364,7 +364,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.activeTween = this.scene.tweens.add({                      // tween to rotate back and forth
             targets: [this.hitbox, this.activePole],                    // target both the player hitbox and the pole
             angle: (this.flipX ? '+=360' : '-=360'),                    // rotate both by -360 degrees
-            duration: 1000,                                             // Duration of the tween in milliseconds
+            duration: 1500,                                             // Duration of the tween in milliseconds
             repeat: -1,                                                 // repeat indefinitely
             ease: 'Linear',                                             // Easing function
             onUpdate: () => {                                           // on each update

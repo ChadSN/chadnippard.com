@@ -2,6 +2,7 @@ import { Player } from '../../gameObjects/Player.js';
 import { Glizzard } from '../../gameObjects/Glizzard.js';
 import { Muncher } from '../../gameObjects/Muncher.js';
 import { DNA } from '../../gameObjects/DNA.js';
+import { Crate } from '../../gameObjects/Crate.js';
 import { InputManager } from '../utils/InputManager.js';
 import { UIManager } from '../utils/UIManager.js';
 import { DamageBox } from '../../gameObjects/damageBox.js';
@@ -21,6 +22,10 @@ export class Game extends Phaser.Scene {
         this.currentAmbientColour = 0xCCCCCC;                                                           // Current ambient light color set to a neutral color
         this.daylightAmbientColour = this.currentAmbientColour;                                         // Daylight color
         this.nightAmbientColour = 0x222222;                                                             // Nighttime color
+    }
+
+    init() {
+        this.levelKey = 'level1';                                                     // Get level key from data or default to 'level1'
     }
 
     create() {
@@ -123,6 +128,7 @@ export class Game extends Phaser.Scene {
 
         this.spawnSigns();                                                                              // Spawn signs with text
         this.spawnPoles();                                                                              // Spawn poles for swinging
+        this.spawnCrates();
         this.spawnGlizzards();                                                                          // Spawn glizzard enemies
         this.spawnMunchers();                                                                           // Spawn muncher enemies
         this.spawnDNAs();                                                                               // Spawn DNA collectables
@@ -145,7 +151,27 @@ export class Game extends Phaser.Scene {
         // });
     }
 
-
+    spawnCrates() {
+        this.crates = this.physics.add.staticGroup();                                           // Create a single static group for all crates
+        const cratePoints = this.map.filterObjects("Objects", obj =>                            // Find all crate points (small and large)
+            obj.name === "crateSmallPoint" || obj.name === "crateLargePoint"                    // based on their names
+        );
+        cratePoints.forEach(cratePoint => {                                                     // Add crates to the group
+            const isLarge = cratePoint.name === "crateLargePoint";                              // Check if it's a large crate
+            const crate = new Crate(this, cratePoint.x, cratePoint.y)                           // Use the same sprite for both
+                .setOrigin(0.5, 0.5)                                                            // Set origin to center
+                .setPipeline('Light2D')                                                         // Enable lighting effects on the crate
+                .setDepth(4)                                                                    // Set depth above ground layer
+                .setScale(1, isLarge ? 2 : 1);                                                  // Scale the crate based on its type
+            this.crates.add(crate);                                                             // Add the crate to the static group
+        });
+        this.physics.add.collider(this.player.hitbox, this.crates, (hitbox, crate) => {         // Player collides with crate
+            this.player.handleCollision(crate);                                                 // Handle player collision effects
+        });
+        this.physics.add.overlap(this.player.damageBox, this.crates, (damageBox, crate) => {    // Player damage box overlaps with crate
+            crate.break();                                                                      // Break the crate
+        });
+    }
 
     spawnSigns() {
         const signPoints = this.map.filterObjects("Objects", obj => obj.name === "signPoint");          // Find all sign objects in the Tiled map
