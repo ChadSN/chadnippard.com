@@ -1,6 +1,3 @@
-// The Player.js class file extends the Phaser.Physics.Arcade.Sprite and inherits all properties and methods.
-// To make the properties and methods of the Player class available to other files, the export keyword is added.
-
 export class Player extends Phaser.Physics.Arcade.Sprite {
 
     constructor(scene, x, y) {
@@ -39,7 +36,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.footstepGrassSound = this.scene.sound.add('footstepGrass', { volume: 1 }); // footstep sound
         this.footstepDirtSound = this.scene.sound.add('footstepDirt', { volume: 0.3 }); // footstep dirt sound
         this.tailwhipSound = this.scene.sound.add('tailwhipSound', { volume: 0.5 });    // tailwhip sound
-        this.poleSwingSound = this.scene.sound.add('poleSwingSound', { volume: 0.5 });   // pole swing sound
+        this.poleSwingSound = this.scene.sound.add('poleSwingSound', { volume: 0.5 });  // pole swing sound
         this.footstepGrassSoundIsPlaying = false;                                       // footstep sound playing flag
         this.tilemap = this.scene.map;                                                  // Initialise the tilemap
         this.groundLayer = this.scene.groundLayer;                                      // Initialise the ground layer
@@ -130,21 +127,19 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     playFootstepSound(sound) {
-        if (!this.footStepSoundIsPlaying) {
-            sound.stop(); // Stop any currently playing sound
-            sound.setDetune(Phaser.Math.Between(-100, 100)); // Add some variation to the sound
-            sound.play(); // Play the footstep sound
-            this.footStepSoundIsPlaying = true; // Set the flag to true
+        if (this.footStepSoundIsPlaying) return;                    // Only play if the sound isn't already playing
+        sound.stop();                                               // Stop any currently playing sound
+        sound.setDetune(Phaser.Math.Between(-100, 100));            // Add some variation to the sound
+        sound.play();                                               // Play the footstep sound
+        this.footStepSoundIsPlaying = true;                         // Set the flag to true
+        sound.once('complete', () => {                              // When the sound completes
+            this.footStepSoundIsPlaying = false;                    // Reset the flag 
+        });
 
-            sound.once('complete', () => {
-                this.footStepSoundIsPlaying = false;
-            });
-        }
     }
 
     getTileSoundType() {
         const tile = this.getTileHit();
-
         if (tile && tile.properties.soundType) {
             return tile.properties.soundType; // Return the soundType string from the tile's properties
         }
@@ -193,7 +188,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         if (this.isGlidingSpinning) return;                                             // prevent jump if canMove is false
         if (this.isPoleSwinging) { this.stopPoleSwing(); return; }                      // stop pole swing if swinging
         if (this.hitbox.body.blocked.down) {                                            // only jump if on the ground
-            this.hitbox.body.setVelocityY(-this.jumpVel);  
+            this.hitbox.body.setVelocityY(-this.jumpVel);
         }
         else if (!this.isGliding && this.hitbox.body.velocity.x != 0) {                 // start gliding only if moving horizontally
             this.startGlide(this.flipX ? -this.glideAngle : this.glideAngle);           // start gliding at an angle based on facing direction
@@ -231,9 +226,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.isGliding = false;                                                         // set isGliding to false
         this.hitbox.body.setGravity(0);                                                 // Re-enable normal gravity
         this.currentMoveSpeed = this.originalMoveSpeed;                                 // reset speed
-        if (this.isGlidingSpinning || this.isGlideTurning) return;                      // if currently spinning, do not tween angle back to zero
+        if (this.isGlidingSpinning || this.isGlideTurning) return;                      // prevent angle reset if spinning or turning
         this.tweenAngleToZero(this.hitbox, 100);                                        // tween angle back to zero over 100ms
-
     }
 
     glideSpin() {
@@ -269,8 +263,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         if (this.flipX !== isFlipX) return;                                             // no need to turn if already facing the right direction
         this.isGlideTurning = true;                                                     // set glideTurning to true
         this.disableMovement = true;                                                    // disable movement during spin
-        const storeVelocity = this.hitbox.body.velocity.clone();                       // store initial velocity
-        const radius = 50;                                                             // Radius of the circular path
+        const storeVelocity = this.hitbox.body.velocity.clone();                        // store initial velocity
+        const radius = 50;                                                              // Radius of the circular path
         const duration = 500;                                                           // Duration of the circular motion in milliseconds
         const startAngle = 270;                                                         // Starting angle for the circular path at the top
         const endAngle = isFlipX                                                        // Ending angle based on turn direction
@@ -338,16 +332,24 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     endTailwhip() {
         if (this.isTailwhipping) this.isTailwhipping = false;                   // set isTailwhipping to false
         if (this.hitbox.body.gravity.y != 0) this.hitbox.body.setGravity(0);    // Re-enable gravity
-        if (this.hitbox.angle != 0 && !this.isGliding) this.hitbox.angle = 0;                 // reset angle
+        if (this.hitbox.angle != 0 && !this.isGliding) this.hitbox.angle = 0;   // reset angle
         if (this.isGliding) this.glide();                                       // ensure gliding state is correct
         if (this.damageBox) this.damageBox.deactivate();                        // reset damage box position
     }
 
     poleSwing(pole) {
         if (this.isPoleSwinging) return;                                // prevent multiple pole swings
-        this.activePole = pole;                                         // store reference to the pole being swung on
-        this.stopGlide();                                               // stop gliding
-        this.isPoleSwinging = true;                                     // set isPoleSwinging to true
+        // Cleanup before starting pole swing
+        this.stopActiveTween();                                         // Stop any active tweens
+        this.stopGlide();                                               // Stop gliding
+        this.isGlidingSpinning = false;                                 // Reset gliding spin flag
+        this.isGlideTurning = false;                                    // Reset glide turning flag
+        this.didStartGlide = false;                                     // Reset glide start flag
+        this.isTailwhipping = false;                                    // Reset tailwhipping flag
+        this.disableMovement = false;                                   // Ensure movement is enabled
+
+        this.activePole = pole;                                         // Store reference to the pole being swung on
+        this.isPoleSwinging = true;                                     // Set isPoleSwinging flag
 
         // Set in order to position correctly
         this.hitbox.body.setVelocity(0);                                // 1. Stop player movement      
@@ -358,7 +360,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.hitbox.body.setImmovable(true);                            // 6. Make the hitbox immovable
         this.hitbox.angle = 0;                                          // 7. reset angle
         this.activePole.angle = 0;                                      // 8. reset pole angle
-
         this.play('poleSwing', true);                                   // play pole swing animation
         this.stopActiveTween();                                         // stop any existing tween
         this.activeTween = this.scene.tweens.add({                      // tween to rotate back and forth
@@ -407,18 +408,18 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     crouch() {
-        // Implement crouch functionality if needed
+        // Implement crouch functionality MAYBE
     }
 
     damagePlayer(amount, attacker) {
-        this.takeDamage(amount);                            // Reduce player health
-        this.hitbox.body.setVelocityY(-600);                            // Knockback upwards
-        if (attacker.x < this.x) this.hitbox.body.setVelocityX(600);    // Knockback to the right
-        else this.hitbox.body.setVelocityX(-600);                       // Knockback to the left
+        this.takeDamage(amount);                                                        // Reduce player health
+        this.hitbox.body.setVelocityY(-600);                                            // Knockback upwards
+        if (attacker.x < this.x) this.hitbox.body.setVelocityX(600);                    // Knockback to the right
+        else this.hitbox.body.setVelocityX(-600);                                       // Knockback to the left
     }
 
     takeDamage(amount = 1) {
-        if (this.health <= 0 || this.invulnerable) return;                              // Already dead
+        if (this.health <= 0 || this.invulnerable) return;                              // Ignore if already dead or invulnerable
         this.health = Math.max(0, this.health - amount);                                // Decrease health but not below 0
         this.scene.uiManager.updateHealth(this.health);                                 // Update health text
         this.invulnerable = true;                                                       // set invulnerable
@@ -427,24 +428,24 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     heal(amount = 1) {
-        this.health = Math.min(this.maxHealth, this.health + amount);   // Increase health but not above maxHealth
-        this.scene.uiManager.updateHealth(this.health);                 // Update health text
+        this.health = Math.min(this.maxHealth, this.health + amount);                   // Increase health but not above maxHealth
+        this.scene.uiManager.updateHealth(this.health);                                 // Update health text
     }
 
     // Function to handle DNA collection
     collectDNA(dna) {
-        if (this.health >= this.maxHealth) return;  // Don't collect if health is full
-        dna.disableBody(true, true);                // Remove the collected DNA
-        this.heal(1);                               // Heal the player
+        if (this.health >= this.maxHealth) return;                                      // Don't collect if health is full
+        dna.disableBody(true, true);                                                    // Remove the collected DNA
+        this.heal(1);                                                                   // Heal the player
     }
 
     die() {
-        this.isDead = true;                         // Set isDead flag to true
-        this.hitbox.body.enable = false;            // Disable player physics
-        this.scene.physics.pause();                 // Pause the game
-        this.setTint(0xff0000);                     // Change player color to red
-        this.scene.time.delayedCall(2000, () => {   // Wait for 2 seconds
-            this.scene.scene.start('GameOver');     // Restart the game scene
+        this.isDead = true;                                                             // Set isDead flag to true
+        this.hitbox.body.enable = false;                                                // Disable player physics
+        this.scene.physics.pause();                                                     // Pause the game
+        this.setTint(0xff0000);                                                         // Change player color to red
+        this.scene.time.delayedCall(2000, () => {                                       // Wait for 2 seconds
+            this.scene.scene.start('GameOver');                                         // Restart the game scene
         });
     }
 

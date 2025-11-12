@@ -152,24 +152,24 @@ export class Game extends Phaser.Scene {
     }
 
     spawnCrates() {
-        this.crates = this.physics.add.staticGroup();                                           // Create a single static group for all crates
-        const cratePoints = this.map.filterObjects("Objects", obj =>                            // Find all crate points (small and large)
-            obj.name === "crateSmallPoint" || obj.name === "crateLargePoint"                    // based on their names
+        this.crates = this.physics.add.staticGroup();                                                   // Create a single static group for all crates
+        const cratePoints = this.map.filterObjects("Objects", obj =>                                    // Find all crate points (small and large)
+            obj.name === "crateSmallPoint" || obj.name === "crateLargePoint"                            // based on their names
         );
-        cratePoints.forEach(cratePoint => {                                                     // Add crates to the group
-            const isLarge = cratePoint.name === "crateLargePoint";                              // Check if it's a large crate
-            const crate = new Crate(this, cratePoint.x, cratePoint.y)                           // Use the same sprite for both
-                .setOrigin(0.5, 0.5)                                                            // Set origin to center
-                .setPipeline('Light2D')                                                         // Enable lighting effects on the crate
-                .setDepth(4)                                                                    // Set depth above ground layer
-                .setScale(1, isLarge ? 2 : 1);                                                  // Scale the crate based on its type
-            this.crates.add(crate);                                                             // Add the crate to the static group
+        cratePoints.forEach(cratePoint => {                                                             // Add crates to the group
+            const isLarge = cratePoint.name === "crateLargePoint";                                      // Check if it's a large crate
+            const crate = new Crate(this, cratePoint.x, cratePoint.y)                                   // Use the same sprite for both
+                .setOrigin(0.5, 0.5)                                                                    // Set origin to center
+                .setPipeline('Light2D')                                                                 // Enable lighting effects on the crate
+                .setDepth(4)                                                                            // Set depth above ground layer
+                .setScale(1, isLarge ? 2 : 1);                                                          // Scale the crate based on its type
+            this.crates.add(crate);                                                                     // Add the crate to the static group
         });
-        this.physics.add.collider(this.player.hitbox, this.crates, (hitbox, crate) => {         // Player collides with crate
-            this.player.handleCollision(crate);                                                 // Handle player collision effects
+        this.physics.add.collider(this.player.hitbox, this.crates, (hitbox, crate) => {                 // Player collides with crate
+            this.player.handleCollision(crate);                                                         // Handle player collision effects
         });
-        this.physics.add.overlap(this.player.damageBox, this.crates, (damageBox, crate) => {    // Player damage box overlaps with crate
-            crate.break();                                                                      // Break the crate
+        this.physics.add.overlap(this.player.damageBox, this.crates, (damageBox, crate) => {            // Player damage box overlaps with crate
+            crate.break();                                                                              // Break the crate
         });
     }
 

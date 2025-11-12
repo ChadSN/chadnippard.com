@@ -1,10 +1,9 @@
 export class Crate extends Phaser.Physics.Arcade.Sprite {
     constructor(scene, x, y) {
-        super(scene, x, y, 'crate');          // Call the parent class constructor
-
+        super(scene, x, y, 'crate');        // Call the parent class constructor
         this.scene.add.existing(this);      // Add the DNA to the scene
         this.initAnimations();              // Initialise DNA animations
-        this.broken = false;
+        this.broken = false;                // Track if crate is broken
     }
 
     initAnimations() {
@@ -21,7 +20,7 @@ export class Crate extends Phaser.Physics.Arcade.Sprite {
     break(size) {
         if (this.broken) return;                    // Prevent multiple breaks
         this.broken = true;                         // Mark as broken
-        this.play('crate_Break', true);    // Play break animation
+        this.play('crate_Break', true);             // Play break animation
         this.scene.sound.play('breakingCrate');     // Play breaking sound
         this.body.enable = false;                   // Disable physics body 
     }
