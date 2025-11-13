@@ -38,18 +38,20 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.tailwhipSound = this.scene.sound.add('tailwhipSound', { volume: 0.5 });    // tailwhip sound
         this.poleSwingSound = this.scene.sound.add('poleSwingSound', { volume: 0.5 });  // pole swing sound
         this.footstepGrassSoundIsPlaying = false;                                       // footstep sound playing flag
-        this.tilemap = this.scene.map;                                                  // Initialise the tilemap
-        this.groundLayer = this.scene.groundLayer;                                      // Initialise the ground layer
+        this.tilemap = null;                                                            // Initialise the tilemap
+        this.groundLayer = null;                                                        // Initialise the ground layer
         this.currentTileSoundType = null;                                               // current tile sound type
     }
 
-
     // Update method called every frame
     preUpdate(time, delta) {
+        if (!this.scene.levelReady) return;                                              // safety check
         super.preUpdate(time, delta);                                                   // call the parent class preUpdate
-        if (!this.hitbox.body) return;                                                  // safety check
+        if (!this.hitbox.body) return;
+
         this.setPosition(this.hitbox.x, this.hitbox.y);                                 // sync player sprite position with hitbox
         this.angle = this.hitbox.angle;                                                 // sync player sprite angle with hitbox
+
         this.outOfBoundsCheck();
 
         if (this.isTailwhipping) {                                                      // during tailwhip
@@ -147,6 +149,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     getTileHit() {
+        if (!this.tilemap || !this.groundLayer) return null; // Ensure tilemap and groundLayer are defined
         const tile = this.tilemap.getTileAtWorldXY(
             this.hitbox.x,
             this.hitbox.body.bottom,
@@ -493,9 +496,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     setAbovePlatform(platform) {
-        // Get the tile at the player's current position
-        const tile = this.getTileHit();
-
+        const tile = this.getTileHit();                             // get the tile directly below the player
         if (tile) {
             // Position the player above the tile
             const tileWorldY = tile.getTop(); // Get the top Y position of the tile in world coordinates
@@ -503,6 +504,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             this.hitbox.body.velocity.y = 0; // Reset vertical velocity
             this.hitbox.angle = 0; // Reset angle
         }
+    }
+
+    setTilemapAndLayer(tilemap, groundLayer) {
+        this.tilemap = tilemap;
+        this.groundLayer = groundLayer;
     }
 
     // Define player animations

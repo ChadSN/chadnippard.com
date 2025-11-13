@@ -5,14 +5,12 @@ export class GlizzardProjectile extends Phaser.Physics.Arcade.Sprite {
         scene.add.existing(this);                   // Add the projectile to the scene
         scene.physics.add.existing(this);           // Enable physics on the projectile
         this.body.setAllowGravity(false);           // Disable gravity for the projectile
-        this.speed = Math.abs(300);               // Speed of movement
-
-        this.setActive(false);                  // Initially inactive
-        this.setVisible(false);                 // Initially invisible
-        this.setVelocity(0);                    // Reset velocity
-        this.body.enable = false;               // Disable the physics body to stop collisions
-
-        this.initAnimations();                     // Initialise projectile animations
+        this.speed = Math.abs(300);                 // Speed of movement
+        this.setActive(false);                      // Initially inactive
+        this.setVisible(false);                     // Initially invisible
+        this.setVelocity(0);                        // Reset velocity
+        this.body.enable = false;                   // Disable the physics body to stop collisions
+        this.initAnimations();                      // Initialise projectile animations
     }
 
     init(parent = null) {
@@ -30,6 +28,20 @@ export class GlizzardProjectile extends Phaser.Physics.Arcade.Sprite {
             this.setVisible(false);                             // Initially invisible
             this.setScale(1);                                   // Reset scale
         });
+    }
+
+    preUpdate(time, delta) {
+        super.preUpdate(time, delta);                                                           // Call the parent class preUpdate
+        if (!this.active) return;                                                               // Only update if active
+        this.setVelocityX(this.normalizedX * this.speed);                                       // Maintain velocity towards target
+        this.setVelocityY(this.normalizedY * this.speed);                                       // Maintain velocity towards target
+        this.rotation = Math.atan2(this.normalizedY, this.normalizedX);  // Rotate to face movement direction
+        if (this.x < 0 ||
+            this.x > this.scene.worldWidth ||
+            this.y < 0 ||
+            this.y > this.scene.worldHeight) {
+            this.init();                                                                         // Deactivate the projectile if out of bounds
+        }
     }
 
     initAnimations() {
@@ -80,17 +92,4 @@ export class GlizzardProjectile extends Phaser.Physics.Arcade.Sprite {
         }
     }
 
-    preUpdate(time, delta) {
-        super.preUpdate(time, delta);                                                           // Call the parent class preUpdate
-        if (!this.active) return;                                                               // Only update if active
-        this.setVelocityX(this.normalizedX * this.speed);                                       // Maintain velocity towards target
-        this.setVelocityY(this.normalizedY * this.speed);                                       // Maintain velocity towards target
-        this.rotation = Math.atan2(this.normalizedY, this.normalizedX);  // Rotate to face movement direction
-        if (this.x < 0 ||
-            this.x > this.scene.worldWidth ||
-            this.y < 0 ||
-            this.y > this.scene.worldHeight) {
-            this.init();                                                                         // Deactivate the projectile if out of bounds
-        }
-    }
 }

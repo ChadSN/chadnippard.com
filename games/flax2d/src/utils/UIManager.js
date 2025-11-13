@@ -5,7 +5,6 @@ export class UIManager {
         this.scene = scene;                                                             // Reference to the main game scene
         this.score = 0;                                                                 // Player score
         this.healthDNA = null;                                                          // Group to hold health DNA collectables
-        this.maxHealth = this.scene.player.maxHealth;                                   // Maximum health of the player
         this.timerEvent = null;                                                         // Timer event for updating the timer
         this.timeText = null;                                                           // Text object for displaying time
         this.create();                                                                  // Initialise UI elements
@@ -18,8 +17,6 @@ export class UIManager {
         const backgroundCenterX = cam.x + cam.width - BackgroundWidth / 2 - 16;         // X position for centering backgrounds
         const timerBackgroundY = BackgroundHeight / 2 + 16;                             // Y position for timer background
         const scoreBackgroundY = timerBackgroundY + BackgroundHeight + 16;              // Y position for score background
-
-
         const createBackground = (x, y) => {                                            // Create reusable method for backgrounds
             return this.scene.add.rectangle(x, y, BackgroundWidth, BackgroundHeight)    // Create rectangle for background
                 .setDepth(1000)                                                         // Set depth to ensure it's above other game objects
@@ -27,8 +24,6 @@ export class UIManager {
                 .setOrigin(0.5)                                                         // Center origin
                 .setFillStyle(0x000000, 0.5);                                           // Semi-transparent black fill
         };
-
-
         const createText = (x, y, fontSize, fontFamily, initialText) => {               // Create reusable method for text
             return this.scene.add.text(x, y)                                            // Add text at specified position
                 .setDepth(1000)                                                         // Set depth for text
@@ -39,28 +34,16 @@ export class UIManager {
                 .setFill('#fff')                                                        // Set text color to white
                 .setText(initialText);                                                  // Set initial text
         };
-
         this.healthPanel = this.scene.add.sprite
             (16, 16, 'healthPanel')
             .setDepth(1000)                                                             // Set depth for health panel
             .setOrigin(0, 0)                                                            // Set origin to left center
             .setScrollFactor(0);                                                        // Health panel background   
-
-        this.healthDNA = this.scene.add.group();                                        // Create a group for DNA collectables
-        for (let i = 0; i < this.maxHealth; i++) {                                      // Loop to create DNA collectables for health display
-            const dna = new DNA(this.scene, 208 + 64 * i, 80);                          // Example DNA collectable for health
-            this.healthDNA.add(dna);                                                    // Add DNA to the health group
-            dna.setScale(1.5);                                                          // Scale up the DNA
-            dna.setScrollFactor(0);                                                     // Fix to camera
-            dna.setDepth(1000);                                                         // Set depth
-        }
-
         this.timerBackground = createBackground(backgroundCenterX, timerBackgroundY);   // Create timer background
         this.timeText = createText(this.timerBackground.x, this.timerBackground.y,      // Create timer text
             64,                                                                         // font size
             'Courier New',                                                              // font family
             '00:00:00');                                                                // initial text
-
         this.scoreBackground = createBackground(backgroundCenterX, scoreBackgroundY);   // Create score background
         this.scoreText = createText(this.scoreBackground.x, this.scoreBackground.y,     // Create score text
             64,                                                                         // font size
@@ -74,12 +57,22 @@ export class UIManager {
         this.scoreText.setText('Score: ' + this.score);                                 // Update score text display
     }
 
+    initHealthDisplay() {
+        this.healthDNA = this.scene.add.group();                                        // Create a group for DNA collectables
+        for (let i = 0; i < this.scene.player.maxHealth; i++) {                                      // Loop to create DNA collectables for health display
+            const dna = new DNA(this.scene, 208 + 64 * i, 80);                          // Example DNA collectable for health
+            this.healthDNA.add(dna);                                                    // Add DNA to the health group
+            dna.setScale(1.5);                                                          // Scale up the DNA
+            dna.setScrollFactor(0);                                                     // Fix to camera
+            dna.setDepth(1000);                                                         // Set depth
+        }
+    }
+
     // Method to update health display                          
     updateHealth(health) {
         this.healthDNA.children.iterate((dna, index) => {                               // Iterate through each DNA in the health group
             if (index < health) {                                                       // If index is less than current health
                 dna.setVisible(true);                                                   // show the DNA
-
             } else {                                                                    // If index is greater than or equal to current health
                 dna.setTint(0xff0000);                                                  // set tint to red
                 this.scene.time.delayedCall(200, () => {                                // after 0.2 seconds

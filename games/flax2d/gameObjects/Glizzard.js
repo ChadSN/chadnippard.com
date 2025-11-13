@@ -26,7 +26,7 @@ export class Glizzard extends Phaser.Physics.Arcade.Sprite {
         this.scene.physics.add.collider(this.projectile, this.scene.platforms, (projectile, player) => {
             this.projectile.init(this);
         });
-        this.scene.physics.add.overlap(this.projectile, this.scene.player, (projectile, player) => {
+        this.scene.physics.add.overlap(this.projectile, this.scene.player.hitbox, (projectile, player) => {
             this.scene.player.damagePlayer(1, this.projectile);
             this.projectile.init(this);
         });
