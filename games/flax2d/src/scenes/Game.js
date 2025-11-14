@@ -39,7 +39,7 @@ export class Game extends Phaser.Scene {
         this.background = this.add.image(960, 540, 'sky').setDepth(0).setScrollFactor(0);               // Add the background image at the center of the game canvas
         this.setupCamera();                                                                             // Setup camera to follow the player
         this.inputManager = new InputManager(this);                                                     // Create an instance of InputManager
-        this.initUIManager();                                                                           // Initialise UI Manager
+        this.uiManager = new UIManager(this);                                                           // Create UI Manager
         this.createLevel('level1');                                                                     // Create level 1
         this.level1Music = this.sound.add('level1Music', { loop: true, volume: 0.5 });                  // Load and play level 1 music
         this.level1Music.play();                                                                        // Play the level 1 music
@@ -90,11 +90,7 @@ export class Game extends Phaser.Scene {
 
         this.spawnPlayer(spawnPoint.x, spawnPoint.y);                                                           // Spawn the player at the spawn point location
         // COLLISIONS SETUP FOR PLAYER WITH GROUND LAYER            
-        this.physics.add.collider(this.player.hitbox, this.groundLayer, (hitbox, tile) => {                     // Player collides with ground layer
-            if (tile && tile.properties.collides && this.groundLayer) {                                         // Check if the tile has the 'collides' property
-                this.player.handleCollision(tile);                                                              // Use the Player instance to handle collision
-            }
-        });
+        this.physics.add.collider(this.player.hitbox, this.groundLayer);
 
         this.addLights();                                                                               // Add lighting effects
         this.spawnSigns();                                                                              // Spawn signs with text
@@ -104,7 +100,6 @@ export class Game extends Phaser.Scene {
         this.spawnMunchers();                                                                           // Spawn muncher enemies
         this.spawnDNAs();                                                                               // Spawn DNA collectables
         this.spawnClouds();                                                                             // Spawn background clouds
-        this.cameras.main.fadeIn(1000);                                                                 // Fade in the camera
         // COLLISIONS SETUP FOR PLAYER WITH GROUND INSIDE LAYER
         this.physics.add.overlap(this.player.hitbox, this.groundInsideLayer, (hitbox, tile) => {
             if (tile && tile.properties.overlaps) {                                                     // Check if the tile has the 'overlaps' property
@@ -128,8 +123,8 @@ export class Game extends Phaser.Scene {
             if (tile && tile.properties.exit && !this.levelExiting) {                                           // Check if the tile has the 'exit' property
                 this.levelExiting = true;                                                                       // Prevent multiple triggers
                 this.levelReady = false;                                                                        // Mark level as not ready during transition
-                this.cameras.main.fadeOut(1000);                                                                // Fade out the camera
-                this.time.delayedCall(1000, () => {                                                             // Small delay to ensure smooth transition
+
+                this.cameras.main.fadeOut(1000, 255, 255, 255).on('camerafadeoutcomplete', () => {                                                     // Once fade-out is complete using an event listener
                     switch (this.levelKey) {                                                                    // Determine the next level based on current level key
                         case 'level1': this.levelKey = 'level2'; this.transitionToLevel(this.levelKey); break;  // Transition to level 2
                         case 'level2': this.levelKey = 'level3'; this.transitionToLevel(this.levelKey); break;  // Transition to level 3
@@ -139,7 +134,11 @@ export class Game extends Phaser.Scene {
                 });
             }
         });
-        this.levelReady = true;                                                                                 // Mark level as ready
+
+        this.cameras.main.fadeIn(500, 255, 255, 255).on('camerafadeincomplete', () => {                                                               // Once fade-in is complete using an event listener
+            this.uiManager.startTimerEvent(this.uiManager.elapsed);                                             // Start the level timer                                   
+        });
+        this.levelReady = true;                                                                                 // Mark level as ready after creation
     }
 
     transitionToLevel(levelKey) {
@@ -176,11 +175,6 @@ export class Game extends Phaser.Scene {
         }
     }
 
-    initUIManager() {
-        this.uiManager = new UIManager(this);                                                           // Create UI Manager
-        this.uiManager.startTimerEvent(0);                                                              // Start the timer event
-    }
-
     spawnCrates() {
         this.crates = this.physics.add.staticGroup();                                                   // Create a single static group for all crates
         const cratePoints = this.map.filterObjects("Objects", obj =>                                    // Find all crate points (small and large)
@@ -195,9 +189,7 @@ export class Game extends Phaser.Scene {
                 .setScale(1, isLarge ? 2 : 1);                                                          // Scale the crate based on its type
             this.crates.add(crate);                                                                     // Add the crate to the static group
         });
-        this.physics.add.collider(this.player.hitbox, this.crates, (hitbox, crate) => {                 // Player collides with crate
-            this.player.handleCollision(crate);                                                         // Handle player collision effects
-        });
+        this.physics.add.collider(this.player.hitbox, this.crates);
         this.physics.add.overlap(this.player.damageBox, this.crates, (damageBox, crate) => {            // Player damage box overlaps with crate
             crate.break();                                                                              // Break the crate
         });
@@ -264,14 +256,14 @@ export class Game extends Phaser.Scene {
             Phaser.Input.Keyboard.JustDown(this.inputManager.keyW)                                          // W key
         ) this.player.jump();                                                                               // Make the player jump
         if (this.inputManager.cursors.left.isDown || this.inputManager.keyA.isDown)                         // Left arrow or A key
-            this.player.moveLeft();                                                                         // Move player left
+            this.player.move(true);                                                                         // Move player left
         else if (this.inputManager.cursors.right.isDown || this.inputManager.keyD.isDown)                   // Right arrow or D key
-            this.player.moveRight();                                                                        // Move player right
+            this.player.move(false);                                                                        // Move player right
         else this.player.idle();                                                                            // No horizontal input, Player idle
     }
 
     pointerLeftPressed() {
-        if (this.player.isPoleSwinging) return;
+        if (this.player.disableMovement) return;
         this.player.tailwhip();
     }
 
@@ -279,6 +271,7 @@ export class Game extends Phaser.Scene {
     }
 
     pointerRightPressed() {
+        if (this.player.disableMovement) return;
         this.player.glideSpin();
     }
 
@@ -378,7 +371,6 @@ export class Game extends Phaser.Scene {
             if (player.y < muncher.y - muncher.height && player.body.velocity.y >= 200) {                   // player is above muncher and falling fast
                 player.body.setVelocityY(-600);                                                             // bounce the player up
                 muncher.death();                                                                            // destroy the muncher
-                this.player.handleCollision();                                                              // handle player collision effects
             }
         });
     }
@@ -395,7 +387,6 @@ export class Game extends Phaser.Scene {
             if (player.y < glizzard.y - glizzard.height && player.body.velocity.y >= 200) {                 // player is above glizzard and falling fast
                 player.body.setVelocityY(-600);                                                             // bounce the player up
                 glizzard.death();                                                                           // destroy the glizzard
-                this.player.handleCollision();                                                              // handle player collision effects
             }
         });
     }

@@ -20,7 +20,7 @@ export class MainMenu extends Phaser.Scene {
             'mainMenuMusic',                                            // Key of the audio asset
             { loop: true, volume: 2 });                                 // Loop the music and set volume
         this.menuMusic.play();                                          // Play the main menu music
-        this.cameras.main.fadeIn(1000, 0, 0, 0);                        // Fade in the screen
+        this.cameras.main.fadeIn(1500, 255, 255, 255);                  // Fade in the screen
     }
 
     createStartButton() {
@@ -54,9 +54,9 @@ export class MainMenu extends Phaser.Scene {
     }
 
     startGame() {
-        const duration = 500;                                          // Duration of the fade out and music fade
+        const duration = 1000;                                          // Duration of the fade out and music fade
         this.startButton.disableInteractive();                          // Disable further interaction with the start button
-        this.cameras.main.fadeOut(duration, 0, 0, 0);                   // Fade out the screen
+        this.cameras.main.fadeOut(duration, 255, 255, 255);                   // Fade out the screen
         this.tweens.add({                                               // Create a tween to fade out the music
             targets: this.menuMusic,                                    // Target the main menu music
             volume: 0,                                                  // Fade the volume to 0

@@ -167,20 +167,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         }
     }
 
-    moveLeft() {
+    move(flipX) {
         if (!this.canMove || this.isGlidingSpinning || this.isPoleSwinging) return;     // prevent movement if canMove is false
-        if (!this.isGliding) this.setFlipX(true);                                       // Flip the sprite to face left
-        this.hitbox.body.setAccelerationX(-this.currentMoveSpeed);                      // Set horizontal velocity to move left
+        if (!this.isGliding) this.setFlipX(flipX);                                       // Flip the sprite to face left
+        this.hitbox.body.setAccelerationX(this.currentMoveSpeed * (flipX ? -1 : 1));                      // Set horizontal velocity to move left
         if (this.isGliding)                                                             // if currently gliding
-            this.glideTurn(false);                                                      // Set horizontal velocity to move left
-    }
-
-    moveRight() {
-        if (!this.canMove || this.isGlidingSpinning || this.isPoleSwinging) return;     // prevent movement if canMove is false
-        if (!this.isGliding) this.setFlipX(false);                                      // Flip the sprite to face right
-        this.hitbox.body.setAccelerationX(this.currentMoveSpeed);                       // Set horizontal velocity to move right
-        if (this.isGliding)                                                             // if currently gliding
-            this.glideTurn(true);                                                       // Set horizontal velocity to move right
+            this.glideTurn(!flipX);                                                      // Set horizontal velocity to move left
     }
 
     idle() {
@@ -298,10 +290,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                 this.disableMovement = false;                                           // re-enable movement
                 if (!this.isGliding) this.glide();                                      // if not gliding, start gliding
                 this.setFlipX(!isFlipX);                                                // set flip based on turn direction
-                this.hitbox.body.setVelocity(isFlipX                                    // restore initial velocity, adjusting x direction based on flipX
-                    ? -storeVelocity.x
-                    : storeVelocity.x,
-                    storeVelocity.y);
+                const speedX = Math.abs(storeVelocity.x);                               // maintain horizontal speed magnitude
+                const dir = (!isFlipX) ? -1 : 1;                                        // left turn -1, right turn +1
+                this.hitbox.body.setVelocity(dir * speedX, storeVelocity.y);            // restore horizontal velocity in new direction
             }
         });
     }
