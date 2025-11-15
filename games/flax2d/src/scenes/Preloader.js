@@ -34,6 +34,9 @@ export class Preloader extends Phaser.Scene {
         // UI ASSETS
         this.load.spritesheet('dna', '/Objects/DNA_Anim.png', { frameWidth: 64, frameHeight: 64 });
         this.load.image('healthPanel', '/UI/Health_Panel.png');
+        this.load.image('smallButton', '/UI/SmallButton.png');
+        this.load.image('quaver', '/UI/quaver.png');
+        this.load.image('exit', '/UI/exit.png');
 
         // PLAYER ASSETS
         this.load.spritesheet('flax_Idle', '/Flax/Idle_128.png', { frameWidth: 128, frameHeight: 128 });

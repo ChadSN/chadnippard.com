@@ -7,6 +7,7 @@ import { InputManager } from '../utils/InputManager.js';
 import { UIManager } from '../utils/UIManager.js';
 import { DamageBox } from '../../gameObjects/damageBox.js';
 import { CloudSpawner } from '../utils/CloudSpawner.js';
+import { musicManager } from '../utils/musicManager.js';
 
 export class Game extends Phaser.Scene {
 
@@ -32,6 +33,7 @@ export class Game extends Phaser.Scene {
         this.signs = [];                                                                                // Array to hold Signs
         this.levelExiting = false;                                                                      // Flag to indicate if the level is exiting
         this.levelReady = false;                                                                        // Flag to indicate if the level is ready
+        this.musicManager = new musicManager(this);
     }
 
     create() {
@@ -41,8 +43,7 @@ export class Game extends Phaser.Scene {
         this.inputManager = new InputManager(this);                                                     // Create an instance of InputManager
         this.uiManager = new UIManager(this);                                                           // Create UI Manager
         this.createLevel('level1');                                                                     // Create level 1
-        this.level1Music = this.sound.add('level1Music', { loop: true, volume: 0.5 });                  // Load and play level 1 music
-        this.level1Music.play();                                                                        // Play the level 1 music
+        this.musicManager.setMusic('level1Music');         // Load and set level 1 music
         this.caveAmbience = this.sound.add('caveAmbience', { loop: true, volume: 0.05 });               // Load cave ambience sound
         //this.relayer();                                                                               // Adjust layer depths
     }
@@ -124,7 +125,7 @@ export class Game extends Phaser.Scene {
                 this.levelExiting = true;                                                                       // Prevent multiple triggers
                 this.levelReady = false;                                                                        // Mark level as not ready during transition
 
-                this.cameras.main.fadeOut(1000, 255, 255, 255).on('camerafadeoutcomplete', () => {                                                     // Once fade-out is complete using an event listener
+                this.cameras.main.fadeOut(1000, 255, 255, 255).once('camerafadeoutcomplete', () => {            // Fade out the camera over 1 second once
                     switch (this.levelKey) {                                                                    // Determine the next level based on current level key
                         case 'level1': this.levelKey = 'level2'; this.transitionToLevel(this.levelKey); break;  // Transition to level 2
                         case 'level2': this.levelKey = 'level3'; this.transitionToLevel(this.levelKey); break;  // Transition to level 3
@@ -135,7 +136,7 @@ export class Game extends Phaser.Scene {
             }
         });
 
-        this.cameras.main.fadeIn(500, 255, 255, 255).on('camerafadeincomplete', () => {                                                               // Once fade-in is complete using an event listener
+        this.cameras.main.fadeIn(500, 255, 255, 255).once('camerafadeincomplete', () => {                       // Fade in the camera over 0.5 seconds once
             this.uiManager.startTimerEvent(this.uiManager.elapsed);                                             // Start the level timer                                   
         });
         this.levelReady = true;                                                                                 // Mark level as ready after creation
@@ -249,6 +250,9 @@ export class Game extends Phaser.Scene {
 
     // Handle player input
     handlePlayerInput() {
+        if (Phaser.Input.Keyboard.JustDown(this.inputManager.keyP)
+            || Phaser.Input.Keyboard.JustDown(this.inputManager.keyESC))
+            this.pauseGame();
         if (this.player.disableMovement) return;                                                            // prevent movement if canMove is false
         if (                                                                                                // Jump input
             Phaser.Input.Keyboard.JustDown(this.inputManager.cursors.up) ||                                 // Up arrow
@@ -276,6 +280,18 @@ export class Game extends Phaser.Scene {
     }
 
     pointerRightReleased() {
+    }
+
+    pauseGame() {
+        if (this.scene.isPaused()) return;                                                                  // Prevent double-pause
+        this.musicManager.pauseMusic();                                                                     // Pause music
+        this.scene.launch('Pause');                                                                         // Launch Pause scene
+        this.scene.pause();                                                                                 // Pause Game scene
+    }
+
+    unpauseGame() {
+        this.scene.resume();                                                                                // Resume Game scene
+        this.musicManager.resumeMusic();                                                                    // Resume music
     }
 
     // Add lighting effects to the scene
@@ -317,6 +333,7 @@ export class Game extends Phaser.Scene {
         this.cameras.main.startFollow(this.player, false, 0.08, 0.08);                                      // Make the camera follow the player smoothly
         this.player.setTilemapAndLayer(this.map, this.groundLayer);                                         // Provide player with tilemap and ground layer for collision handling
         this.uiManager.updateHealth(this.player.health);                                                    // Update health display in UI
+        this.player.setCheckpoint(x, y);                                                                    // Set initial checkpoint
     }
 
     // Setup camera to follow the player                        

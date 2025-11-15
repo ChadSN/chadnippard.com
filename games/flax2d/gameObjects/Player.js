@@ -49,6 +49,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.tilemap = null;                                                                    // Initialise the tilemap
         this.groundLayer = null;                                                                // Initialise the ground layer
         this.currentTileSoundType = null;                                                       // current tile sound type
+        this.checkpoint = { x: x, y: y };                                                       // initial checkpoint
     }
 
     // Update method called every frame
@@ -70,9 +71,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             this.damageBox.rectangle.angle = this.hitbox.angle;                                 // Sync angle with player
             return;                                                                             // skip rest of update
         }
-
-        // console log the current anim key
-        console.log("Current state: " + this.state);
 
         if (!this.hitbox.body.blocked.down) {                                                   // IF IN AIR
             this.hitbox.body.setDragX(this.airDrag);                                            // set air drag
@@ -414,13 +412,20 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     die() {
+        if (this.state === STATES.DEAD) return;                                                 // Prevent multiple death triggers
         this.setState(STATES.DEAD);                                                             // Set isDead flag to true
         this.hitbox.body.enable = false;                                                        // Disable player physics
-        this.scene.physics.pause();                                                             // Pause the game
-        this.setTint(0xff0000);                                                                 // Change player color to red
-        this.scene.time.delayedCall(2000, () => {                                               // Wait for 2 seconds
-            this.scene.scene.start('GameOver');                                                 // Restart the game scene
-        });
+        this.respawn();                                                                         // Respawn the player
+    }
+
+    respawn() {
+        this.hitbox.setPosition(this.checkpoint.x, this.checkpoint.y);                          // Move player to checkpoint
+        this.hitbox.body.setVelocity(0, 0);                                                     // Reset velocity
+        this.health = this.maxHealth;                                                           // Restore health
+        this.scene.uiManager.updateHealth(this.health);                                         // Update health text
+        this.setState(STATES.IDLE);                                                             // Reset state to IDLE
+        this.hitbox.body.enable = true;                                                         // Re-enable player physics
+        this.scene.cameras.main.fadeIn(1000, 0, 0, 0);                                          // Fade camera back in
     }
 
     outOfBoundsCheck() {
@@ -519,6 +524,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         return tile;                                                                            // return the found tile or null
     }
 
+    setCheckpoint(x, y) {
+        this.checkpoint = { x: x, y: y };                                                       // Set checkpoint coordinates
+    }
+
+
     // Define player animations
     initAnimations() {
         if (!this.anims.exists('idle'))                                                         // check if animation already exists
@@ -577,6 +587,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                 repeat: -1
             });
     }
+
 }
 
 // WRITE ABOUT HOW THIS WAS CHANGED TO USE CIRCULAR MOTION INSTEAD OF MULTIPLE TWEENS

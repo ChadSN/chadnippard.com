@@ -3,6 +3,7 @@ import { Preloader } from './scenes/Preloader.js';
 import { MainMenu } from './scenes/MainMenu.js';
 import { Game } from './scenes/Game.js';
 import { GameOver } from './scenes/GameOver.js';
+import { Pause } from './scenes/Pause.js';
 
 const gravityY = 3000;
 
@@ -29,6 +30,7 @@ const config = {
         Preloader,
         MainMenu,
         Game,
+        Pause,
         GameOver
     ]
 };
