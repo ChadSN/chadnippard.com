@@ -21,6 +21,7 @@ export class Game extends Phaser.Scene {
         this.groundInsideLayer = null;                                                                  // Layer for ground inside areas
         this.objectLayer = null;                                                                        // Layer for objects
         this.objectLayer2 = null;                                                                       // Layer for objects layer 2
+        this.objectLayerTop = null;                                                                     // Layer for top objects
         this.isOverlappingGroundInsideLayer = false;                                                    // Flag to track overlap state
         this.currentAmbientColour = 0xCCCCCC;                                                           // Current ambient light color set to a neutral color
         this.daylightAmbientColour = this.currentAmbientColour;                                         // Daylight color
@@ -61,20 +62,16 @@ export class Game extends Phaser.Scene {
         this.levelExiting = false;                                                                              // Reset level exiting flag
         this.levelKey = levelKey;                                                                               // Set the current level key
         this.map = this.make.tilemap({ key: this.levelKey, tileWidth: 64, tileHeight: 64 });                    // key must match the key used in preload
-
         this.worldWidth = this.map.widthInPixels;                                                               // Get map dimensions in pixels
         this.worldHeight = this.map.heightInPixels;                                                             // Get map dimensions in pixels
         this.physics.world.setBounds(0, 0, this.worldWidth, this.worldHeight);                                  // Set physics world bounds to match the tilemap size
-
         // CREATE GROUND LAYER      
         const groundTileSet = this.map.addTilesetImage('GroundTileSet', 'tiles');                               // Arg 1: tileset name in Tiled.    2: key used in preload
         this.groundLayer = this.map.createLayer('Ground', groundTileSet, 0, 0).setDepth(3);                     // Arg 1: layer name in Tiled.      2: tileset object created above.    Arg 3 & 4: x,y position.
-
         this.groundLayer.setCollisionByProperty({ collides: true });                                            // Enable collision for tiles with the 'collides' property set to true
         // CREATE GROUND INSIDE LAYER
         const groundTileSetInside = this.map.addTilesetImage('GroundTileSet_Inside', 'tilesInside');            // Arg 1: tileset name in Tiled.    2: key used in preload
         this.groundInsideLayer = this.map.createLayer('Ground_Inside', groundTileSetInside, 0, 0).setDepth(2);  // Arg 1: layer name in Tiled.      2: tileset object created above.    Arg 3 & 4: x,y position.
-
         this.groundInsideLayer.setCollisionByProperty({ overlaps: true });                                      // Enable collision for tiles with the 'collides' property set to true
         // CREATE OBJECT LAYER
         const objectTileSet = this.map.addTilesetImage('ObjectTileSet', 'objectTiles');                         // Arg 1: tileset name in Tiled.    2: key used in preload
@@ -90,17 +87,20 @@ export class Game extends Phaser.Scene {
         this.objectLayerTop.setPipeline('Light2D');
         // PLAYER SETUP
         const spawnPoint = this.map.findObject("Objects", obj => obj.name === "spawnPoint");                    // Find the spawn point object in the Tiled map
-
         this.spawnPlayer(spawnPoint.x, spawnPoint.y);                                                           // Spawn the player at the spawn point location
-        // COLLISIONS SETUP FOR PLAYER WITH GROUND LAYER            
+        // COLLISIONS SETUP FOR PLAYER WITH LAYERS           
         this.physics.add.collider(this.player.hitbox, this.groundLayer);
-        this.physics.add.collider(this.player.hitbox, this.objectLayerTop);
+        this.physics.add.collider(this.player.hitbox, this.objectLayerTop,
+            null,                         // Arg 3: Always collide callback
+            this.processOneWayPlatform,   // Arg 4: Process one-way platform callback to allow passing through from below
+            this                          // Arg 5: This scene
+        );
 
         this.addLights();                                                                               // Add lighting effects
         this.spawnSigns();                                                                              // Spawn signs with text
         this.spawnPoles();                                                                              // Spawn poles for swinging
         this.spawnCrates();                                                                             // Spawn crates
-        this.spawnWheels();
+        this.spawnWheels();                                                                             // Spawn wheels
         this.spawnGlizzards();                                                                          // Spawn glizzard enemies
         this.spawnMunchers();                                                                           // Spawn muncher enemies
         this.spawnDNAs();                                                                               // Spawn DNA collectables
@@ -168,6 +168,7 @@ export class Game extends Phaser.Scene {
             this.groundInsideLayer = null;                                                              // Clear ground inside layer reference
             this.objectLayer = null;                                                                    // Clear object layer reference
             this.objectLayer2 = null;                                                                   // Clear object layer 2 reference
+            this.objectLayerTop = null;                                                                 // Clear object layer top reference
             this.map.destroy();                                                                         // Destroy the tilemap
         }
         if (this.level1Music) this.level1Music.stop();                                                  // Stop level music
@@ -511,6 +512,15 @@ export class Game extends Phaser.Scene {
                 this.player.damagePlayer(damageBox.damage, damageBox); // Damage the player
             });
         }
+    }
+
+    // One-way platform collision processing
+    processOneWayPlatform(player, tile) {
+        const body = player.body;                       // player's hitbox physics body
+        if (body.velocity.y <= 0) return false;         // Pass-through when moving up (jumping)
+        const prevBottom = body.prev.y + body.height;   // previous bottom edge
+        const tileTop = tile.getTop();                  // world Y of tile top
+        return prevBottom <= tileTop;                   // Collide only if the player's bottom was above the tile's top in the previous frame
     }
 }
 
