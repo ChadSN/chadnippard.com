@@ -4,7 +4,6 @@ export class musicManager {
     constructor(scene) {
         this.scene = scene;                                     // Reference to the scene
         this.currentMusic = null;                               // Currently playing music track
-        this.shouldPlayMusic = musicManager.shouldPlayMusic;    // Initialise instance mute state from static property
     }
 
     setMusic(track) {
@@ -25,13 +24,12 @@ export class musicManager {
         if (musicManager.shouldPlayMusic) {                                 // IF MUSIC IS PLAYING, PAUSE IT
             this.currentMusic.pause();                                      // Pause the music
             icon.setAlpha(0.5);                                             // Dim the icon to indicate muted state
-            this.shouldPlayMusic = false;                                   // Update instance mute state
+            musicManager.shouldPlayMusic = false;                                   // Update instance mute state
         } else {                                                            // IF MUSIC IS PAUSED, PLAY IT
             icon.setAlpha(1);                                               // Set icon to full opacity to indicate unmuted state
-            this.shouldPlayMusic = true;                                    // Update instance mute state
+            musicManager.shouldPlayMusic = true;                                    // Update instance mute state
             if (this.scene.scene.key === 'MainMenu') this.resumeMusic();    // Resume music if in MainMenu
         }
-        musicManager.shouldPlayMusic = this.shouldPlayMusic;                // Update static mute state
     }
 
     fadeOutAndStop(duration, nextScene = null) {
@@ -59,8 +57,8 @@ export class musicManager {
     resumeMusic() {
         if (!this.currentMusic) return;
         if (this.currentMusic.isPaused
-            && this.shouldPlayMusic) {
+            && musicManager.shouldPlayMusic) {
             this.currentMusic.resume();
-        } else if (!this.currentMusic.isPlaying && this.shouldPlayMusic) this.currentMusic.play();
+        } else if (!this.currentMusic.isPlaying && musicManager.shouldPlayMusic) this.currentMusic.play();
     }
 }

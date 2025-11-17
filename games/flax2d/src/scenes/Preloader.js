@@ -69,6 +69,9 @@ export class Preloader extends Phaser.Scene {
         // OBJECTS ASSETS
         this.load.image('pole', '/Objects/pole.png');
         this.load.spritesheet('crate', '/Objects/crate.png', { frameWidth: 64, frameHeight: 64 });
+        this.load.image('wheel', '/Objects/Wheel.png');
+        this.load.image('wheelPlatform', '/Objects/WheelPlatform.png');
+        this.load.image('rope_onWheel', '/Objects/Rope_onWheel.png');
 
         // AUDIO
         this.load.audio('mainMenuMusic', '/audio/Song 2 09.11.25.mp3');

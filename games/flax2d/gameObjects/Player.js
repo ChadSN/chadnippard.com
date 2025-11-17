@@ -50,6 +50,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.groundLayer = null;                                                                // Initialise the ground layer
         this.currentTileSoundType = null;                                                       // current tile sound type
         this.checkpoint = { x: x, y: y };                                                       // initial checkpoint
+        this.onPlatform = null;                                                                 // reference to the platform the player is on
     }
 
     // Update method called every frame
