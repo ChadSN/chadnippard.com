@@ -63,7 +63,6 @@ export class Preloader extends Phaser.Scene {
         this.load.tilemapTiledJSON('level2', '/levels/level2.json');        // Load the level2 tilemap JSON file.
         this.load.tilemapTiledJSON('level3', '/levels/level3.json');        // Load the level3 tilemap JSON file.
         this.load.image('tiles', '/levels/GrassTile.png');                  // Load the GrassTile tileset image.
-        this.load.image('tilesInside', '/levels/GrassTile_Inside.png');     // Load the GrassTile_Inside tileset image.
         this.load.image('objectTiles', '/levels/ObjectsTileSet.png');       // Load the ObjectTileSet tileset image.
 
         // OBJECTS ASSETS
@@ -78,10 +77,14 @@ export class Preloader extends Phaser.Scene {
         this.load.audio('level1Music', '/audio/Piano Song.mp3');
         this.load.audio('footstepGrass', '/audio/footstep-grass.wav');
         this.load.audio('footstepDirt', '/audio/Steps-Dirt_3a.ogg');
+        this.load.audio('footstepWood', '/audio/wood-step.wav');
         this.load.audio('tailwhipSound', '/audio/woosh(edited).mp3');
         this.load.audio('poleSwingSound', '/audio/Fast Whoosh.wav');
         this.load.audio('caveAmbience', '/audio/ambience cave (edited).mp3');
         this.load.audio('breakingCrate', '/audio/443293__deathscyp__wood-break.wav');
+        this.load.audio('muncherDeath', '/audio/muncher-death.wav');
+        this.load.audio('muncherAttack', '/audio/crunch.wav');
+        this.load.audio('scorePoints', '/audio/ScorePoints.mp3');
     }
 
     create() {

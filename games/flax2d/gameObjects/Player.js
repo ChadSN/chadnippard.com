@@ -20,6 +20,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.hitbox.body.setAllowGravity(true);                                                 // Enable gravity for the hitbox
         this.hitbox.setOrigin(0.5, 0.5);                                                        // Set origin to center for better alignment with hitbox
         this.setOrigin(0.5, 0.6);                                                               // Set the sprite origin to better align with the hitbox
+        this.hitbox.body.setImmovable(false);                                                   // Make the hitbox movable
         this.originalMoveSpeed = 4000;                                                          // original movement speed
         this.currentMoveSpeed = this.originalMoveSpeed;                                         // target movement speed
         this.jumpVel = 1000;                                                                    // jump velocity
@@ -43,11 +44,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.activePole = null;                                                                 // reference to the pole being swung on
         this.footstepGrassSound = this.scene.sound.add('footstepGrass', { volume: 1 });         // footstep sound
         this.footstepDirtSound = this.scene.sound.add('footstepDirt', { volume: 0.3 });         // footstep dirt sound
+        this.footstepWoodSound = this.scene.sound.add('footstepWood', { volume: 0.1 });         // footstep wood sound
         this.tailwhipSound = this.scene.sound.add('tailwhipSound', { volume: 0.5 });            // tailwhip sound
         this.poleSwingSound = this.scene.sound.add('poleSwingSound', { volume: 0.5 });          // pole swing sound
         this.footstepGrassSoundIsPlaying = false;                                               // footstep sound playing flag
         this.tilemap = null;                                                                    // Initialise the tilemap
         this.groundLayer = null;                                                                // Initialise the ground layer
+        this.objectLayerTop = null;                                                             // Initialise the object layer top
         this.currentTileSoundType = null;                                                       // current tile sound type
         this.checkpoint = { x: x, y: y };                                                       // initial checkpoint
         this.onPlatform = null;                                                                 // reference to the platform the player is on
@@ -87,7 +90,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             return;                                                                             // reset ground flag
         }
         if (this.hitbox.body.blocked.down) {                                                    // IF ON GROUND
-            this.currentTileSoundType = this.getTileSoundType();                                // update current tile sound type
+            this.currentTileSoundType = this.getSurfaceSoundType();                             // update current tile sound type
             this.playFootstepAnimationSound();                                                  // play footstep sound if applicable
             if (!this._wasOnGround) this.onLanded();                                            // IF JUST LANDED - handle landing
             if (Math.abs(this.hitbox.body.velocity.x) > 0.1)                                    // IF MOVING HORIZONTALLY
@@ -102,19 +105,14 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             || this.state === STATES.GLIDE_TURNING;
     }
 
-    playAnimation(animKey) {
-        if (this.anims.currentAnim?.key === animKey) return;                                    // already playing desired animation
-        this.anims.play(animKey, true);                                                         // play desired animation
-    }
-
     setState(newState) {
         if (this.state === newState) return;                                                    // already in desired state
         this.state = newState;                                                                  // update state
         switch (newState) {
-            case STATES.IDLE: this.playAnimation('idle'); break;                                // play idle animation
-            case STATES.RUNNING: this.playAnimation('run'); break;                              // play run animation
-            case STATES.JUMPING: this.playAnimation('jump'); break;                             // play jump animation
-            case STATES.FALLING: this.playAnimation('fall'); break;                             // play fall animation
+            case STATES.IDLE: this.play('idle', true); break;                                   // play idle animation 
+            case STATES.RUNNING: this.play('run', true); break;                                 // play run animation
+            case STATES.JUMPING: this.play('jump', true); break;                                // play jump animation
+            case STATES.FALLING: this.play('fall', true); break;                                // play fall animation
             case STATES.GLIDING: this.glide(); break;                                           // handle gliding
             default: break;
         }
@@ -123,10 +121,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     onLanded() {
         this.hitbox.body.setDragX(this.groundDrag);                                             // ground drag
         this.handleCollision();                                                                 // handle collision
-        if (this.currentTileSoundType === 'grass') {                                            // check if current tile sound type is grass
-            this.playFootstepSound(this.footstepGrassSound);                                    // play grass footstep sound
-        } else if (this.currentTileSoundType === 'dirt') {                                      // check if current tile sound type is dirt
-            this.playFootstepSound(this.footstepDirtSound);                                     // play dirt footstep sound
+        switch (this.currentTileSoundType) {
+            case 'grass': this.playFootstepSound(this.footstepGrassSound); break;               // play landing sound based on tile type
+            case 'dirt': this.playFootstepSound(this.footstepDirtSound); break;
+            case 'wood': this.playFootstepSound(this.footstepWoodSound); break;
+            default: break;
         }
         this._wasOnGround = true;                                                               // set ground flag
     }
@@ -161,7 +160,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     startGlide(glideAngle) {
         if (this.didStartGlide || this.state === STATES.GLIDE_SPINNING) return;                 // prevent multiple glide starts
         this.didStartGlide = true;                                                              // flag to indicate glide has started
-        this.playAnimation('glide_Start');                                                      // play glide start animation
+        this.play('glide_Start', true);                                                         // play glide start animation
         this.activeTween = this.scene.tweens.add({                                              // tween to rotate and move down
             targets: this.hitbox,                                                               // target the muncher
             angle: glideAngle,                                                                  // rotate to 360 degrees
@@ -176,7 +175,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     glide() {
-        this.playAnimation('glide');                                                            // play glide animation
+        this.play('glide', true);                                                               // play glide animation
         this.hitbox.body.setVelocityY(0);                                                       // limit downward speed
         this.hitbox.body.setGravity(0, -2500);                                                  // Reduce gravity for the player
         const glideSpeed = this.originalMoveSpeed * 3 / 4;                                      // calculate reduced horizontal speed while gliding
@@ -327,7 +326,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.hitbox.body.setImmovable(true);                                                    // 6. Make the hitbox immovable
         this.hitbox.angle = 0;                                                                  // 7. reset angle
         this.activePole.angle = 0;                                                              // 8. reset pole angle
-        this.playAnimation('poleSwing');                                                        // play pole swing animation
+        this.play('poleSwing', true);                                                           // play pole swing animation
         this.activeTween = this.scene.tweens.add({                                              // tween to rotate back and forth
             targets: [this.hitbox, this.activePole],                                            // target both the player hitbox and the pole
             angle: (this.flipX ? '+=360' : '-=360'),                                            // rotate both by -360 degrees
@@ -420,13 +419,16 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     respawn() {
-        this.hitbox.setPosition(this.checkpoint.x, this.checkpoint.y);                          // Move player to checkpoint
-        this.hitbox.body.setVelocity(0, 0);                                                     // Reset velocity
-        this.health = this.maxHealth;                                                           // Restore health
-        this.scene.uiManager.updateHealth(this.health);                                         // Update health text
-        this.setState(STATES.IDLE);                                                             // Reset state to IDLE
-        this.hitbox.body.enable = true;                                                         // Re-enable player physics
-        this.scene.cameras.main.fadeIn(1000, 0, 0, 0);                                          // Fade camera back in
+        this.scene.cameras.main.fadeOut(250, 0, 0, 0);                                          // Fade out the camera
+        this.scene.time.delayedCall(500, () => {                                                // Delay before respawning
+            this.hitbox.setPosition(this.checkpoint.x, this.checkpoint.y);                      // Move player to checkpoint
+            this.hitbox.body.setVelocity(0, 0);                                                 // Reset velocity
+            this.health = this.maxHealth;                                                       // Restore health
+            this.scene.uiManager.updateHealth(this.health);                                     // Update health text
+            this.setState(STATES.IDLE);                                                         // Reset state to IDLE
+            this.hitbox.body.enable = true;                                                     // Re-enable player physics
+            this.scene.cameras.main.fadeIn(1000, 0, 0, 0);                                      // Fade camera back in
+        });
     }
 
     outOfBoundsCheck() {
@@ -478,9 +480,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         }
     }
 
-    setTilemapAndLayer(tilemap, groundLayer) {
+    setTilemapAndLayer(tilemap, groundLayer, objectLayerTop) {
         this.tilemap = tilemap;                                                                 // Assign the tilemap
         this.groundLayer = groundLayer;                                                         // Assign the ground layer
+        this.objectLayerTop = objectLayerTop;
     }
 
     playFootstepAnimationSound() {
@@ -491,8 +494,15 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                     this.playFootstepSound(this.footstepGrassSound);                            // play grass footstep sound
                 else if (this.currentTileSoundType === 'dirt')                                  // check if current tile sound type is dirt
                     this.playFootstepSound(this.footstepDirtSound);                             // play dirt footstep sound
+                else if (this.currentTileSoundType === 'wood')                                  // check if current tile sound type is wood
+                    this.playFootstepSound(this.footstepWoodSound);                             // play wood footstep sound
             }
         }
+    }
+
+    getSurfaceSoundType() {
+        if (this.onPlatform && this.onPlatform.soundType) return this.onPlatform.soundType;     // moving platforms
+        return this.getTileSoundType();                                                         // tiles fallback
     }
 
     playFootstepSound(sound) {
@@ -504,31 +514,26 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         sound.once('complete', () => {                                                          // When the sound completes
             this.footStepSoundIsPlaying = false;                                                // Reset the flag 
         });
-
     }
+
+    getObjectSoundType() { }
 
     getTileSoundType() {
-        const tile = this.getTileHit();                                                         // get the tile directly below the player
-        if (tile && tile.properties.soundType)                                                  // check if tile has soundType property
-            return tile.properties.soundType;                                                   // Return the soundType string from the tile's properties
-        return null;                                                                            // Default to null if no soundType is found
+        if (!this.tilemap || (!this.groundLayer && !this.objectLayerTop)) return null;          // Ensure tilemap and groundLayer/objectLayerTop are defined
+        const topTile = this.getTileHit(this.objectLayerTop);                                   // Check top object layer first
+        if (topTile.properties?.soundType) return topTile.properties.soundType;                 // return if found
+        const groundTile = this.getTileHit(this.groundLayer);                                   // then check ground layer
+        if (groundTile.properties?.soundType) return groundTile.properties.soundType;           // return if found
+        return null;                                                                            // return null if no soundType found
     }
 
-    getTileHit() {
-        if (!this.tilemap || !this.groundLayer) return null;                                    // Ensure tilemap and groundLayer are defined
-        const tile = this.tilemap.getTileAtWorldXY(                                             // get tile at player's bottom center
-            this.hitbox.x,                                                                      // player's x position
-            this.hitbox.body.bottom,                                                            // player's bottom y position
-            true,                                                                               // non-null result
-            this.scene.cameras.main,                                                            // camera for coordinate conversion
-            this.groundLayer);                                                                  // ground layer to check
-        return tile;                                                                            // return the found tile or null
+    getTileHit(layer) {
+        return this.tilemap.getTileAtWorldXY(this.hitbox.x, this.hitbox.body.bottom, true, this.scene.cameras.main, layer);
     }
 
     setCheckpoint(x, y) {
         this.checkpoint = { x: x, y: y };                                                       // Set checkpoint coordinates
     }
-
 
     // Define player animations
     initAnimations() {

@@ -38,6 +38,7 @@ export class Game extends Phaser.Scene {
         this.levelReady = false;                                                                        // Flag to indicate if the level is ready
         this.musicManager = new musicManager(this);                                                     // Music manager instance
         this.hasMovementInput = false;                                                                  // Track if there was movement input in the previous frame
+        this.playerLastVel = { x: 0, y: 0 };                                                            // Store the player's last velocity
     }
 
     create() {
@@ -53,8 +54,9 @@ export class Game extends Phaser.Scene {
     }
 
     update(time, delta) {
-        this.handlePlayerInput();                                                                       // Handle player input
-        this.updateWheelPlatforms();                                                                    // Update wheel platform positions
+        this.handlePlayerInput();                                                                               // Handle player input
+        this.updateWheelPlatforms();                                                                            // Update wheel platform positions
+        this.player.lastVel = this.player.hitbox.body.velocity.clone();                                         // Store the player's last velocity
     }
 
     createLevel(levelKey) {
@@ -65,19 +67,18 @@ export class Game extends Phaser.Scene {
         this.worldWidth = this.map.widthInPixels;                                                               // Get map dimensions in pixels
         this.worldHeight = this.map.heightInPixels;                                                             // Get map dimensions in pixels
         this.physics.world.setBounds(0, 0, this.worldWidth, this.worldHeight);                                  // Set physics world bounds to match the tilemap size
-        // CREATE GROUND LAYER      
+        // CREATE TILESETS
         const groundTileSet = this.map.addTilesetImage('GroundTileSet', 'tiles');                               // Arg 1: tileset name in Tiled.    2: key used in preload
-        this.groundLayer = this.map.createLayer('Ground', groundTileSet, 0, 0).setDepth(3);                     // Arg 1: layer name in Tiled.      2: tileset object created above.    Arg 3 & 4: x,y position.
-        this.groundLayer.setCollisionByProperty({ collides: true });                                            // Enable collision for tiles with the 'collides' property set to true
-        // CREATE GROUND INSIDE LAYER
-        const groundTileSetInside = this.map.addTilesetImage('GroundTileSet_Inside', 'tilesInside');            // Arg 1: tileset name in Tiled.    2: key used in preload
-        this.groundInsideLayer = this.map.createLayer('Ground_Inside', groundTileSetInside, 0, 0).setDepth(2);  // Arg 1: layer name in Tiled.      2: tileset object created above.    Arg 3 & 4: x,y position.
-        this.groundInsideLayer.setCollisionByProperty({ overlaps: true });                                      // Enable collision for tiles with the 'collides' property set to true
-        // CREATE OBJECT LAYER
         const objectTileSet = this.map.addTilesetImage('ObjectTileSet', 'objectTiles');                         // Arg 1: tileset name in Tiled.    2: key used in preload
+        // CREATE LAYERS
+        this.groundLayer = this.map.createLayer('Ground', groundTileSet, 0, 0).setDepth(3);                     // Arg 1: layer name in Tiled.      2: tileset object created above.    Arg 3 & 4: x,y position.
+        this.groundInsideLayer = this.map.createLayer('GroundInside', groundTileSet, 0, 0).setDepth(2);         // Arg 1: layer name in Tiled.      2: tileset object created above.    Arg 3 & 4: x,y position.
         this.objectLayer = this.map.createLayer('ObjectTiles', objectTileSet, 0, 0).setDepth(3);                // Arg 1: layer name in Tiled.      2: tileset object created above.    Arg 3 & 4: x,y position.
         this.objectLayer2 = this.map.createLayer('ObjectTilesLayer2', objectTileSet, 0, 0).setDepth(3);         // Arg 1: layer name in Tiled.      2: tileset object created above.    Arg 3 & 4: x,y position.
         this.objectLayerTop = this.map.createLayer('ObjectTilesLayerTop', objectTileSet, 0, 0).setDepth(500);   // Arg 1: layer name in Tiled.      2: tileset object created above.    Arg 3 & 4: x,y position.
+        // SET COLLISIONS ON LAYERS
+        this.groundLayer.setCollisionByProperty({ collides: true });                                            // Enable collision for tiles with the 'collides' property set to true
+        this.groundInsideLayer.setCollisionByProperty({ overlaps: true });                                      // Enable collision for tiles with the 'collides' property set to true
         this.objectLayerTop.setCollisionByProperty({ collides: true });                                         // Enable collision for tiles with the 'collides' property set to true
         // ENABLE LIGHTING ON LAYERS
         this.groundLayer.setPipeline('Light2D');
@@ -90,37 +91,38 @@ export class Game extends Phaser.Scene {
         this.spawnPlayer(spawnPoint.x, spawnPoint.y);                                                           // Spawn the player at the spawn point location
         // COLLISIONS SETUP FOR PLAYER WITH LAYERS           
         this.physics.add.collider(this.player.hitbox, this.groundLayer);
-        this.physics.add.collider(this.player.hitbox, this.objectLayerTop,
-            null,                         // Arg 3: Always collide callback
-            this.processOneWayPlatform,   // Arg 4: Process one-way platform callback to allow passing through from below
-            this                          // Arg 5: This scene
-        );
-
-        this.addLights();                                                                               // Add lighting effects
-        this.spawnSigns();                                                                              // Spawn signs with text
-        this.spawnPoles();                                                                              // Spawn poles for swinging
-        this.spawnCrates();                                                                             // Spawn crates
-        this.spawnWheels();                                                                             // Spawn wheels
-        this.spawnGlizzards();                                                                          // Spawn glizzard enemies
-        this.spawnMunchers();                                                                           // Spawn muncher enemies
-        this.spawnDNAs();                                                                               // Spawn DNA collectables
-        this.spawnClouds();                                                                             // Spawn background clouds
+        this.physics.add.collider(this.player.hitbox, this.objectLayerTop, null, (player, tile) => {            // Custom collision callback for one-way platforms
+            const body = player.body;                                                                           // player's hitbox physics body
+            if (body.velocity.y <= 0) return false;                                                             // Pass-through when moving up (jumping)
+            const prevBottom = body.prev.y + body.height;                                                       // previous bottom edge
+            const tileTop = tile.getTop();                                                                      // world Y of tile top
+            return prevBottom <= tileTop;                                                                       // Collide only if the player's bottom was above the tile's top in the previous frame
+        });
+        this.addLights();                                                                                       // Add lighting effects
+        this.spawnSigns();                                                                                      // Spawn signs with text
+        this.spawnPoles();                                                                                      // Spawn poles for swinging
+        this.spawnCrates();                                                                                     // Spawn crates
+        this.spawnWheels();                                                                                     // Spawn wheels
+        this.spawnGlizzards();                                                                                  // Spawn glizzard enemies
+        this.spawnMunchers();                                                                                   // Spawn muncher enemies
+        this.spawnDNAs();                                                                                       // Spawn DNA collectables
+        this.spawnClouds();                                                                                     // Spawn background clouds
         // COLLISIONS SETUP FOR PLAYER WITH GROUND INSIDE LAYER
         this.physics.add.overlap(this.player.hitbox, this.groundInsideLayer, (hitbox, tile) => {
-            if (tile && tile.properties.overlaps) {                                                     // Check if the tile has the 'overlaps' property
-                if (!this.isOverlappingGroundInsideLayer) {                                             // Only trigger once when starting to overlap
-                    this.isOverlappingGroundInsideLayer = true;                                         // Set flag to true
-                    this.tweenAmbientLight(this.nightAmbientColour);                                    // Dim light
-                    if (!this.caveAmbience.isPlaying) {                                                 // Play cave ambience if not already playing
-                        this.caveAmbience.stop();                                                       // Ensure it's stopped before playing again
-                        this.caveAmbience.play();                                                       // Play cave ambience
+            if (tile && tile.properties.overlaps) {                                                             // Check if the tile has the 'overlaps' property
+                if (!this.isOverlappingGroundInsideLayer) {                                                     // Only trigger once when starting to overlap
+                    this.isOverlappingGroundInsideLayer = true;                                                 // Set flag to true
+                    this.tweenAmbientLight(this.nightAmbientColour);                                            // Dim light
+                    if (!this.caveAmbience.isPlaying) {                                                         // Play cave ambience if not already playing
+                        this.caveAmbience.stop();                                                               // Ensure it's stopped before playing again
+                        this.caveAmbience.play();                                                               // Play cave ambience
                     }
                 }
             } else {
-                if (this.isOverlappingGroundInsideLayer) {                                              // Only trigger once when stopping overlap
-                    this.isOverlappingGroundInsideLayer = false;                                        // Set flag to false
-                    this.tweenAmbientLight(this.daylightAmbientColour);                                 // Full white light
-                    if (this.caveAmbience.isPlaying) this.caveAmbience.stop();                          // Stop cave ambience
+                if (this.isOverlappingGroundInsideLayer) {                                                      // Only trigger once when stopping overlap
+                    this.isOverlappingGroundInsideLayer = false;                                                // Set flag to false
+                    this.tweenAmbientLight(this.daylightAmbientColour);                                         // Full white light
+                    if (this.caveAmbience.isPlaying) this.caveAmbience.stop();                                  // Stop cave ambience
                 }
             }
         });
@@ -184,23 +186,27 @@ export class Game extends Phaser.Scene {
     }
 
     spawnCrates() {
-        this.crates = this.physics.add.staticGroup();                                                   // Create a single static group for all crates
+        this.crates = this.physics.add.group();                                                         // Create a single static group for all crates
         const cratePoints = this.map.filterObjects("Objects", obj =>                                    // Find all crate points (small and large)
-            obj.name === "crateSmallPoint" || obj.name === "crateLargePoint"                            // based on their names
+            obj.name === "cratePointSmall"                                                              // small crate
+            || obj.name === "cratePointTall"                                                            // tall crate
+            || obj.name === "cratePointLarge"                                                           // large crate
         );
-        cratePoints.forEach(cratePoint => {                                                             // Add crates to the group
-            const isLarge = cratePoint.name === "crateLargePoint";                                      // Check if it's a large crate
-            const crate = new Crate(this, cratePoint.x, cratePoint.y)                                   // Use the same sprite for both
-                .setOrigin(0.5, 0.5)                                                                    // Set origin to center
-                .setPipeline('Light2D')                                                                 // Enable lighting effects on the crate
-                .setDepth(4)                                                                            // Set depth above ground layer
-                .setScale(1, isLarge ? 2 : 1);                                                          // Scale the crate based on its type
+        const crateScaleByName = {                                                                      // Define scale for each crate type
+            cratePointSmall: new Phaser.Math.Vector2(1, 1),                                             // small crate 
+            cratePointTall: new Phaser.Math.Vector2(1, 2),                                              // tall crate
+            cratePointLarge: new Phaser.Math.Vector2(2, 2),                                             // large crate
+        };
+        cratePoints.forEach(cratePoint => {
+            const scale = crateScaleByName[cratePoint.name];                                            // Get scale based on crate type
+            const crate = new Crate(this, cratePoint.x, cratePoint.y, scale)                            // Use the same sprite for both                                                      // Enable lighting effects on the crate
+                .setDepth(4);                                                                           // Set depth above ground layer
             this.crates.add(crate);                                                                     // Add the crate to the static group
         });
-        this.physics.add.collider(this.player.hitbox, this.crates);
-        this.physics.add.overlap(this.player.damageBox, this.crates, (damageBox, crate) => {            // Player damage box overlaps with crate
-            crate.break();                                                                              // Break the crate
-        });
+        this.physics.add.collider(this.groundLayer, this.crates);                                       // Enable collision between ground layer and crates
+        this.physics.add.collider(this.crates, this.crates, null, (_, crate) => !crate.broken);         // Enable crate-to-crate collision, ignoring broken crates
+        this.physics.add.collider(this.player.hitbox, this.crates, null, (_, crate) => !crate.broken);  // Enable player-to-crate collision, ignoring broken crates
+        this.physics.add.overlap(this.player.damageBox, this.crates, (_, crate) => crate.break());      // Enable overlap between player's damage box and crates to break them
     }
 
     spawnWheels() {
@@ -239,21 +245,22 @@ export class Game extends Phaser.Scene {
     }
 
     spawnWheelPlatform(posX, posY, wheelPos, duration) {
-        const wheelPlatform = this.physics.add.sprite(posX, posY, 'wheelPlatform')                  // Create platform sprite
-            .setDepth(4)                                                                            // Set depth above ground layer
-            .setPipeline('Light2D');                                                                // Enable lighting effects on the platform
-        this.wheelPlatforms.add(wheelPlatform);                                                     // Add platform to the wheel platforms group
-        const dx = posX - wheelPos.x;                                                               // Calculate initial distance from wheel center
-        const dy = posY - wheelPos.y;                                                               // Calculate initial distance from wheel center
-        wheelPlatform._orbit = {                                                                    // Store orbit parameters on the platform
-            center: { x: wheelPos.x, y: wheelPos.y },                                               // Center of the wheel
-            radius: Math.sqrt(dx * dx + dy * dy),                                                   // Distance from center
-            angle: Math.atan2(dy, dx),                                                              // Current angle in radians
-            speed: (2 * Math.PI) / (duration / 1000)                                                // Radians per second
+        const wheelPlatform = this.physics.add.sprite(posX, posY, 'wheelPlatform')                      // Create platform sprite
+            .setDepth(4)                                                                                // Set depth above ground layer
+            .setPipeline('Light2D');                                                                    // Enable lighting effects on the platform
+        wheelPlatform.soundType = 'wood';                                                               // Set sound type for footsteps
+        this.wheelPlatforms.add(wheelPlatform);                                                         // Add platform to the wheel platforms group
+        const dx = posX - wheelPos.x;                                                                   // Calculate initial distance from wheel center
+        const dy = posY - wheelPos.y;                                                                   // Calculate initial distance from wheel center
+        wheelPlatform._orbit = {                                                                        // Store orbit parameters on the platform
+            center: { x: wheelPos.x, y: wheelPos.y },                                                   // Center of the wheel
+            radius: Math.sqrt(dx * dx + dy * dy),                                                       // Distance from center
+            angle: Math.atan2(dy, dx),                                                                  // Current angle in radians
+            speed: (2 * Math.PI) / (duration / 1000)                                                    // Radians per second
         };
-        this.physics.add.collider(this.player.hitbox, wheelPlatform, (hitbox, platform) => {        // Enable collision between player and wheel platform
-            if (hitbox.body.blocked.down && hitbox.y <= platform.y - platform.displayHeight / 2) {  // Check if player is landing on top of the platform
-                this.player.onPlatform = platform;                                                  // Set the player's onPlatform reference
+        this.physics.add.collider(this.player.hitbox, wheelPlatform, (hitbox, platform) => {            // Enable collision between player and wheel platform
+            if (hitbox.body.blocked.down && hitbox.y <= platform.y - platform.displayHeight / 2) {      // Check if player is landing on top of the platform
+                this.player.onPlatform = platform;                                                      // Set the player's onPlatform reference
             }
         });
     }
@@ -280,73 +287,73 @@ export class Game extends Phaser.Scene {
     }
 
     spawnSigns() {
-        this.signs = this.add.group();                                                                  // Create a group for signs
-        const signPoints = this.map.filterObjects("Objects", obj => obj.name === "signPoint");          // Find all sign objects in the Tiled map
-        signPoints.forEach(signPoint => {                                                               // Iterate through each signPoint and create a sign with text
-            const textProperty = signPoint.properties.find(prop => prop.name === 'text');               // Get the text property
-            const textSizeProperty = signPoint.properties.find(prop => prop.name === 'size');           // Get the text size property
-            const textWrapProperty = signPoint.properties.find(prop => prop.name === 'wrapWidth')       // Get the text wrap width property
-                || { value: 128 };                                                                      // Default wrap width if not specified
-            const signText = this.add.text(signPoint.x, signPoint.y, textProperty.value)                // Create text object at sign position
-                .setFontFamily('Impact')                                                                // Set font family
-                .setFontSize(`${textSizeProperty.value}px`)                                             // Set font size
-                .setColor('#000000')                                                                    // Set text color
-                .setAlign('center')                                                                     // Set text alignment
-                .setWordWrapWidth(textWrapProperty.value)                                               // Set word wrap width
-                .setLineSpacing(0)                                                                      // Set line spacing
-                .setOrigin(0.5)                                                                         // Center horizontally, align bottom
-                .setDepth(4);                                                                           // Set depth above ground layer
-            this.signs.add(signText);                                                                   // Add sign text to the signs group
+        this.signs = this.add.group();                                                                          // Create a group for signs
+        const signPoints = this.map.filterObjects("Objects", obj => obj.name === "signPoint");                  // Find all sign objects in the Tiled map
+        signPoints.forEach(signPoint => {                                                                       // Iterate through each signPoint and create a sign with text
+            const textProperty = signPoint.properties.find(prop => prop.name === 'text');                       // Get the text property
+            const textSizeProperty = signPoint.properties.find(prop => prop.name === 'size');                   // Get the text size property
+            const textWrapProperty = signPoint.properties.find(prop => prop.name === 'wrapWidth')               // Get the text wrap width property
+                || { value: 128 };                                                                              // Default wrap width if not specified
+            const signText = this.add.text(signPoint.x, signPoint.y, textProperty.value)                        // Create text object at sign position
+                .setFontFamily('Impact')                                                                        // Set font family
+                .setFontSize(`${textSizeProperty.value}px`)                                                     // Set font size
+                .setColor('black')                                                                              // Set text color
+                .setAlign('center')                                                                             // Set text alignment
+                .setWordWrapWidth(textWrapProperty.value)                                                       // Set word wrap width
+                .setLineSpacing(0)                                                                              // Set line spacing
+                .setOrigin(0.5)                                                                                 // Center horizontally, align bottom
+                .setDepth(4);                                                                                   // Set depth above ground layer
+            this.signs.add(signText);                                                                           // Add sign text to the signs group
         });
     }
 
     tweenAmbientLight(targetColour) {
-        if (this.currentAmbientColour === targetColour) return;                                             // No need to tween if already at target color
-        const start = Phaser.Display.Color.ValueToColor(this.currentAmbientColour);                         // Current ambient color
-        const end = Phaser.Display.Color.ValueToColor(targetColour);                                        // Target ambient color
-        const colorObj = { t: 0 };                                                                          // Tweened value 0 - 1
+        if (this.currentAmbientColour === targetColour) return;                                                 // No need to tween if already at target color
+        const start = Phaser.Display.Color.ValueToColor(this.currentAmbientColour);                             // Current ambient color
+        const end = Phaser.Display.Color.ValueToColor(targetColour);                                            // Target ambient color
+        const colorObj = { t: 0 };                                                                              // Tweened value 0 - 1
         this.tweens.add({
-            targets: colorObj,                                                                              // Tween the t value from 0 to 1
-            t: 1,                                                                                           // Target value
-            duration: 500,                                                                                  // Duration of the tween
-            ease: 'Linear',                                                                                 // Easing function
+            targets: colorObj,                                                                                  // Tween the t value from 0 to 1
+            t: 1,                                                                                               // Target value
+            duration: 500,                                                                                      // Duration of the tween
+            ease: 'Linear',                                                                                     // Easing function
             onUpdate: () => {
-                const colour = Phaser.Display.Color.Interpolate.ColorWithColor(start, end, 1, colorObj.t);  // Interpolate between start and end colors
-                const hex = Phaser.Display.Color.GetColor(colour.r, colour.g, colour.b);                    // Convert to hex
-                this.lights.setAmbientColor(hex);                                                           // Update ambient color
-                this.currentAmbientColour = hex;                                                            // Update current ambient color
+                const colour = Phaser.Display.Color.Interpolate.ColorWithColor(start, end, 1, colorObj.t);      // Interpolate between start and end colors
+                const hex = Phaser.Display.Color.GetColor(colour.r, colour.g, colour.b);                        // Convert to hex
+                this.lights.setAmbientColor(hex);                                                               // Update ambient color
+                this.currentAmbientColour = hex;                                                                // Update current ambient color
 
             },
             onComplete: () => {
-                this.lights.setAmbientColor(targetColour);                                                  // Final set to target color
-                this.currentAmbientColour = targetColour;                                                   // Update current ambient color
+                this.lights.setAmbientColor(targetColour);                                                      // Final set to target color
+                this.currentAmbientColour = targetColour;                                                       // Update current ambient color
             }
         });
     }
 
     spawnClouds() {
-        const CloudYMinPoint = this.map.filterObjects("Objects", obj => obj.name === "CloudYMin")[0];       // Get cloud Y min point 
-        const CloudYMaxPoint = this.map.filterObjects("Objects", obj => obj.name === "CloudYMax")[0];       // Get cloud Y max point
-        this.cloudSpawner = new CloudSpawner(this);                                                         // Create a CloudSpawner instance
-        this.cloudSpawner.spawnClouds(1, CloudYMinPoint.y, CloudYMaxPoint.y);                               // Spawn clouds in the background with depth 1
+        const CloudYMinPoint = this.map.filterObjects("Objects", obj => obj.name === "CloudYMin")[0];           // Get cloud Y min point 
+        const CloudYMaxPoint = this.map.filterObjects("Objects", obj => obj.name === "CloudYMax")[0];           // Get cloud Y max point
+        this.cloudSpawner = new CloudSpawner(this);                                                             // Create a CloudSpawner instance
+        this.cloudSpawner.spawnClouds(1, CloudYMinPoint.y, CloudYMaxPoint.y);                                   // Spawn clouds in the background with depth 1
     }
 
     // Handle player input
     handlePlayerInput() {
-        if (Phaser.Input.Keyboard.JustDown(this.inputManager.keyP)
-            || Phaser.Input.Keyboard.JustDown(this.inputManager.keyESC))
-            this.pauseGame();
-        if (this.player.disableMovement) return;                                                            // prevent movement if canMove is false
-        if (                                                                                                // Jump input
-            Phaser.Input.Keyboard.JustDown(this.inputManager.cursors.up) ||                                 // Up arrow
-            Phaser.Input.Keyboard.JustDown(this.inputManager.keySPACE) ||                                   // Space bar
-            Phaser.Input.Keyboard.JustDown(this.inputManager.keyW)                                          // W key
-        ) this.player.jump();                                                                               // Make the player jump
-        if (this.inputManager.cursors.left.isDown || this.inputManager.keyA.isDown)                         // Left arrow or A key
-        { this.player.move(true); this.hasMovementInput = true; }                                           // Move player left
-        else if (this.inputManager.cursors.right.isDown || this.inputManager.keyD.isDown)                   // Right arrow or D key
-        { this.player.move(false); this.hasMovementInput = true; }                                          // Move player right
-        else { this.player.idle(); this.hasMovementInput = false; }                                         // No horizontal input, Player idle
+        if (Phaser.Input.Keyboard.JustDown(this.inputManager.keyP)                                              // P key
+            || Phaser.Input.Keyboard.JustDown(this.inputManager.keyESC))                                        // ESC key
+            this.pauseGame();                                                                                   // Pause the game
+        if (this.player.disableMovement) return;                                                                // prevent movement if canMove is false
+        if (                                                                                                    // Jump input
+            Phaser.Input.Keyboard.JustDown(this.inputManager.cursors.up) ||                                     // Up arrow
+            Phaser.Input.Keyboard.JustDown(this.inputManager.keySPACE) ||                                       // Space bar
+            Phaser.Input.Keyboard.JustDown(this.inputManager.keyW)                                              // W key
+        ) this.player.jump();                                                                                   // Make the player jump
+        if (this.inputManager.cursors.left.isDown || this.inputManager.keyA.isDown)                             // Left arrow or A key
+        { this.player.move(true); this.hasMovementInput = true; }                                               // Move player left
+        else if (this.inputManager.cursors.right.isDown || this.inputManager.keyD.isDown)                       // Right arrow or D key
+        { this.player.move(false); this.hasMovementInput = true; }                                              // Move player right
+        else { this.player.idle(); this.hasMovementInput = false; }                                             // No horizontal input, Player idle
     }
 
     pointerLeftPressed() {
@@ -414,7 +421,7 @@ export class Game extends Phaser.Scene {
         }
         this.player.hitbox.setPosition(x, y);                                                               // Set player hitbox position to spawn point
         this.cameras.main.startFollow(this.player, false, 0.08, 0.08);                                      // Make the camera follow the player smoothly
-        this.player.setTilemapAndLayer(this.map, this.groundLayer);                                         // Provide player with tilemap and ground layer for collision handling
+        this.player.setTilemapAndLayer(this.map, this.groundLayer, this.objectLayerTop);                    // Provide player with tilemap and layer references
         this.uiManager.updateHealth(this.player.health);                                                    // Update health display in UI
         this.player.setCheckpoint(x, y);                                                                    // Set initial checkpoint
     }
@@ -465,13 +472,14 @@ export class Game extends Phaser.Scene {
             this.munchers.add(muncher).setDepth(4);                                                                     // add to the group
             const damageBox = new DamageBox(this, muncher);                                                 // create damage box for muncher
             muncher.setDamageBox(damageBox);                                                                // assign damage box to muncher
+            muncher.body.setImmovable(true);                                                                         // make muncher immovable
         });
         this.physics.add.collider(this.munchers, this.groundLayer);                                         // munchers collide with ground layer
-        this.physics.add.overlap(this.player.hitbox, this.munchers, (player, muncher) => {                  // player stomps muncher
-            if (player.y < muncher.y - muncher.height && player.body.velocity.y >= 200) {                   // player is above muncher and falling fast
-                player.body.setVelocityY(-600);                                                             // bounce the player up
-                muncher.death();                                                                            // destroy the muncher
-            }
+        this.physics.add.collider(this.player.hitbox, this.munchers, (player, muncher) => {                 // player collides with muncher
+            const stomp = this.player.lastVel.y > 200 && player.body.touching.down;                          // check if player is falling fast enough to stomp
+            if (!stomp) return;                                                                             // if not a stomp, exit
+            player.body.setVelocityY(-600);                                                                 // bounce the player up
+            muncher.death();                                                                                // destroy the muncher
         });
     }
 
@@ -484,7 +492,8 @@ export class Game extends Phaser.Scene {
             this.glizzards.add(glizzard).setDepth(4);                                                       // add to the group
         });
         this.physics.add.overlap(this.player.hitbox, this.glizzards, (player, glizzard) => {                // player stomps glizzard
-            if (player.y < glizzard.y - glizzard.height && player.body.velocity.y >= 200) {                 // player is above glizzard and falling fast
+            if (player.y < glizzard.y - glizzard.height                                                     // IF PLAYER IS ABOVE GLIZZARD
+                && this.player.lastVel.y >= 200) {                                                          // AND IF PLAYER IS FALLING FAST ENOUGH
                 player.body.setVelocityY(-600);                                                             // bounce the player up
                 glizzard.death();                                                                           // destroy the glizzard
             }
@@ -513,43 +522,4 @@ export class Game extends Phaser.Scene {
             });
         }
     }
-
-    // One-way platform collision processing
-    processOneWayPlatform(player, tile) {
-        const body = player.body;                       // player's hitbox physics body
-        if (body.velocity.y <= 0) return false;         // Pass-through when moving up (jumping)
-        const prevBottom = body.prev.y + body.height;   // previous bottom edge
-        const tileTop = tile.getTop();                  // world Y of tile top
-        return prevBottom <= tileTop;                   // Collide only if the player's bottom was above the tile's top in the previous frame
-    }
 }
-
-
-// // Spawn platforms in the game world
-// spawnPlatforms() {
-//     // CREATE PLATFORMS
-//     this.platforms = this.physics.add.staticGroup();    // Create a static group for platforms
-
-//     // Create ground platforms
-//     for (let i = 0; i < 8; i++) {
-//         this.platforms.create(256 * i, 1080, 'ground');
-//     }
-// // Create some floating platforms
-// for (let i = 0; i < 20; i++) {
-//     this.platforms.create(51 * i, 0, 'ground').setScale(0.2).refreshBody(); // refreshBody is needed after scaling to update the physics body
-// }
-// for (let i = 0; i < 10; i++) {
-//     this.platforms.create(51 * i + 560, 450, 'ground').setScale(0.2).refreshBody(); // refreshBody is needed after scaling to update the physics body
-// }
-// for (let i = 0; i < 10; i++) {
-//     this.platforms.create(51 * i + 1080, 190, 'ground').setScale(0.2).refreshBody(); // refreshBody is needed after scaling to update the physics body
-// }
-// for (let i = 10; i > 0; i--) {
-//     this.platforms.create(51 * i + 1400, 0, 'ground').setScale(0.2).refreshBody(); // refreshBody is needed after scaling to update the physics body
-// }
-//     this.physics.add.collider(this.player.hitbox, this.platforms, (hitbox, platform) => {
-//         this.player.handleCollision(platform); // Use the Player instance to handle collision
-//     });
-// }
-
-

@@ -49,47 +49,55 @@ export class UIManager {
             64,                                                                         // font size
             'Impact',                                                                   // font family
             'Score: 0');                                                                // initial text
+        this.scorePoints = this.scene.sound.add('scorePoints', { volume: 0.3 });        // Add score points sound
     }
 
     // Method to update score display
     updateScore(amount) {
+        this.scorePoints.play();                                                        // Play score points sound
         this.score += amount;                                                           // Increase score by the specified amount
         this.scoreText.setText('Score: ' + this.score);                                 // Update score text display
+        this.scene.tweens.add({                                                         // Create a tween for score text pop effect
+            targets: this.scoreText,                                                    // Target the score text
+            scale: { from: 1.2, to: 1 },                                                // Scale up and back down
+            duration: 300,                                                              // Duration of the tween
+            ease: 'Cubic.easeOut'                                                       // Easing function
+        });
     }
 
     initHealthDisplay() {
-        this.healthDNA = this.scene.add.group();                                        // Create a group for DNA collectables
-        for (let i = 0; i < this.scene.player.maxHealth; i++) {                                      // Loop to create DNA collectables for health display
-            const dna = new DNA(this.scene, 208 + 64 * i, 80);                          // Example DNA collectable for health
-            this.healthDNA.add(dna);                                                    // Add DNA to the health group
-            dna.setScale(1.5);                                                          // Scale up the DNA
-            dna.setScrollFactor(0);                                                     // Fix to camera
-            dna.setDepth(1000);                                                         // Set depth
+        this.healthDNA = this.scene.add.group();                                                // Create a group for DNA collectables
+        for (let i = 0; i < this.scene.player.maxHealth; i++) {                                 // Loop to create DNA collectables for health display
+            const dna = new DNA(this.scene, 208 + 64 * i, 80);                                  // Example DNA collectable for health
+            this.healthDNA.add(dna);                                                            // Add DNA to the health group
+            dna.setScale(1.5);                                                                  // Scale up the DNA
+            dna.setScrollFactor(0);                                                             // Fix to camera
+            dna.setDepth(1000);                                                                 // Set depth
         }
     }
 
-    // Method to update health display                          
+    // Method to update health display                                  
     updateHealth(health) {
-        this.healthDNA.children.iterate((dna, index) => {                               // Iterate through each DNA in the health group
-            if (index < health) {                                                       // If index is less than current health
-                dna.setVisible(true);                                                   // show the DNA
-            } else {                                                                    // If index is greater than or equal to current health
-                dna.setTint(0xff0000);                                                  // set tint to red
-                this.scene.time.delayedCall(200, () => {                                // after 0.2 seconds
-                    dna.clearTint();                                                    // clear the tint
-                    dna.setVisible(false);                                              // hide the DNA
+        this.healthDNA.children.iterate((dna, index) => {                                       // Iterate through each DNA in the health group
+            if (index < health) {                                                               // If index is less than current health
+                dna.setVisible(true);                                                           // show the DNA
+            } else {                                                                            // If index is greater than or equal to current health
+                dna.setTint(0xff0000);                                                          // set tint to red
+                this.scene.time.delayedCall(200, () => {                                        // after 0.2 seconds
+                    dna.clearTint();                                                            // clear the tint
+                    dna.setVisible(false);                                                      // hide the DNA
                 });
             }
         });
     }
 
     startTimerEvent(elapsed = 0) {
-        this.timerEvent = this.scene.time.addEvent({                                    // Create a repeating timed event
-            delay: 10,                                                                  // Delay of 10 milliseconds
-            loop: true,                                                                 // Repeat indefinitely
-            callback: () => {                                                           // Callback function to update the timer
-                elapsed += 10;                                                          // Increment elapsed time
-                this.updateTimer(elapsed);                                              // Update the timer display
+        this.timerEvent = this.scene.time.addEvent({                                            // Create a repeating timed event
+            delay: 10,                                                                          // Delay of 10 milliseconds
+            loop: true,                                                                         // Repeat indefinitely
+            callback: () => {                                                                   // Callback function to update the timer
+                elapsed += 10;                                                                  // Increment elapsed time
+                this.updateTimer(elapsed);                                                      // Update the timer display
             }
         });
     }
@@ -109,5 +117,31 @@ export class UIManager {
 
     pauseTimer() {
         this.timerEvent.paused = true;                                                          // Pause the timer event
+    }
+
+    addScoreText(worldX, worldY, amount) {
+        const cam = this.scene.cameras.main;                                                    // Get the main camera
+        const screenX = worldX - cam.scrollX;                                                   // Convert world X to screen X
+        const screenY = worldY - cam.scrollY;                                                   // Convert world Y to screen Y
+        const floatText = this.scene.add.text(screenX, screenY, `+${amount}`)                   // Create floating score text
+            .setFontSize(64)                                                                    // font size
+            .setFontFamily('Impact')                                                            // font family
+            .setFill('white')                                                                   // white color
+            .setDepth(1001)                                                                     // above other UI
+            .setOrigin(0.5)                                                                     // center origin
+            .setScrollFactor(0);                                                                // fix to camera
+        this.scene.tweens.add({                                                                 // Create a tween for the floating text
+            targets: floatText,                                                                 // Target the floating text
+            x: this.scoreText.x,                                                                // Move to score text X position
+            y: this.scoreText.y,                                                                // Move to score text Y position
+            alpha: { from: 1, to: .5 },                                                         // Fade out slightly
+            scale: { from: 1, to: .5 },                                                         // Scale down slightly
+            duration: 500,                                                                      // Duration of the tween
+            ease: 'Cubic.easeIn',                                                               // Easing function
+            onComplete: () => {                                                                 // Callback when tween completes
+                this.updateScore(amount);                                                       // Update the score
+                floatText.destroy();                                                            // Destroy the floating text
+            }
+        });
     }
 }
