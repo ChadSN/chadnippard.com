@@ -13,50 +13,51 @@ export class Game extends Phaser.Scene {
 
     constructor() {
         super('Game');
-        this.worldWidth;                                                                                // Set world width
-        this.worldHeight;                                                                               // Set world height
-        this.levelKey = 'level1';                                                                       // Level key for loading specific levels
-        this.map = null;                                                                                // Tilemap reference
-        this.groundLayer = null;                                                                        // Layer for ground areas
-        this.groundInsideLayer = null;                                                                  // Layer for ground inside areas
-        this.objectLayer = null;                                                                        // Layer for objects
-        this.objectLayer2 = null;                                                                       // Layer for objects layer 2
-        this.objectLayerTop = null;                                                                     // Layer for top objects
-        this.isOverlappingGroundInsideLayer = false;                                                    // Flag to track overlap state
-        this.currentAmbientColour = 0xCCCCCC;                                                           // Current ambient light color set to a neutral color
-        this.daylightAmbientColour = this.currentAmbientColour;                                         // Daylight color
-        this.nightAmbientColour = 0x222222;                                                             // Nighttime color
-        this.munchers = [];                                                                             // Array to hold Muncher enemies
-        this.glizzards = [];                                                                            // Array to hold Glizzard enemies
-        this.dnas = [];                                                                                 // Array to hold DNA collectibles
-        this.crates = [];                                                                               // Array to hold Crates
-        this.poles = [];                                                                                // Array to hold Poles
-        this.signs = [];                                                                                // Array to hold Signs
-        this.wheels = [];                                                                               // Array to hold Wheels
-        this.wheelPlatforms = [];                                                                       // Array to hold Wheel Platforms
-        this.levelExiting = false;                                                                      // Flag to indicate if the level is exiting
-        this.levelReady = false;                                                                        // Flag to indicate if the level is ready
-        this.musicManager = new musicManager(this);                                                     // Music manager instance
-        this.hasMovementInput = false;                                                                  // Track if there was movement input in the previous frame
-        this.playerLastVel = { x: 0, y: 0 };                                                            // Store the player's last velocity
+        this.worldWidth;                                                                                        // Set world width
+        this.worldHeight;                                                                                       // Set world height
+        this.levelKey = 'level1';                                                                               // Level key for loading specific levels
+        this.map = null;                                                                                        // Tilemap reference
+        this.groundLayer = null;                                                                                // Layer for ground areas
+        this.groundInsideLayer = null;                                                                          // Layer for ground inside areas
+        this.objectLayer = null;                                                                                // Layer for objects
+        this.objectLayer2 = null;                                                                               // Layer for objects layer 2
+        this.objectLayerTop = null;                                                                             // Layer for top objects
+        this.isOverlappingGroundInsideLayer = false;                                                            // Flag to track overlap state
+        this.currentAmbientColour = 0xCCCCCC;                                                                   // Current ambient light color set to a neutral color
+        this.daylightAmbientColour = this.currentAmbientColour;                                                 // Daylight color
+        this.nightAmbientColour = 0x555555;                                                                     // Nighttime color
+        this.munchers = [];                                                                                     // Array to hold Muncher enemies
+        this.glizzards = [];                                                                                    // Array to hold Glizzard enemies
+        this.dnas = [];                                                                                         // Array to hold DNA collectibles
+        this.crates = [];                                                                                       // Array to hold dynamic crates
+        this.poles = [];                                                                                        // Array to hold Poles
+        this.signs = [];                                                                                        // Array to hold Signs
+        this.wheels = [];                                                                                       // Array to hold Wheels
+        this.wheelPlatforms = [];                                                                               // Array to hold Wheel Platforms
+        this.levelExiting = false;                                                                              // Flag to indicate if the level is exiting
+        this.levelReady = false;                                                                                // Flag to indicate if the level is ready
+        this.musicManager = new musicManager(this);                                                             // Music manager instance
+        this.hasMovementInput = false;                                                                          // Track if there was movement input in the previous frame
+        this.playerLastVel = { x: 0, y: 0 };                                                                    // Store the player's last velocity
     }
 
     create() {
-        this.physics.world.TILE_BIAS = 64;                                                              // Increase the tile bias to prevent tunneling
-        this.background = this.add.image(960, 540, 'sky').setDepth(0).setScrollFactor(0);               // Add the background image at the center of the game canvas
-        this.setupCamera();                                                                             // Setup camera to follow the player
-        this.inputManager = new InputManager(this);                                                     // Create an instance of InputManager
-        this.uiManager = new UIManager(this);                                                           // Create UI Manager
-        this.createLevel('level1');                                                                     // Create level 1
-        this.musicManager.setMusic('level1Music');         // Load and set level 1 music
-        this.caveAmbience = this.sound.add('caveAmbience', { loop: true, volume: 0.05 });               // Load cave ambience sound
-        //this.relayer();                                                                               // Adjust layer depths
+        this.physics.world.TILE_BIAS = 64;                                                                      // Increase the tile bias to prevent tunneling
+        this.background = this.add.image(960, 540, 'sky').setDepth(0).setScrollFactor(0);                       // Add the background image at the center of the game canvas
+        this.setupCamera();                                                                                     // Setup camera to follow the player
+        this.inputManager = new InputManager(this);                                                             // Create an instance of InputManager
+        this.uiManager = new UIManager(this);                                                                   // Create UI Manager
+        this.createLevel('level1');                                                                             // Create level 1
+        this.musicManager.setMusic('level1Music');                                                              // Load and set level 1 music        
+        this.caveAmbience = this.sound.add('caveAmbience', { loop: true, volume: 0.05 });                       // Load cave ambience sound
+        //this.relayer();                                                                                       // Adjust layer depths
     }
 
     update(time, delta) {
         this.handlePlayerInput();                                                                               // Handle player input
         this.updateWheelPlatforms();                                                                            // Update wheel platform positions
         this.player.lastVel = this.player.hitbox.body.velocity.clone();                                         // Store the player's last velocity
+
     }
 
     createLevel(levelKey) {
@@ -93,6 +94,10 @@ export class Game extends Phaser.Scene {
         this.physics.add.collider(this.player.hitbox, this.groundLayer);
         this.physics.add.collider(this.player.hitbox, this.objectLayerTop, null, (player, tile) => {            // Custom collision callback for one-way platforms
             const body = player.body;                                                                           // player's hitbox physics body
+            if (tile && tile.properties && tile.properties.death) {                                             // Check if the tile has the 'death' property
+                this.player.die();                                                                              // Trigger player death on death tiles
+                return false;                                                                                   // Prevent further collision handling
+            }
             if (body.velocity.y <= 0) return false;                                                             // Pass-through when moving up (jumping)
             const prevBottom = body.prev.y + body.height;                                                       // previous bottom edge
             const tileTop = tile.getTop();                                                                      // world Y of tile top
@@ -108,7 +113,7 @@ export class Game extends Phaser.Scene {
         this.spawnDNAs();                                                                                       // Spawn DNA collectables
         this.spawnClouds();                                                                                     // Spawn background clouds
         // COLLISIONS SETUP FOR PLAYER WITH GROUND INSIDE LAYER
-        this.physics.add.overlap(this.player.hitbox, this.groundInsideLayer, (hitbox, tile) => {
+        this.physics.add.overlap(this.player.hitbox, this.groundInsideLayer, (_, tile) => {
             if (tile && tile.properties.overlaps) {                                                             // Check if the tile has the 'overlaps' property
                 if (!this.isOverlappingGroundInsideLayer) {                                                     // Only trigger once when starting to overlap
                     this.isOverlappingGroundInsideLayer = true;                                                 // Set flag to true
@@ -126,7 +131,7 @@ export class Game extends Phaser.Scene {
                 }
             }
         });
-        this.physics.add.overlap(this.player.hitbox, this.objectLayer, (hitbox, tile) => {                      // Check overlap with object layer
+        this.physics.add.overlap(this.player.hitbox, this.objectLayer, (_, tile) => {                      // Check overlap with object layer
             if (tile && tile.properties.exit && !this.levelExiting) {                                           // Check if the tile has the 'exit' property
                 this.levelExiting = true;                                                                       // Prevent multiple triggers
                 this.levelReady = false;                                                                        // Mark level as not ready during transition
@@ -149,118 +154,128 @@ export class Game extends Phaser.Scene {
     }
 
     transitionToLevel(levelKey) {
-        this.destroyLevel();                                                                            // Clean up the current level
-        this.createLevel(levelKey);                                                                     // Load the new level
+        this.destroyLevel();                                                                                    // Clean up the current level
+        this.createLevel(levelKey);                                                                             // Load the new level
     }
 
     destroyLevel() {
-        this.physics.world.colliders.getActive().forEach(c => c.destroy());                             // Destroy all active colliders
-        this.destroyGroup(this.munchers);                                                               // Destroy muncher enemies
-        this.destroyGroup(this.glizzards);                                                              // Destroy glizzard enemies
-        this.destroyGroup(this.dnas);                                                                   // Destroy DNA collectables
-        this.destroyGroup(this.crates);                                                                 // Destroy crates
-        this.destroyGroup(this.poles);                                                                  // Destroy poles
-        this.destroyGroup(this.signs);                                                                  // Destroy signs
-        this.destroyGroup(this.wheels);                                                                 // Destroy wheels
-        this.destroyGroup(this.wheelPlatforms);                                                         // Destroy wheel platforms
-        if (this.player) this.player.setTilemapAndLayer(null, null);                                    // Clear player's tilemap and layer references
-        if (this.lights) this.lights.destroy();                                                         // Destroy the Lights Manager
-        if (this.map) {                                                                                 // Check if map exists before destroying
-            this.groundLayer = null;                                                                    // Clear ground layer reference
-            this.groundInsideLayer = null;                                                              // Clear ground inside layer reference
-            this.objectLayer = null;                                                                    // Clear object layer reference
-            this.objectLayer2 = null;                                                                   // Clear object layer 2 reference
-            this.objectLayerTop = null;                                                                 // Clear object layer top reference
-            this.map.destroy();                                                                         // Destroy the tilemap
+        this.physics.world.colliders.getActive().forEach(c => c.destroy());                                     // Destroy all active colliders
+        this.destroyGroup(this.munchers);                                                                       // Destroy muncher enemies
+        this.destroyGroup(this.glizzards);                                                                      // Destroy glizzard enemies
+        this.destroyGroup(this.dnas);                                                                           // Destroy DNA collectables
+        this.destroyGroup(this.crates);                                                                         // Destroy crates
+        this.destroyGroup(this.poles);                                                                          // Destroy poles
+        this.destroyGroup(this.signs);                                                                          // Destroy signs
+        this.destroyGroup(this.wheels);                                                                         // Destroy wheels
+        this.destroyGroup(this.wheelPlatforms);                                                                 // Destroy wheel platforms
+        if (this.player) this.player.setTilemapAndLayer(null, null);                                            // Clear player's tilemap and layer references
+        if (this.lights) this.lights.destroy();                                                                 // Destroy the Lights Manager
+        if (this.map) {                                                                                         // Check if map exists before destroying
+            this.groundLayer = null;                                                                            // Clear ground layer reference
+            this.groundInsideLayer = null;                                                                      // Clear ground inside layer reference
+            this.objectLayer = null;                                                                            // Clear object layer reference
+            this.objectLayer2 = null;                                                                           // Clear object layer 2 reference
+            this.objectLayerTop = null;                                                                         // Clear object layer top reference
+            this.map.destroy();                                                                                 // Destroy the tilemap
         }
-        if (this.level1Music) this.level1Music.stop();                                                  // Stop level music
-        if (this.caveAmbience) this.caveAmbience.stop();                                                // Stop cave ambience
-        this.tweens.killAll();                                                                          // Stop all tweens
+        if (this.level1Music) this.level1Music.stop();                                                          // Stop level music
+        if (this.caveAmbience) this.caveAmbience.stop();                                                        // Stop cave ambience
+        this.tweens.killAll();                                                                                  // Stop all tweens
     }
 
     destroyGroup(group) {
-        if (group && group.children) {                                                                  // Check if group and its children exist
-            group.children.each(child => child.destroy());                                              // Destroy each child in the group
-            group.clear(true, true);                                                                    // Clear the group
+        if (group && group.children) {                                                                          // Check if group and its children exist
+            group.children.each(child => child.destroy());                                                      // Destroy each child in the group
+            group.clear(true, true);                                                                            // Clear the group
         }
     }
 
     spawnCrates() {
-        this.crates = this.physics.add.group();                                                         // Create a single static group for all crates
-        const cratePoints = this.map.filterObjects("Objects", obj =>                                    // Find all crate points (small and large)
-            obj.name === "cratePointSmall"                                                              // small crate
-            || obj.name === "cratePointTall"                                                            // tall crate
-            || obj.name === "cratePointLarge"                                                           // large crate
+        this.crates = this.physics.add.group({ runChildUpdate: true });                                         // dynamic group
+        const cratePoints = this.map.filterObjects("Objects", obj =>                                            // Find all crate points (small and large)
+            obj.name === "cratePointSmall"                                                                      // small crate
+            || obj.name === "cratePointTall"                                                                    // tall crate
+            || obj.name === "cratePointLarge"                                                                   // large crate
         );
-        const crateScaleByName = {                                                                      // Define scale for each crate type
-            cratePointSmall: new Phaser.Math.Vector2(1, 1),                                             // small crate 
-            cratePointTall: new Phaser.Math.Vector2(1, 2),                                              // tall crate
-            cratePointLarge: new Phaser.Math.Vector2(2, 2),                                             // large crate
+        const crateScaleByName = {                                                                              // Define scale for each crate type
+            cratePointSmall: new Phaser.Math.Vector2(1, 1),                                                     // small crate 
+            cratePointTall: new Phaser.Math.Vector2(1, 2),                                                      // tall crate
+            cratePointLarge: new Phaser.Math.Vector2(2, 2),                                                     // large crate
         };
         cratePoints.forEach(cratePoint => {
-            const scale = crateScaleByName[cratePoint.name];                                            // Get scale based on crate type
-            const crate = new Crate(this, cratePoint.x, cratePoint.y, scale)                            // Use the same sprite for both                                                      // Enable lighting effects on the crate
-                .setDepth(4);                                                                           // Set depth above ground layer
-            this.crates.add(crate);                                                                     // Add the crate to the static group
+            const scale = crateScaleByName[cratePoint.name];                                                    // Get scale based on crate type
+            const depth = 4;                                                                                    // Set depth above ground layer
+            const crate = new Crate(this, cratePoint.x, cratePoint.y, scale, depth);                            // Create crate instance
+            this.crates.add(crate);                                                                             // Add the crate to the crates group
         });
-        this.physics.add.collider(this.groundLayer, this.crates);                                       // Enable collision between ground layer and crates
-        this.physics.add.collider(this.crates, this.crates, null, (_, crate) => !crate.broken);         // Enable crate-to-crate collision, ignoring broken crates
-        this.physics.add.collider(this.player.hitbox, this.crates, null, (_, crate) => !crate.broken);  // Enable player-to-crate collision, ignoring broken crates
-        this.physics.add.overlap(this.player.damageBox, this.crates, (_, crate) => crate.break());      // Enable overlap between player's damage box and crates to break them
+        this.physics.add.collider(this.groundLayer, this.crates);                                               // Enable collision between ground layer and crates
+        this.physics.add.collider(this.crates, this.crates, null, (crateA, crateB) => !crateA.broken && !crateB.broken);
+
+        this.physics.add.overlap(this.player.damageBox, this.crates, (_, crate) => crate.break());              // Enable overlap between player's damage box and crates to break them
+        this.physics.add.collider(this.player.hitbox, this.crates,
+            (hitbox, crate) => {
+                crate.body.setVelocity(0);                                                                      // Stop crate movement on player collision
+                if (hitbox.body.bottom >= crate.body.top + 8) {                                                 // IF COLLIDING FROM TOP
+                    if (hitbox.x < crate.x) hitbox.body.x = hitbox.body.prev.x - 8;                             // IF COLLIDING FROM SIDE, move player to previous x                                                               // Prevent player from being pushed horizontally by crate
+                    if (hitbox.x > crate.x) hitbox.body.x = hitbox.body.prev.x + 8;                             // IF COLLIDING FROM SIDE, move player to previous x
+                }
+            },
+            (_, crate) => !crate.broken
+        );
     }
 
     spawnWheels() {
-        this.wheels = this.add.group();                                                                 // Create a group for wheels
-        this.wheelPlatforms = this.physics.add.group();                                                 // Create a physics group for wheel platforms
-        const wheelPoints = this.map.filterObjects("Objects", obj => obj.name === "WheelPoint");        // Find all wheel points based on their names
-        const duration = 10000;                                                                         // Duration of one full rotation in milliseconds
-        wheelPoints.forEach(wheelPoint => {                                                             // Add wheels to the group
-            const ropeAngle = wheelPoint.properties.find(prop => prop.name === 'angle').value;          // Get rope angle from properties or default to 0
-            const wheel = this.add.sprite(wheelPoint.x, wheelPoint.y, 'wheel')                          // Create wheel sprite at point
-                .setOrigin(0.5, 0.5)                                                                    // Set origin to center
-                .setPipeline('Light2D')                                                                 // Enable lighting effects on the wheel
-                .setDepth(4);                                                                           // Set depth above ground layer
-            const rope = this.add.sprite(wheelPoint.x, wheelPoint.y, 'rope_onWheel')                    // Create rope sprite at point
-                .setAngle(ropeAngle)                                                                    // Rotate the rope sprite
-                .setDepth(4);                                                                           // Set depth above ground layer
-            this.wheels.add(wheel);                                                                     // Add wheel to the wheels group
-            this.wheels.add(rope);                                                                      // Add rope to the wheels group
-            this.tweens.add({                                                                           // Create a tween to rotate the wheel
-                targets: wheel,                                                                         // Target the wheel sprite
-                angle: 360,                                                                             // Rotate to 360 degrees
-                duration: duration,                                                                     // Duration of one full rotation
-                ease: 'Linear',                                                                         // Linear easing for constant speed
-                repeat: -1                                                                              // Repeat indefinitely
+        this.wheels = this.add.group();                                                                         // Create a group for wheels
+        this.wheelPlatforms = this.physics.add.group();                                                         // Create a physics group for wheel platforms
+        const wheelPoints = this.map.filterObjects("Objects", obj => obj.name === "WheelPoint");                // Find all wheel points based on their names
+        const duration = 10000;                                                                                 // Duration of one full rotation in milliseconds
+        wheelPoints.forEach(wheelPoint => {                                                                     // Add wheels to the group
+            const ropeAngle = wheelPoint.properties.find(prop => prop.name === 'angle').value;                  // Get rope angle from properties or default to 0
+            const wheel = this.add.sprite(wheelPoint.x, wheelPoint.y, 'wheel')                                  // Create wheel sprite at point
+                .setOrigin(0.5, 0.5)                                                                            // Set origin to center
+                .setPipeline('Light2D')                                                                         // Enable lighting effects on the wheel
+                .setDepth(4);                                                                                   // Set depth above ground layer
+            const rope = this.add.sprite(wheelPoint.x, wheelPoint.y, 'rope_onWheel')                            // Create rope sprite at point
+                .setAngle(ropeAngle)                                                                            // Rotate the rope sprite
+                .setDepth(4);                                                                                   // Set depth above ground layer
+            this.wheels.add(wheel);                                                                             // Add wheel to the wheels group
+            this.wheels.add(rope);                                                                              // Add rope to the wheels group
+            this.tweens.add({                                                                                   // Create a tween to rotate the wheel
+                targets: wheel,                                                                                 // Target the wheel sprite
+                angle: 360,                                                                                     // Rotate to 360 degrees
+                duration: duration,                                                                             // Duration of one full rotation
+                ease: 'Linear',                                                                                 // Linear easing for constant speed
+                repeat: -1                                                                                      // Repeat indefinitely
             });
-            const platformOffset = wheel.displayWidth / 2 - 32;                                         // Distance from wheel center to platform center
-            this.spawnWheelPlatform(wheelPoint.x, wheelPoint.y - platformOffset, wheelPoint, duration); // Top platform
-            this.spawnWheelPlatform(wheelPoint.x, wheelPoint.y + platformOffset, wheelPoint, duration); // Bottom platform
-            this.spawnWheelPlatform(wheelPoint.x - platformOffset, wheelPoint.y, wheelPoint, duration); // Left platform
-            this.spawnWheelPlatform(wheelPoint.x + platformOffset, wheelPoint.y, wheelPoint, duration); // Right platform
+            const platformOffset = wheel.displayWidth / 2 - 32;                                                 // Distance from wheel center to platform center
+            this.spawnWheelPlatform(wheelPoint.x, wheelPoint.y - platformOffset, wheelPoint, duration);         // Top platform
+            this.spawnWheelPlatform(wheelPoint.x, wheelPoint.y + platformOffset, wheelPoint, duration);         // Bottom platform
+            this.spawnWheelPlatform(wheelPoint.x - platformOffset, wheelPoint.y, wheelPoint, duration);         // Left platform
+            this.spawnWheelPlatform(wheelPoint.x + platformOffset, wheelPoint.y, wheelPoint, duration);         // Right platform
         });
-        this.wheelPlatforms.getChildren().forEach(platform => {                                         // Configure each wheel platform
-            platform.body.setAllowGravity(false);                                                       // Disable gravity on the platform
-            platform.body.setImmovable(true);                                                           // Make the platform immovable
+        this.wheelPlatforms.getChildren().forEach(platform => {                                                 // Configure each wheel platform
+            platform.body.setAllowGravity(false);                                                               // Disable gravity on the platform
+            platform.body.setImmovable(true);                                                                   // Make the platform immovable
         });
     }
 
     spawnWheelPlatform(posX, posY, wheelPos, duration) {
-        const wheelPlatform = this.physics.add.sprite(posX, posY, 'wheelPlatform')                      // Create platform sprite
-            .setDepth(4)                                                                                // Set depth above ground layer
-            .setPipeline('Light2D');                                                                    // Enable lighting effects on the platform
-        wheelPlatform.soundType = 'wood';                                                               // Set sound type for footsteps
-        this.wheelPlatforms.add(wheelPlatform);                                                         // Add platform to the wheel platforms group
-        const dx = posX - wheelPos.x;                                                                   // Calculate initial distance from wheel center
-        const dy = posY - wheelPos.y;                                                                   // Calculate initial distance from wheel center
-        wheelPlatform._orbit = {                                                                        // Store orbit parameters on the platform
-            center: { x: wheelPos.x, y: wheelPos.y },                                                   // Center of the wheel
-            radius: Math.sqrt(dx * dx + dy * dy),                                                       // Distance from center
-            angle: Math.atan2(dy, dx),                                                                  // Current angle in radians
-            speed: (2 * Math.PI) / (duration / 1000)                                                    // Radians per second
+        const wheelPlatform = this.physics.add.sprite(posX, posY, 'wheelPlatform')                              // Create platform sprite
+            .setDepth(4)                                                                                        // Set depth above ground layer
+            .setPipeline('Light2D');                                                                            // Enable lighting effects on the platform
+        wheelPlatform.soundType = 'wood';                                                                       // Set sound type for footsteps
+        this.wheelPlatforms.add(wheelPlatform);                                                                 // Add platform to the wheel platforms group
+        const dx = posX - wheelPos.x;                                                                           // Calculate initial distance from wheel center
+        const dy = posY - wheelPos.y;                                                                           // Calculate initial distance from wheel center
+        wheelPlatform._orbit = {                                                                                // Store orbit parameters on the platform
+            center: { x: wheelPos.x, y: wheelPos.y },                                                           // Center of the wheel
+            radius: Math.sqrt(dx * dx + dy * dy),                                                               // Distance from center
+            angle: Math.atan2(dy, dx),                                                                          // Current angle in radians
+            speed: (2 * Math.PI) / (duration / 1000)                                                            // Radians per second
         };
-        this.physics.add.collider(this.player.hitbox, wheelPlatform, (hitbox, platform) => {            // Enable collision between player and wheel platform
-            if (hitbox.body.blocked.down && hitbox.y <= platform.y - platform.displayHeight / 2) {      // Check if player is landing on top of the platform
-                this.player.onPlatform = platform;                                                      // Set the player's onPlatform reference
+        this.physics.add.collider(this.player.hitbox, wheelPlatform, (hitbox, platform) => {                    // Enable collision between player and wheel platform
+            if (hitbox.body.blocked.down && hitbox.y <= platform.y - platform.displayHeight / 2) {              // Check if player is landing on top of the platform
+                this.player.onPlatform = platform;                                                              // Set the player's onPlatform reference
             }
         });
     }
@@ -373,129 +388,129 @@ export class Game extends Phaser.Scene {
     }
 
     pauseGame() {
-        if (this.scene.isPaused()) return;                                                                  // Prevent double-pause
-        this.musicManager.pauseMusic();                                                                     // Pause music
-        this.scene.launch('Pause');                                                                         // Launch Pause scene
-        this.scene.pause();                                                                                 // Pause Game scene
+        if (this.scene.isPaused()) return;                                                                      // Prevent double-pause
+        this.musicManager.pauseMusic();                                                                         // Pause music
+        this.scene.launch('Pause');                                                                             // Launch Pause scene
+        this.scene.pause();                                                                                     // Pause Game scene
     }
 
     unpauseGame() {
-        this.scene.resume();                                                                                // Resume Game scene
-        this.musicManager.resumeMusic();                                                                    // Resume music
+        this.scene.resume();                                                                                    // Resume Game scene
+        this.musicManager.resumeMusic();                                                                        // Resume music
     }
 
-    // Add lighting effects to the scene
+    // Add lighting effects to the scene    
     addLights() {
-        this.lights.enable();                                                                               // Enable Lights Manager
-        this.lights.setAmbientColor(this.daylightAmbientColour);                                            // Set ambient light color for the scene
-        this.lights.addLight(this.cameras.main.x, 0, 3000)                                                  // Light position and radius
-            .setColor(0xFFFACD)                                                                             // Light color
-            .setIntensity(1.2)                                                                              // Simulated sunlight
-            .setScrollFactor(1, 0);                                                                         // Make the light follow the camera. Arg1: x scroll factor. 2: y scroll factor
+        this.lights.enable();                                                                                   // Enable Lights Manager
+        this.lights.setAmbientColor(this.daylightAmbientColour);                                                // Set ambient light color for the scene
+        this.lights.addLight(this.cameras.main.x, 0, 3000)                                                      // Light position and radius
+            .setColor(0xFFFACD)                                                                                 // Light color
+            .setIntensity(1.2)                                                                                  // Simulated sunlight
+            .setScrollFactor(1, 0);                                                                             // Make the light follow the camera. Arg1: x scroll factor. 2: y scroll factor
 
-        // Add flickering lights at designated light points         
+        // Add flickering lights at designated light points             
         const lightPoints = this.map.filterObjects("Objects", obj => obj.name === "lightPoint");
         lightPoints.forEach(point => {
-            const light = this.lights.addLight(point.x, point.y, 200)                                       // Light position and radius
-                .setColor(0xFFD580)                                                                         // Warm light color
-                .setIntensity(1.5);                                                                         // Random brightness of the light
+            const light = this.lights.addLight(point.x, point.y, 200)                                           // Light position and radius
+                .setColor(0xFFD580)                                                                             // Warm light color
+                .setIntensity(1.5);                                                                             // Random brightness of the light
             this.tweens.add({
-                targets: light,                                                                             // Animate the Phaser Light object
-                intensity: { from: 1.5, to: 2 },                                                            // Flicker intensity between 1.5 and 2
-                radius: { from: 200, to: 250 },                                                             // Flicker radius between 200 and 250
-                duration: 1500,                                                                             // Duration of one flicker cycle
-                yoyo: true,                                                                                 // Flicker back and forth
-                repeat: -1                                                                                  // Repeat indefinitely
+                targets: light,                                                                                 // Animate the Phaser Light object
+                intensity: { from: 1.5, to: 2 },                                                                // Flicker intensity between 1.5 and 2
+                radius: { from: 200, to: 250 },                                                                 // Flicker radius between 200 and 250
+                duration: 1500,                                                                                 // Duration of one flicker cycle
+                yoyo: true,                                                                                     // Flicker back and forth
+                repeat: -1                                                                                      // Repeat indefinitely
             });
         });
     }
 
-    // Spawn the player character
+    // Spawn the player character   
     spawnPlayer(x, y) {
-        if (!this.player) {                                                                                 // If player doesn't exist, create a new one
-            this.player = new Player(this, x, y).setDepth(10);                                              // Spawn player and set depth
-            this.player.setPipeline('Light2D');                                                             // Enable lighting effects on the player
-            const playerDamageBox = new DamageBox(this, this.player);                                       // create damage box for player
-            this.player.setDamageBox(playerDamageBox);                                                      // assign damage box to player
-            this.uiManager.initHealthDisplay();                                                             // Initialise health display in UI
+        if (!this.player) {                                                                                     // If player doesn't exist, create a new one
+            this.player = new Player(this, x, y).setDepth(10);                                                  // Spawn player and set depth
+            this.player.setPipeline('Light2D');                                                                 // Enable lighting effects on the player
+            const playerDamageBox = new DamageBox(this, this.player);                                           // create damage box for player
+            this.player.setDamageBox(playerDamageBox);                                                          // assign damage box to player
+            this.uiManager.initHealthDisplay();                                                                 // Initialise health display in UI
         }
-        this.player.hitbox.setPosition(x, y);                                                               // Set player hitbox position to spawn point
-        this.cameras.main.startFollow(this.player, false, 0.08, 0.08);                                      // Make the camera follow the player smoothly
-        this.player.setTilemapAndLayer(this.map, this.groundLayer, this.objectLayerTop);                    // Provide player with tilemap and layer references
-        this.uiManager.updateHealth(this.player.health);                                                    // Update health display in UI
-        this.player.setCheckpoint(x, y);                                                                    // Set initial checkpoint
+        this.player.hitbox.setPosition(x, y);                                                                   // Set player hitbox position to spawn point
+        this.cameras.main.startFollow(this.player, false, 0.08, 0.08);                                          // Make the camera follow the player smoothly
+        this.player.setTilemapAndLayer(this.map, this.groundLayer, this.objectLayerTop);                        // Provide player with tilemap and layer references
+        this.uiManager.updateHealth(this.player.health);                                                        // Update health display in UI
+        this.player.setCheckpoint(x, y);                                                                        // Set initial checkpoint
     }
 
-    // Setup camera to follow the player                        
+    // Setup camera to follow the player                            
     setupCamera() {
-        const cam = this.cameras.main;                                                                      // get main camera
-        cam.setBounds(0, 0, this.worldWidth, this.worldHeight);                                             // Set camera bounds to the size of the level
-        cam.setDeadzone(cam.width / 4, 0);                                                                  // Set deadzone to center quarter width and full height
-        this.cameras.main.roundPixels = true;                                                               // Prevent sub-pixel rendering to avoid blurriness
+        const cam = this.cameras.main;                                                                          // get main camera
+        cam.setBounds(0, 0, this.worldWidth, this.worldHeight);                                                 // Set camera bounds to the size of the level
+        cam.setDeadzone(cam.width / 4, 0);                                                                      // Set deadzone to center quarter width and full height
+        this.cameras.main.roundPixels = true;                                                                   // Prevent sub-pixel rendering to avoid blurriness
     }
 
-    // Spawn poles for swinging         
+    // Spawn poles for swinging             
     spawnPoles() {
-        this.poles = this.physics.add.staticGroup();                                                        // Create a static group for poles
-        const polePoints = this.map.filterObjects("Objects", obj => obj.name === "polePoint");              // Find all pole spawn points
-        polePoints.forEach(polePoint => {                                                                   // Iterate through each polePoint and create a pole at its position
-            const pole = this.poles.create(polePoint.x, polePoint.y, 'pole')                                // create pole at point
+        this.poles = this.physics.add.staticGroup();                                                            // Create a static group for poles
+        const polePoints = this.map.filterObjects("Objects", obj => obj.name === "polePoint");                  // Find all pole spawn points
+        polePoints.forEach(polePoint => {                                                                       // Iterate through each polePoint and create a pole at its position
+            const pole = this.poles.create(polePoint.x, polePoint.y, 'pole')                                    // create pole at point
                 .setOrigin(0.5, 0.5)
                 .setScale(2)
                 .refreshBody()
                 .setDepth(4);
         });
-        this.physics.add.overlap(this.player.hitbox, this.poles, (hitbox, pole) => {                        // player overlaps pole
-            this.player.poleSwing(pole);                                                                    // initiate pole swinging
+        this.physics.add.overlap(this.player.hitbox, this.poles, (_, pole) => {                                 // player overlaps pole
+            this.player.poleSwing(pole);                                                                        // initiate pole swinging
         });
     }
 
-    // Spawn DNA collectables           
+    // Spawn DNA collectables               
     spawnDNAs() {
-        this.dnas = this.physics.add.staticGroup();                                                         // Create a static group for DNAs
-        const dnaPoints = this.map.filterObjects("Objects", obj => obj.name === "dnaPoint");                // Find all DNA spawn points
-        dnaPoints.forEach(dnaPoint => {                                                                     // Iterate through each dnaPoint and create a DNA at its position
-            const dna = new DNA(this, dnaPoint.x, dnaPoint.y);                                              // create dna at point
-            this.dnas.add(dna).setDepth(4);                                                                 // add to the group
+        this.dnas = this.physics.add.staticGroup();                                                             // Create a static group for DNAs
+        const dnaPoints = this.map.filterObjects("Objects", obj => obj.name === "dnaPoint");                    // Find all DNA spawn points
+        dnaPoints.forEach(dnaPoint => {                                                                         // Iterate through each dnaPoint and create a DNA at its position
+            const dna = new DNA(this, dnaPoint.x, dnaPoint.y);                                                  // create dna at point
+            this.dnas.add(dna).setDepth(4);                                                                     // add to the group
         });
-        this.physics.add.overlap(this.player.hitbox, this.dnas, (hitbox, dna) => {                          // player collects dna
-            this.player.collectDNA(dna);                                                                    // Handle DNA collection
+        this.physics.add.overlap(this.player.hitbox, this.dnas, (_, dna) => {                                   // player collects dna
+            this.player.collectDNA(dna);                                                                        // Handle DNA collection
         });
     }
 
-    // Spawn muncher enemies
+    // Spawn muncher enemies    
     spawnMunchers() {
-        this.munchers = this.physics.add.group({ runChildUpdate: true });                                   // Create a group for munchers
-        const muncherPoints = this.map.filterObjects("Objects", obj => obj.name === "muncherPoint");        // Find all muncher spawn points
-        muncherPoints.forEach(muncherPoint => {                                                             // Iterate through each muncherPoint and create a Muncher at its position
-            const muncher = new Muncher(this, muncherPoint.x, muncherPoint.y);                              // create muncher at point
-            this.munchers.add(muncher).setDepth(4);                                                                     // add to the group
-            const damageBox = new DamageBox(this, muncher);                                                 // create damage box for muncher
-            muncher.setDamageBox(damageBox);                                                                // assign damage box to muncher
-            muncher.body.setImmovable(true);                                                                         // make muncher immovable
+        this.munchers = this.physics.add.group({ runChildUpdate: true });                                       // Create a group for munchers
+        const muncherPoints = this.map.filterObjects("Objects", obj => obj.name === "muncherPoint");            // Find all muncher spawn points
+        muncherPoints.forEach(muncherPoint => {                                                                 // Iterate through each muncherPoint and create a Muncher at its position
+            const muncher = new Muncher(this, muncherPoint.x, muncherPoint.y);                                  // create muncher at point
+            this.munchers.add(muncher).setDepth(4);                                                                         // add to the group
+            const damageBox = new DamageBox(this, muncher);                                                     // create damage box for muncher
+            muncher.setDamageBox(damageBox);                                                                    // assign damage box to muncher
+            muncher.body.setImmovable(true);                                                                             // make muncher immovable
         });
-        this.physics.add.collider(this.munchers, this.groundLayer);                                         // munchers collide with ground layer
-        this.physics.add.collider(this.player.hitbox, this.munchers, (player, muncher) => {                 // player collides with muncher
-            const stomp = this.player.lastVel.y > 200 && player.body.touching.down;                          // check if player is falling fast enough to stomp
-            if (!stomp) return;                                                                             // if not a stomp, exit
-            player.body.setVelocityY(-600);                                                                 // bounce the player up
-            muncher.death();                                                                                // destroy the muncher
+        this.physics.add.collider(this.munchers, this.groundLayer);                                             // munchers collide with ground layer
+        this.physics.add.collider(this.player.hitbox, this.munchers, (player, muncher) => {                     // player collides with muncher
+            const stomp = this.player.lastVel.y > 200 && player.body.touching.down;                              // check if player is falling fast enough to stomp
+            if (!stomp) return;                                                                                 // if not a stomp, exit
+            player.body.setVelocityY(-600);                                                                     // bounce the player up
+            muncher.death();                                                                                    // destroy the muncher
         });
     }
 
-    // Spawn glizzard enemies
+    // Spawn glizzard enemies   
     spawnGlizzards() {
-        this.glizzards = this.add.group({ runChildUpdate: true });                                          // Create a group for glizzards
-        const glizzardPoints = this.map.filterObjects("Objects", obj => obj.name === "glizzardPoint");      // Find all glizzard spawn points
-        glizzardPoints.forEach(glizzardPoint => {                                                           // Iterate through each glizzardPoint and create a Glizzard at its position
-            const glizzard = new Glizzard(this, glizzardPoint.x, glizzardPoint.y);                          // create glizzard at point
-            this.glizzards.add(glizzard).setDepth(4);                                                       // add to the group
+        this.glizzards = this.add.group({ runChildUpdate: true });                                              // Create a group for glizzards
+        const glizzardPoints = this.map.filterObjects("Objects", obj => obj.name === "glizzardPoint");          // Find all glizzard spawn points
+        glizzardPoints.forEach(glizzardPoint => {                                                               // Iterate through each glizzardPoint and create a Glizzard at its position
+            const glizzard = new Glizzard(this, glizzardPoint.x, glizzardPoint.y);                              // create glizzard at point
+            this.glizzards.add(glizzard).setDepth(4);                                                           // add to the group
         });
-        this.physics.add.overlap(this.player.hitbox, this.glizzards, (player, glizzard) => {                // player stomps glizzard
-            if (player.y < glizzard.y - glizzard.height                                                     // IF PLAYER IS ABOVE GLIZZARD
-                && this.player.lastVel.y >= 200) {                                                          // AND IF PLAYER IS FALLING FAST ENOUGH
-                player.body.setVelocityY(-600);                                                             // bounce the player up
-                glizzard.death();                                                                           // destroy the glizzard
+        this.physics.add.overlap(this.player.hitbox, this.glizzards, (player, glizzard) => {                    // player stomps glizzard
+            if (player.y < glizzard.y - glizzard.height                                                         // IF PLAYER IS ABOVE GLIZZARD
+                && this.player.lastVel.y >= 200) {                                                              // AND IF PLAYER IS FALLING FAST ENOUGH
+                player.body.setVelocityY(-600);                                                                 // bounce the player up
+                glizzard.death();                                                                               // destroy the glizzard
             }
         });
     }
@@ -509,15 +524,15 @@ export class Game extends Phaser.Scene {
 
     handleDamageBoxOverlap(parent, damageBox) {
         if (parent === this.player) {
-            this.physics.add.overlap(damageBox, this.munchers, (damageBox, muncher) => {
+            this.physics.add.overlap(damageBox, this.munchers, (_, muncher) => {
                 muncher.death(muncher.x < this.player.x ? -1 : 1);
             });
 
-            this.physics.add.overlap(damageBox, this.glizzards, (damageBox, glizzard) => {
+            this.physics.add.overlap(damageBox, this.glizzards, (_, glizzard) => {
                 glizzard.death(glizzard.x < this.player.x ? -1 : 1);
             });
         } else {
-            this.physics.add.overlap(damageBox, this.player.hitbox, (damageBox, player) => {
+            this.physics.add.overlap(damageBox, this.player.hitbox, (damageBox, _) => {
                 this.player.damagePlayer(damageBox.damage, damageBox); // Damage the player
             });
         }

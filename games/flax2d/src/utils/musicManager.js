@@ -9,10 +9,10 @@ export class musicManager {
     setMusic(track) {
         switch (track) {
             case 'mainMenuMusic':
-                this.currentMusic = this.scene.sound.add('mainMenuMusic', { loop: true, volume: 0 });   // Load the main menu music. vol: 2
+                this.currentMusic = this.scene.sound.add('mainMenuMusic', { loop: true, volume: 2 });   // Load the main menu music. vol: 2
                 if (musicManager.shouldPlayMusic) this.currentMusic.play(); break;                      // IF MUSIC SHOULD PLAY, PLAY IT
             case 'level1Music':
-                this.currentMusic = this.scene.sound.add('level1Music', { loop: true, volume: 0 });   // Load level 1 music. vol: 0.5 
+                this.currentMusic = this.scene.sound.add('level1Music', { loop: true, volume: 0.5 });   // Load level 1 music. vol: 0.5 
                 if (musicManager.shouldPlayMusic) this.currentMusic.play(); break;                      // IF MUSIC SHOULD PLAY, PLAY IT
             default:
                 console.warn('Unknown music track:', track);

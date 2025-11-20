@@ -103,7 +103,7 @@ export class Muncher extends Phaser.Physics.Arcade.Sprite {
                 this.attackSound.play();                                                            // play attack sound
 
                 // VISUAL AID - REMOVE LATER
-                this.damageBox.rectangle.setPosition(this.x + this.width / 2 * this.direction, this.y);
+                //this.damageBox.rectangle.setPosition(this.x + this.width / 2 * this.direction, this.y);
             }
         };
         this.off('animationupdate', onAnimUpdate);                                                  // remove existing listener if any
