@@ -131,7 +131,7 @@ export class Game extends Phaser.Scene {
                 }
             }
         });
-        this.physics.add.overlap(this.player.hitbox, this.objectLayer, (_, tile) => {                      // Check overlap with object layer
+        this.physics.add.overlap(this.player.hitbox, this.objectLayer, (_, tile) => {                           // Check overlap with object layer
             if (tile && tile.properties.exit && !this.levelExiting) {                                           // Check if the tile has the 'exit' property
                 this.levelExiting = true;                                                                       // Prevent multiple triggers
                 this.levelReady = false;                                                                        // Mark level as not ready during transition
@@ -144,6 +144,12 @@ export class Game extends Phaser.Scene {
                         default: console.error('Unknown level key:', this.levelKey); break;                     // Handle unknown level keys
                     }
                 });
+            }
+            if (tile && tile.properties && tile.properties.spawnPoint) {                                        // Check if the tile has the 'spawnPoint' property
+                if (
+                    this.player.checkpoint.x !== tile.getCenterX()                                              // New checkpoint X
+                    || this.player.checkpoint.y !== tile.getBottom()                                            // New checkpoint Y
+                ) this.player.setCheckpoint(tile.getCenterX(), tile.getBottom());                               // Set new checkpoint at tile center
             }
         });
 

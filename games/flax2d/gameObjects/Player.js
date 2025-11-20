@@ -110,10 +110,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         if (this.state === newState) return;                                                    // already in desired state
         this.state = newState;                                                                  // update state
         switch (newState) {
-            case STATES.IDLE: this.play('idle', true); break;                                   // play idle animation 
-            case STATES.RUNNING: this.play('run', true); break;                                 // play run animation
-            case STATES.JUMPING: this.play('jump', true); break;                                // play jump animation
-            case STATES.FALLING: this.play('fall', true); break;                                // play fall animation
+            case STATES.IDLE: if (!this.isTailwhipping) this.play('idle', true); break;         // handle idle
+            case STATES.RUNNING: if (!this.isTailwhipping) this.play('run', true); break;       // handle running
+            case STATES.JUMPING: if (!this.isTailwhipping) this.play('jump', true); break;      // handle jumping
+            case STATES.FALLING: if (!this.isTailwhipping) this.play('fall', true); break;      // handle falling
             case STATES.GLIDING: this.glide(); break;                                           // handle gliding
             default: break;
         }
@@ -198,7 +198,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         if (this.state !== STATES.GLIDING                                                       // IF NOT GLIDING
             || this.state === STATES.GLIDE_SPINNING                                             // OR IF ALREADY SPINNING
             || this.state === STATES.GLIDE_TURNING) return;                                     // OR IF ALREADY TURNING - prevent gliding spin
-        this.endTailwhip();
+        this.endTailwhip(true);
         this.setState(STATES.GLIDE_SPINNING);                                                   // set state to GLIDE_SPINNING
         this.disableMovement = true;                                                            // disable movement during spin
         const storeVelocity = this.hitbox.body.velocity.clone();                                // store initial velocity
@@ -247,7 +247,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             || this.state === STATES.GLIDE_SPINNING                                             // OR IF ALREADY SPINNING
             || this.state === STATES.GLIDE_TURNING) return;                                     // OR ALREADY TURNING - prevent glide turn
         if (this.flipX !== isFlipX) return;                                                     // no need to turn if already facing the right direction
-        this.endTailwhip();                                                                     // end tailwhip if active
+        this.endTailwhip(true);                                                                     // end tailwhip if active
         this.setState(STATES.GLIDE_TURNING);                                                    // set glideTurning to true
         this.disableMovement = true;                                                            // disable movement during spin
         const storeVelocity = this.hitbox.body.velocity.clone();                                // store initial velocity
@@ -305,13 +305,14 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.scene.handleDamageBoxOverlap(this, this.damageBox);                                // set up overlap handling
         this.anims.play('tailwhip');                                                            // play tailwhip animation
         this.on('animationcomplete', (animation) => {                                           // when any animation completes
-            if (animation.key === 'tailwhip') this.endTailwhip();                               // IF tailwhip animation completed - end tailwhip
+            if (animation.key === 'tailwhip') this.endTailwhip(false);                               // IF tailwhip animation completed - end tailwhip
         });
     }
 
-    endTailwhip() {
+    endTailwhip(endAudio) {
         if (!this.isTailwhipping) return;                                                       // prevent multiple tailwhip ends
         this.isTailwhipping = false;                                                            // set isTailwhipping to false
+        if (endAudio) this.tailwhipSound.stop();
         this.damageBox.deactivate();                                                            // reset damage box position
         if (this.state === STATES.GLIDING) this.glide();                                        // IF GLIDING - resume gliding
         else {                                                                                  // NOT GLIDING - reset to appropriate state
@@ -325,7 +326,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         if (this.state === STATES.POLE_SWINGING || this.didStartPoleJump) return                // prevent multiple pole swings
         this.didStartPoleJump = false;                                                          // set pole jump flag
         this.stopActiveTween();                                                                 // Stop any active tweens
-        this.endTailwhip();                                                                     // End tailwhip if active
+        this.endTailwhip(true);                                                                     // End tailwhip if active
         this.didStartGlide = false;                                                             // Reset glide start flag
         this.disableMovement = false;                                                           // Ensure movement is enabled
         this.activePole = pole;                                                                 // Store reference to the pole being swung on
@@ -475,7 +476,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             this.setState(STATES.IDLE);                                                         // Reset the gliding spin flag
             this.setAbovePlatform();                                                            // Position player above the platform
         }
-        this.endTailwhip();
+        this.endTailwhip(true);
         this.didStartGlide = false;                                                             // Reset the glide start flag
         this.hitbox.angle = 0;                                                                  // Reset the rotation
         this.hitbox.body.setGravity(0);                                                         // Re-enable normal gravity
