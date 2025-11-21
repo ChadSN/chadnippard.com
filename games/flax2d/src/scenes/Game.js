@@ -70,6 +70,7 @@ export class Game extends Phaser.Scene {
         this.map = this.make.tilemap({ key: this.levelKey, tileWidth: 64, tileHeight: 64 });                    // key must match the key used in preload
         this.worldWidth = this.map.widthInPixels;                                                               // Get map dimensions in pixels
         this.worldHeight = this.map.heightInPixels;                                                             // Get map dimensions in pixels
+        this.cameras.main.setBounds(0, 0, this.worldWidth, this.worldHeight);                             // Set camera bounds to match the tilemap size
         this.physics.world.setBounds(0, 0, this.worldWidth, this.worldHeight);                                  // Set physics world bounds to match the tilemap size
         // CREATE TILESETS
         const groundTileSet = this.map.addTilesetImage('GroundTileSet', 'tiles');                               // Arg 1: tileset name in Tiled.    2: key used in preload
@@ -178,6 +179,9 @@ export class Game extends Phaser.Scene {
         this.destroyGroup(this.signs);                                                                          // Destroy signs
         this.destroyGroup(this.wheels);                                                                         // Destroy wheels
         this.destroyGroup(this.wheelPlatforms);                                                                 // Destroy wheel platforms
+        this.destroyGroup(this.tpSenders);                                                                      // Destroy teleporter senders
+        this.destroyGroup(this.tpReceivers);                                                                    // Destroy teleporter receivers
+
         if (this.player) this.player.setTilemapAndLayer(null, null);                                            // Clear player's tilemap and layer references
         if (this.lights) this.lights.destroy();                                                                 // Destroy the Lights Manager
         if (this.map) {                                                                                         // Check if map exists before destroying
