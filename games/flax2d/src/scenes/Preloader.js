@@ -71,6 +71,8 @@ export class Preloader extends Phaser.Scene {
         this.load.image('wheel', '/Objects/Wheel.png');
         this.load.image('wheelPlatform', '/Objects/WheelPlatform.png');
         this.load.image('rope_onWheel', '/Objects/Rope_onWheel.png');
+        this.load.spritesheet('teleporter', '/Objects/teleporter.png', { frameWidth: 64, frameHeight: 128 });
+        this.load.image('teleporterPad', '/Objects/teleporterPad.png');
 
         // AUDIO
         this.load.audio('mainMenuMusic', '/audio/Song 2 09.11.25.mp3');
@@ -84,7 +86,8 @@ export class Preloader extends Phaser.Scene {
         this.load.audio('breakingCrate', '/audio/443293__deathscyp__wood-break.wav');
         this.load.audio('muncherDeath', '/audio/muncher-death.wav');
         this.load.audio('muncherAttack', '/audio/crunch.wav');
-        this.load.audio('scorePoints', '/audio/ScorePoints.mp3');
+        this.load.audio('scorePoints', '/audio/ScorePoints.wav');
+        this.load.audio('checkpointSound', '/audio/Checkpoint.wav');
     }
 
     create() {

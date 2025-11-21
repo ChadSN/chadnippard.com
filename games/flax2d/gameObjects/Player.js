@@ -48,6 +48,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.footstepWoodSound = this.scene.sound.add('footstepWood', { volume: 0.1 });         // footstep wood sound
         this.tailwhipSound = this.scene.sound.add('tailwhipSound', { volume: 0.5 });            // tailwhip sound
         this.poleSwingSound = this.scene.sound.add('poleSwingSound', { volume: 0.5 });          // pole swing sound
+        this.checkpointSound = this.scene.sound.add('checkpointSound', { volume: 0.5 });        // checkpoint sound
         this.footstepGrassSoundIsPlaying = false;                                               // footstep sound playing flag
         this.tilemap = null;                                                                    // Initialise the tilemap
         this.groundLayer = null;                                                                // Initialise the ground layer
@@ -63,25 +64,26 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         if (!this.hitbox.body) return;                                                          // safety check
         if (this.state === STATES.DEAD) return;                                                 // if dead, skip update
         super.preUpdate(time, delta);                                                           // call the parent class preUpdate
+        const body = this.hitbox.body;
         this.setPosition(this.hitbox.x, this.hitbox.y);                                         // sync player sprite position with hitbox
         this.angle = this.hitbox.angle;                                                         // sync player sprite angle with hitbox
-        this.outOfBoundsCheck();
+        this.outOfBoundsCheck();                                                                // check if out of bounds
+        if (this.state === STATES.GLIDING) body.setMaxVelocityY(300);                           // limit falling speed when gliding
+        else body.setMaxVelocityY(1200);                                                        // reset max falling speed
         if (this.isTailwhipping) {                                                              // during tailwhip
             const tailWhipOffset = this.state === STATES.GLIDING ? 0 : this.height / 5;         // adjust offset based on gliding state
             this.damageBox.setPosition(this.x, this.y + tailWhipOffset);                        // Sync position with player
             this.damageBox.angle = this.hitbox.angle;                                           // Sync angle with player
-            // VISUAL AID - REMOVE LATER                    
-            //this.damageBox.rectangle.setPosition(this.x, this.y + tailWhipOffset);              // Sync position with player
-            //this.damageBox.rectangle.angle = this.hitbox.angle;                                 // Sync angle with player
+            //this.damageBox.rectangle.setPosition(this.x, this.y + tailWhipOffset);            // VISUAL DEBUGGING
+            //this.damageBox.rectangle.angle = this.hitbox.angle;                               // VISUAL DEBUGGING
         }
-        const body = this.hitbox.body;                                                          // shorthand reference to the hitbox body
         const vy = body.velocity.y;                                                             // shorthand reference to vertical velocity
         const velTol = 50;                                                                      // velocity tolerance for state changes
         if (!body.blocked.down && Math.abs(vy) > velTol) {                                      // IF IN AIR
             body.setDragX(this.airDrag);                                                        // set air drag
             this._wasOnGround = false;                                                          // unset ground flag
             if (this.isInGlideFamily()) {                                                       // IF GLIDING
-                if (this.state === STATES.GLIDING && this.hitbox.body.velocity.x === 0)         // IF NO HORIZONTAL VELOCITY
+                if (this.state === STATES.GLIDING && body.velocity.x === 0)                     // IF NO HORIZONTAL VELOCITY
                     this.stopGlide();                                                           // stop gliding if no horizontal velocity
                 return;                                                                         // skip rest of update
             }
@@ -226,7 +228,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                 this.handleGlideSpinCollision();                                                // handle collisions during glide spin
             },
             onComplete: () => {                                                                 // When the circular motion is complete
-                this.endGlideSpin(STATES.GLIDING, storeVelocity);                                      // end glide spin and resume gliding
+                this.endGlideSpin(STATES.GLIDING, storeVelocity);                               // end glide spin and resume gliding
             }
         });
     }
@@ -247,7 +249,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             || this.state === STATES.GLIDE_SPINNING                                             // OR IF ALREADY SPINNING
             || this.state === STATES.GLIDE_TURNING) return;                                     // OR ALREADY TURNING - prevent glide turn
         if (this.flipX !== isFlipX) return;                                                     // no need to turn if already facing the right direction
-        this.endTailwhip(true);                                                                     // end tailwhip if active
+        this.endTailwhip(true);                                                                 // end tailwhip if active
         this.setState(STATES.GLIDE_TURNING);                                                    // set glideTurning to true
         this.disableMovement = true;                                                            // disable movement during spin
         const storeVelocity = this.hitbox.body.velocity.clone();                                // store initial velocity
@@ -291,7 +293,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         path.draw(graphics);                                                                    // Draw the path for debugging
     }
 
-    // FIX: Timer resets regardless of tailwhipping again...
     tailwhip() {
         if (this.state === STATES.GLIDE_SPINNING                                                // IF GLIDE SPINNING
             || this.state === STATES.GLIDE_TURNING                                              // OR GLIDE TURNING
@@ -304,8 +305,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         else this.damageBox.activate(128, 64, 1);                                               // activate larger damage box when gliding
         this.scene.handleDamageBoxOverlap(this, this.damageBox);                                // set up overlap handling
         this.anims.play('tailwhip');                                                            // play tailwhip animation
+        this.off('animationcomplete');                                                          // remove previous listeners
         this.on('animationcomplete', (animation) => {                                           // when any animation completes
-            if (animation.key === 'tailwhip') this.endTailwhip(false);                               // IF tailwhip animation completed - end tailwhip
+            if (animation.key === 'tailwhip') this.endTailwhip(false);                          // end tailwhip
         });
     }
 
@@ -316,7 +318,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.damageBox.deactivate();                                                            // reset damage box position
         if (this.state === STATES.GLIDING) this.glide();                                        // IF GLIDING - resume gliding
         else {                                                                                  // NOT GLIDING - reset to appropriate state
-            this.anims.play('idle');                                                            // reset to idle animation
+            this.setState(STATES.IDLE);                                                         // reset state to IDLE
+            this.play('idle', true);                                                            // play idle animation
             this.hitbox.angle = 0;                                                              // reset angle
             this.hitbox.body.setGravity(0);                                                     // Re-enable gravity
         }
@@ -570,7 +573,26 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     setCheckpoint(x, y) {
+        if (this.checkpoint && this.checkpoint.x === x && this.checkpoint.y === y) return;      // Prevent setting the same checkpoint again
         this.checkpoint = { x: x, y: y };                                                       // Set checkpoint coordinates
+        this.checkpointSound.play();                                                            // Play checkpoint sound
+        const checkpointText = this.scene.add.text(x, y - 128, 'Checkpoint!')                   // Display checkpoint text two tiles above
+            .setOrigin(0.5, 1)
+            .setDepth(1000)
+            .setFontSize(32)
+            .setFontFamily('Impact')
+            .setFill('white')
+            .setAlpha(0);                                                                       // Start invisible
+        this.scene.tweens.add({                                                                 // Tween for fade-in and fade-out
+            targets: checkpointText,                                                            // Target the checkpoint text
+            alpha: 1,                                                                           // Fade in to full opacity
+            duration: 150,                                                                      // Duration of fade-in
+            hold: 1000,                                                                         // Hold at full opacity for 1 second
+            yoyo: true,                                                                         // Fade out after hold
+            onComplete: () => {                                                                 // On complete of fade-in and hold
+                checkpointText.destroy();                                                       // Destroy the text object
+            }
+        });
     }
 
     // Define player animations
@@ -606,9 +628,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         if (!this.anims.exists('tailwhip'))
             this.anims.create({
                 key: 'tailwhip',
-                frames: this.anims.generateFrameNumbers('flax_Tailwhip', { start: 0, end: 8 }),
+                frames: this.anims.generateFrameNumbers('flax_Tailwhip', { start: 0, end: 17 }),
                 frameRate: 48,
-                repeat: 1
+                repeat: 0
             });
         if (!this.anims.exists('glide_Start'))
             this.anims.create({

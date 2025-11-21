@@ -34,11 +34,14 @@ export class Game extends Phaser.Scene {
         this.signs = [];                                                                                        // Array to hold Signs
         this.wheels = [];                                                                                       // Array to hold Wheels
         this.wheelPlatforms = [];                                                                               // Array to hold Wheel Platforms
+        this.tpSenders = [];                                                                                    // Array to hold Teleporters
+        this.tpReceivers = [];                                                                                  // Array to hold Teleporters
         this.levelExiting = false;                                                                              // Flag to indicate if the level is exiting
         this.levelReady = false;                                                                                // Flag to indicate if the level is ready
         this.musicManager = new musicManager(this);                                                             // Music manager instance
         this.hasMovementInput = false;                                                                          // Track if there was movement input in the previous frame
         this.playerLastVel = { x: 0, y: 0 };                                                                    // Store the player's last velocity
+
     }
 
     create() {
@@ -108,6 +111,7 @@ export class Game extends Phaser.Scene {
         this.spawnPoles();                                                                                      // Spawn poles for swinging
         this.spawnCrates();                                                                                     // Spawn crates
         this.spawnWheels();                                                                                     // Spawn wheels
+        this.spawnTeleporters();                                                                                // Spawn teleporters
         this.spawnGlizzards();                                                                                  // Spawn glizzard enemies
         this.spawnMunchers();                                                                                   // Spawn muncher enemies
         this.spawnDNAs();                                                                                       // Spawn DNA collectables
@@ -194,6 +198,46 @@ export class Game extends Phaser.Scene {
             group.children.each(child => child.destroy());                                                      // Destroy each child in the group
             group.clear(true, true);                                                                            // Clear the group
         }
+    }
+
+    spawnTeleporters() {
+        this.tpSenders = this.physics.add.group({ allowGravity: false });                                       // Create a group for teleporters
+        this.tpReceivers = this.add.group();                                                                    // Create a group for teleporters
+        const tpSenders = this.map.filterObjects("Objects", obj => obj.name === "TPSender");                    // Find all teleporter points based on their names
+        tpSenders.forEach(tpSender => {                                                                         // Add teleporters to the group
+            this.add.image(tpSender.x, tpSender.y - 64, 'teleporterPad')                                        // Create teleporter pad sprite at point
+                .setDepth(11)                                                                                   // Set depth above player layer
+                .setPipeline('Light2D');                                                                        // Enable lighting on teleporter pad
+            const teleporter = this.add.sprite(tpSender.x, tpSender.y - 64, 'teleporter')                       // Create teleporter sprite at point
+                .setDepth(11);                                                                                  // Set depth above player layer
+            if (!this.anims.exists('teleporterAnim')) {                                                         // Check if animation already exists
+                this.anims.create({                                                                             // Create teleporter animation
+                    key: 'teleporterAnim',
+                    frames: this.anims.generateFrameNumbers('teleporter', { start: 0, end: 7 }),
+                    frameRate: 16,
+                    repeat: -1
+                });
+            }
+            teleporter.play('teleporterAnim');                                                                      // Play teleporter animation
+            teleporter.channel = tpSender.properties.find(prop => prop.name === 'channel').value;                   // Get teleporter channel from properties
+            this.tpSenders.add(teleporter);                                                                         // Add teleporter to the group
+        });
+        const tpReceivers = this.map.filterObjects("Objects", obj => obj.name === "TPReceiver");                    // Find all teleporter points based on their names
+        tpReceivers.forEach(tpReceiver => {                                                                         // Add teleporters to the group
+            const receiver = this.add.image(tpReceiver.x, tpReceiver.y - 64, 'teleporterPad')                       // Create teleporter pad sprite at point
+                .setOrigin(0.5, 0.5)                                                                                // Set origin to center
+                .setDepth(11);                                                                                      // Set depth above ground layer
+            receiver.channel = tpReceiver.properties.find(prop => prop.name === 'channel').value;                   // Get teleporter channel from properties
+            this.tpReceivers.add(receiver);                                                                         // Add teleporter to the group
+        });
+        this.physics.add.overlap(this.player.hitbox, this.tpSenders, (player, tpSender) => {
+            if (Math.abs(player.x - tpSender.x) > 8) return;                                                        // Prevent teleporting when player is not centered on the teleporter
+            const channel = tpSender.channel;                                                                       // Get the channel of the sender
+            const targetReceiver = this.tpReceivers.getChildren().find(receiver => receiver.channel === channel);   // Find the matching receiver by channel
+            if (!targetReceiver) return;                                                                            // Safety check
+            this.player.setCheckpoint(targetReceiver.x, targetReceiver.y);                                          // Set checkpoint above the receiver
+            player.setPosition(this.player.checkpoint.x, this.player.checkpoint.y);                                 // Move player to checkpoint
+        });
     }
 
     spawnCrates() {
@@ -417,17 +461,21 @@ export class Game extends Phaser.Scene {
         // Add flickering lights at designated light points             
         const lightPoints = this.map.filterObjects("Objects", obj => obj.name === "lightPoint");
         lightPoints.forEach(point => {
+            // get 'intensity' property or default to 1.5
+            const intensity = point.properties?.find(prop => prop.name === 'intensity')?.value || 1.5;
+            const flicker = point.properties?.find(prop => prop.name === 'flicker')?.value || false;
             const light = this.lights.addLight(point.x, point.y, 200)                                           // Light position and radius
                 .setColor(0xFFD580)                                                                             // Warm light color
-                .setIntensity(1.5);                                                                             // Random brightness of the light
-            this.tweens.add({
-                targets: light,                                                                                 // Animate the Phaser Light object
-                intensity: { from: 1.5, to: 2 },                                                                // Flicker intensity between 1.5 and 2
-                radius: { from: 200, to: 250 },                                                                 // Flicker radius between 200 and 250
-                duration: 1500,                                                                                 // Duration of one flicker cycle
-                yoyo: true,                                                                                     // Flicker back and forth
-                repeat: -1                                                                                      // Repeat indefinitely
-            });
+                .setIntensity(intensity);                                                                       // Random brightness of the light
+            if (flicker)
+                this.tweens.add({
+                    targets: light,                                                                                 // Animate the Phaser Light object
+                    intensity: { from: intensity, to: intensity * 1.3 },                                                                // Flicker intensity between 1.5 and 2
+                    radius: { from: 200, to: 250 },                                                                 // Flicker radius between 200 and 250
+                    duration: 1500,                                                                                 // Duration of one flicker cycle
+                    yoyo: true,                                                                                     // Flicker back and forth
+                    repeat: -1                                                                                      // Repeat indefinitely
+                });
         });
     }
 
@@ -444,7 +492,7 @@ export class Game extends Phaser.Scene {
         this.cameras.main.startFollow(this.player, false, 0.08, 0.08);                                          // Make the camera follow the player smoothly
         this.player.setTilemapAndLayer(this.map, this.groundLayer, this.objectLayerTop);                        // Provide player with tilemap and layer references
         this.uiManager.updateHealth(this.player.health);                                                        // Update health display in UI
-        this.player.setCheckpoint(x, y);                                                                        // Set initial checkpoint
+        this.player.checkpoint = { x: x, y: y };                                                                        // Set initial checkpoint
     }
 
     // Setup camera to follow the player                            
@@ -506,26 +554,27 @@ export class Game extends Phaser.Scene {
 
     // Spawn glizzard enemies   
     spawnGlizzards() {
-        this.glizzards = this.add.group({ runChildUpdate: true });                                              // Create a group for glizzards
-        const glizzardPoints = this.map.filterObjects("Objects", obj => obj.name === "glizzardPoint");          // Find all glizzard spawn points
-        glizzardPoints.forEach(glizzardPoint => {                                                               // Iterate through each glizzardPoint and create a Glizzard at its position
-            const glizzard = new Glizzard(this, glizzardPoint.x, glizzardPoint.y);                              // create glizzard at point
-            this.glizzards.add(glizzard).setDepth(4);                                                           // add to the group
+        this.glizzards = this.add.group({ runChildUpdate: true });                                                  // Create a group for glizzards
+        const glizzardPoints = this.map.filterObjects("Objects", obj => obj.name === "glizzardPoint");              // Find all glizzard spawn points
+        glizzardPoints.forEach(glizzardPoint => {                                                                   // Iterate through each glizzardPoint and create a Glizzard at its position
+            const patrolDistance = glizzardPoint.properties?.find(prop => prop.name === 'patrolDistance')?.value;   // Get patrol distance from properties or default to 0
+            const detectionRange = glizzardPoint.properties?.find(prop => prop.name === 'detectionRange')?.value;   // Get detection range from properties or default to 300
+            const glizzard = new Glizzard(this, glizzardPoint.x, glizzardPoint.y, patrolDistance, detectionRange);  // create glizzard at point
+            this.glizzards.add(glizzard).setDepth(4);                                                               // add to the group
         });
-        this.physics.add.overlap(this.player.hitbox, this.glizzards, (player, glizzard) => {                    // player stomps glizzard
-            if (player.y < glizzard.y - glizzard.height                                                         // IF PLAYER IS ABOVE GLIZZARD
-                && this.player.lastVel.y >= 200) {                                                              // AND IF PLAYER IS FALLING FAST ENOUGH
-                player.body.setVelocityY(-600);                                                                 // bounce the player up
-                glizzard.death();                                                                               // destroy the glizzard
+        this.physics.add.overlap(this.player.hitbox, this.glizzards, (player, glizzard) => {                        // player stomps glizzard
+            if (player.y < glizzard.y - glizzard.height                                                             // IF PLAYER IS ABOVE GLIZZARD
+                && this.player.lastVel.y >= 200) {                                                                  // AND IF PLAYER IS FALLING FAST ENOUGH
+                player.body.setVelocityY(-600);                                                                     // bounce the player up
+                glizzard.death();                                                                                   // destroy the glizzard
             }
         });
     }
 
     // Adjust layer depths to control rendering order
     relayer() {
-        const layer = this.add.layer(); // Create a new layer
-        // Order: background, lights, platforms, dnas, glizzards, munchers, player, pointLight, UI
-        layer.add([this.pointLight, this.player]);
+        const layer = this.add.layer();             // Create a new layer
+        layer.add([this.pointLight, this.player]);  // Add objects to the layer
     }
 
     handleDamageBoxOverlap(parent, damageBox) {

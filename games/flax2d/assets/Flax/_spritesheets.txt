@@ -7,6 +7,6 @@ Run_128.png,128,128,12
 Jump_128.png,128,128,5
 Falling_128.png,128,128,3
 PoleSpinning_128.png,128,128,3
-Tailwhip_128.png,128,128,9
+Tailwhip_128.png,128,128,18
 GlideStart.png,128,128,3
 Glied_128.png,128,128,6
