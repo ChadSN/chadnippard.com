@@ -370,11 +370,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.hitbox.body.setAllowGravity(true);                                                 // Enable gravity
         this.hitbox.body.setGravity(0);                                                         // reset gravity
 
-        const angleRad = Phaser.Math.DegToRad(this.hitbox.angle) + 90;                          // calculate launch angle
-        const launchSpeed = 3000;                                                               // set launch speed
-        const launchSpeedX = Math.cos(angleRad) * launchSpeed;                                  // calculate launch velocity
-        const launchSpeedY = Math.sin(angleRad) * launchSpeed;                                  // set launch velocity
-
+        const angleRad = Phaser.Math.DegToRad(this.hitbox.angle + 90);                          // calculate launch angle
+        const launchSpeedX = Math.cos(angleRad) * 2000;                                         // calculate launch velocity
+        const launchSpeedY = Math.sin(angleRad) < 0.3 ? -1000 : 0;                              // calculate launch velocity
         this.setState(STATES.JUMPING);                                                          // set state to jumping
         this.hitbox.body.setVelocity(launchSpeedX, launchSpeedY);                               // launch player away from pole
         this.poleSwingSound.play();                                                             // play pole swing sound

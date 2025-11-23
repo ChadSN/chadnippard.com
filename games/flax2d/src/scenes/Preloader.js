@@ -62,7 +62,7 @@ export class Preloader extends Phaser.Scene {
         this.load.tilemapTiledJSON('level1', '/levels/level1.json');        // Load the level1 tilemap JSON file. 
         this.load.tilemapTiledJSON('level2', '/levels/level2.json');        // Load the level2 tilemap JSON file.
         this.load.tilemapTiledJSON('level3', '/levels/level3.json');        // Load the level3 tilemap JSON file.
-        this.load.image('tiles', '/levels/GrassTile.png');                  // Load the GrassTile tileset image.
+        this.load.image('groundTiles', '/levels/Tileset_Ground.png');       // Load the GroundTile tileset image.
         this.load.image('objectTiles', '/levels/ObjectsTileSet.png');       // Load the ObjectTileSet tileset image.
 
         // OBJECTS ASSETS

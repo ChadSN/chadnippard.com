@@ -41,7 +41,6 @@ export class Game extends Phaser.Scene {
         this.musicManager = new musicManager(this);                                                             // Music manager instance
         this.hasMovementInput = false;                                                                          // Track if there was movement input in the previous frame
         this.playerLastVel = { x: 0, y: 0 };                                                                    // Store the player's last velocity
-
     }
 
     create() {
@@ -70,10 +69,10 @@ export class Game extends Phaser.Scene {
         this.map = this.make.tilemap({ key: this.levelKey, tileWidth: 64, tileHeight: 64 });                    // key must match the key used in preload
         this.worldWidth = this.map.widthInPixels;                                                               // Get map dimensions in pixels
         this.worldHeight = this.map.heightInPixels;                                                             // Get map dimensions in pixels
-        this.cameras.main.setBounds(0, 0, this.worldWidth, this.worldHeight);                             // Set camera bounds to match the tilemap size
+        this.cameras.main.setBounds(0, 0, this.worldWidth, this.worldHeight);                                   // Set camera bounds to match the tilemap size
         this.physics.world.setBounds(0, 0, this.worldWidth, this.worldHeight);                                  // Set physics world bounds to match the tilemap size
         // CREATE TILESETS
-        const groundTileSet = this.map.addTilesetImage('GroundTileSet', 'tiles');                               // Arg 1: tileset name in Tiled.    2: key used in preload
+        const groundTileSet = this.map.addTilesetImage('GroundTileSet', 'groundTiles');                         // Arg 1: tileset name in Tiled.    2: key used in preload
         const objectTileSet = this.map.addTilesetImage('ObjectTileSet', 'objectTiles');                         // Arg 1: tileset name in Tiled.    2: key used in preload
         // CREATE LAYERS
         this.groundLayer = this.map.createLayer('Ground', groundTileSet, 0, 0).setDepth(3);                     // Arg 1: layer name in Tiled.      2: tileset object created above.    Arg 3 & 4: x,y position.
