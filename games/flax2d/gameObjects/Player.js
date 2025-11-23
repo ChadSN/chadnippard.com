@@ -56,6 +56,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.currentTileSoundType = null;                                                       // current tile sound type
         this.checkpoint = { x: x, y: y };                                                       // initial checkpoint
         this.onPlatform = null;                                                                 // reference to the platform the player is on
+        this.onCrate = null;
     }
 
     // Update method called every frame
@@ -82,6 +83,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         if (!body.blocked.down && Math.abs(vy) > velTol) {                                      // IF IN AIR
             body.setDragX(this.airDrag);                                                        // set air drag
             this._wasOnGround = false;                                                          // unset ground flag
+            this.onCrate = null;                                                                // clear crate reference when in air
             if (this.isInGlideFamily()) {                                                       // IF GLIDING
                 if (this.state === STATES.GLIDING && body.velocity.x === 0)                     // IF NO HORIZONTAL VELOCITY
                     this.stopGlide();                                                           // stop gliding if no horizontal velocity
@@ -452,6 +454,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             this.stopActiveTween();                                                             // Stop any active tweens
         }
 
+        if (this.hitbox.x > this.scene.worldWidth - this.hitbox.body.width / 2) {               // Check right boundary
+            this.hitbox.x = this.scene.worldWidth - this.hitbox.body.width / 2;
+            this.stopActiveTween();                                                             // Stop any active tweens
+        }
         if (this.hitbox.y > this.scene.worldHeight) {                                           // Check if player has fallen below the world bounds
             this.stopActiveTween();                                                             // Stop any active tweens
             this.die();                                                                         // Handle out-of-bounds death
@@ -541,6 +547,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     getSurfaceSoundType() {
         if (this.onPlatform && this.onPlatform.soundType) return this.onPlatform.soundType;     // moving platforms
+        else if (this.onCrate && this.onCrate.soundType) return this.onCrate.soundType;         // crates
         return this.getTileSoundType();                                                         // tiles fallback
     }
 

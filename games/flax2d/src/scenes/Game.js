@@ -59,7 +59,6 @@ export class Game extends Phaser.Scene {
         this.handlePlayerInput();                                                                               // Handle player input
         this.updateWheelPlatforms();                                                                            // Update wheel platform positions
         this.player.lastVel = this.player.hitbox.body.velocity.clone();                                         // Store the player's last velocity
-
     }
 
     createLevel(levelKey) {
@@ -259,6 +258,7 @@ export class Game extends Phaser.Scene {
             const scale = crateScaleByName[cratePoint.name];                                                    // Get scale based on crate type
             const depth = 4;                                                                                    // Set depth above ground layer
             const crate = new Crate(this, cratePoint.x, cratePoint.y, scale, depth);                            // Create crate instance
+            crate.soundType = 'wood';
             this.crates.add(crate);                                                                             // Add the crate to the crates group
         });
         this.physics.add.collider(this.groundLayer, this.crates);                                               // Enable collision between ground layer and crates
@@ -272,6 +272,9 @@ export class Game extends Phaser.Scene {
                     if (hitbox.x < crate.x) hitbox.body.x = hitbox.body.prev.x - 8;                             // IF COLLIDING FROM SIDE, move player to previous x                                                               // Prevent player from being pushed horizontally by crate
                     if (hitbox.x > crate.x) hitbox.body.x = hitbox.body.prev.x + 8;                             // IF COLLIDING FROM SIDE, move player to previous x
                 }
+                else if (hitbox.body.blocked.down &&
+                    hitbox.body.bottom <= crate.body.top)                                                             // IF COLLIDING FROM TOP
+                    this.player.onCrate = crate;                                                                // Set the player's onPlatform reference
             },
             (_, crate) => !crate.broken
         );
@@ -422,6 +425,11 @@ export class Game extends Phaser.Scene {
         else if (this.inputManager.cursors.right.isDown || this.inputManager.keyD.isDown)                       // Right arrow or D key
         { this.player.move(false); this.hasMovementInput = true; }                                              // Move player right
         else { this.player.idle(); this.hasMovementInput = false; }                                             // No horizontal input, Player idle
+        if (Phaser.Input.Keyboard.JustDown(this.inputManager.keyShift)                                          // Shift or Z key for tailwhip
+            || Phaser.Input.Keyboard.JustDown(this.inputManager.keyZ)) this.player.tailwhip();
+        if (Phaser.Input.Keyboard.JustDown(this.inputManager.keyE)                                              // E key  or X key for glide spin
+            || Phaser.Input.Keyboard.JustDown(this.inputManager.keyX)) this.player.glideSpin();
+
     }
 
     pointerLeftPressed() {

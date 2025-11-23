@@ -7,8 +7,12 @@ export class InputManager {
         this.keyW = scene.input.keyboard.addKey('W');           // Add key W for jump
         this.keyS = scene.input.keyboard.addKey('S');           // Add key S for crouch
         this.keySPACE = scene.input.keyboard.addKey('SPACE');   // Add spacebar for jump
+        this.keyShift = scene.input.keyboard.addKey('SHIFT');   // Add Shift key for tailwhip
+        this.keyZ = scene.input.keyboard.addKey('Z');           // Add Z key for tailwhip
+        this.keyE = scene.input.keyboard.addKey('E');           // Add E key for glide spin
+        this.keyX = scene.input.keyboard.addKey('X');           // Add X key for glide spin
         this.keyESC = scene.input.keyboard.addKey('ESC');       // Add ESC key for pause menu
-        this.keyP = scene.input.keyboard.addKey('P');         // Add P key for pause menu
+        this.keyP = scene.input.keyboard.addKey('P');           // Add P key for pause menu
 
         this.scene.input.on("pointerdown", (pointer) => {              // Listen for pointer down
             if (pointer.buttons === 1)                          // Left mouse button
