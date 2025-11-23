@@ -138,7 +138,8 @@ export class Game extends Phaser.Scene {
             if (tile && tile.properties.exit && !this.levelExiting) {                                           // Check if the tile has the 'exit' property
                 this.levelExiting = true;                                                                       // Prevent multiple triggers
                 this.levelReady = false;                                                                        // Mark level as not ready during transition
-
+                this.player.disableMovement = true;                                                             // Disable player movement
+                this.player.hitbox.body.setVelocity(0, 0);                                                      // Stop player movement
                 this.cameras.main.fadeOut(1000, 255, 255, 255).once('camerafadeoutcomplete', () => {            // Fade out the camera over 1 second once
                     switch (this.levelKey) {                                                                    // Determine the next level based on current level key
                         case 'level1': this.levelKey = 'level2'; this.transitionToLevel(this.levelKey); break;  // Transition to level 2
