@@ -181,7 +181,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     glide() {
         this.play('glide', true);                                                               // play glide animation
-        this.hitbox.body.setVelocityY(0);                                                       // limit downward speed
+        //this.hitbox.body.setVelocityY(0);                                                       // limit downward speed
         this.hitbox.body.setGravity(0, -2500);                                                  // Reduce gravity for the player
         const glideSpeed = this.originalMoveSpeed * 3 / 4;                                      // calculate reduced horizontal speed while gliding
         this.hitbox.body.setAccelerationX(this.currentMoveSpeed * (this.flipX ? -1 : 1));       // maintain horizontal acceleration

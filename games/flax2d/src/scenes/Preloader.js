@@ -73,6 +73,8 @@ export class Preloader extends Phaser.Scene {
         this.load.image('rope_onWheel', '/Objects/Rope_onWheel.png');
         this.load.spritesheet('teleporter', '/Objects/teleporter.png', { frameWidth: 64, frameHeight: 128 });
         this.load.image('teleporterPad', '/Objects/teleporterPad.png');
+        this.load.image('geyser', '/Objects/geyser.png');
+        this.load.spritesheet('gust', '/Objects/gust.png', { frameWidth: 192, frameHeight: 192 });
 
         // AUDIO
         this.load.audio('mainMenuMusic', '/audio/Song 2 09.11.25.mp3');

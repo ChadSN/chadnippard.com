@@ -36,6 +36,7 @@ export class Game extends Phaser.Scene {
         this.wheelPlatforms = [];                                                                               // Array to hold Wheel Platforms
         this.tpSenders = [];                                                                                    // Array to hold Teleporters
         this.tpReceivers = [];                                                                                  // Array to hold Teleporters
+        this.geysers = [];                                                                                      // Array to hold Geysers
         this.levelExiting = false;                                                                              // Flag to indicate if the level is exiting
         this.levelReady = false;                                                                                // Flag to indicate if the level is ready
         this.musicManager = new musicManager(this);                                                             // Music manager instance
@@ -110,6 +111,7 @@ export class Game extends Phaser.Scene {
         this.spawnPoles();                                                                                      // Spawn poles for swinging
         this.spawnCrates();                                                                                     // Spawn crates
         this.spawnWheels();                                                                                     // Spawn wheels
+        this.spawnGeysers();                                                                                    // Spawn geysers
         this.spawnTeleporters();                                                                                // Spawn teleporters
         this.spawnGlizzards();                                                                                  // Spawn glizzard enemies
         this.spawnMunchers();                                                                                   // Spawn muncher enemies
@@ -180,6 +182,7 @@ export class Game extends Phaser.Scene {
         this.destroyGroup(this.wheelPlatforms);                                                                 // Destroy wheel platforms
         this.destroyGroup(this.tpSenders);                                                                      // Destroy teleporter senders
         this.destroyGroup(this.tpReceivers);                                                                    // Destroy teleporter receivers
+        this.destroyGroup(this.geysers);                                                                        // Destroy geysers
 
         if (this.player) this.player.setTilemapAndLayer(null, null);                                            // Clear player's tilemap and layer references
         if (this.lights) this.lights.destroy();                                                                 // Destroy the Lights Manager
@@ -201,6 +204,41 @@ export class Game extends Phaser.Scene {
             group.children.each(child => child.destroy());                                                      // Destroy each child in the group
             group.clear(true, true);                                                                            // Clear the group
         }
+    }
+
+
+    spawnGeysers() {
+        this.geysers = this.physics.add.group({ allowGravity: false });                                         // Create a group for geysers
+        if (!this.anims.exists('gustAnim')) {                                                                   // IF GUST ANIMATION DOESN'T EXIST 
+            this.anims.create({                                                                                 // Create gust animation
+                key: 'gustAnim',
+                frames: this.anims.generateFrameNumbers('gust', { start: 0, end: 8 }),
+                frameRate: 8,
+                repeat: -1
+            });
+        }
+        const geyserPoints = this.map.filterObjects("Objects", obj => obj.name === "geyserPoint");              // Find all geyser points based on their names
+        geyserPoints.forEach(geyserPoint => {                                                                   // Iterate over each geyser point
+            const geyser = this.add.image(geyserPoint.x, geyserPoint.y, 'geyser')                               // Create geyser base sprite
+                .setOrigin(0.5, 1)
+                .setDepth(4)
+                .setPipeline('Light2D');
+            const gustAmount = geyserPoint.properties.find(prop => prop.name === 'gustAmount').value;           // Get gust amount from properties
+            for (let i = 0; i < gustAmount; i++) {                                                              // Create multiple gusts based on gustAmount
+                const gust = this.add.sprite(geyserPoint.x, geyserPoint.y, 'gust')                              // Create gust sprite
+                    .setOrigin(0.5, 1)
+                    .setDepth(3)
+                    .setPipeline('Light2D');
+                gust.y -= i * gust.displayHeight;                                                               // Stack gusts vertically
+                gust.play('gustAnim');                                                                          // Play gust animation
+                this.geysers.add(gust);                                                                         // Add gust to the group
+            }
+            this.geysers.add(geyser);                                                                           // Add geyser base to the group
+        });
+        this.physics.add.overlap(this.player.hitbox, this.geysers, (player, geyser) => {                        // Geyser effect on player
+            if (this.player.state == 'gliding') player.body.setVelocityY(-200);                                 // Strong upward force when gliding
+            else if (geyser.texture.key === 'geyser') this.player.die();                                        // Instant death on touching the geyser base
+        });
     }
 
     spawnTeleporters() {
