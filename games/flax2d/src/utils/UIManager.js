@@ -92,14 +92,16 @@ export class UIManager {
     }
 
     startTimerEvent(elapsed = 0) {
-        this.timerEvent = this.scene.time.addEvent({                                            // Create a repeating timed event
-            delay: 10,                                                                          // Delay of 10 milliseconds
-            loop: true,                                                                         // Repeat indefinitely
-            callback: () => {                                                                   // Callback function to update the timer
-                elapsed += 10;                                                                  // Increment elapsed time
-                this.updateTimer(elapsed);                                                      // Update the timer display
-            }
-        });
+        if (!this.timerEvent) {
+            this.timerEvent = this.scene.time.addEvent({                                            // Create a repeating timed event
+                delay: 10,                                                                          // Delay of 10 milliseconds
+                loop: true,                                                                         // Repeat indefinitely
+                callback: () => {                                                                   // Callback function to update the timer
+                    elapsed += 10;                                                                  // Increment elapsed time
+                    this.updateTimer(elapsed);                                                      // Update the timer display
+                }
+            });
+        }
     }
 
     updateTimer(elapsed) {

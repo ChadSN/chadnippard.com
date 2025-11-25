@@ -93,19 +93,7 @@ export class Game extends Phaser.Scene {
         // PLAYER SETUP
         const spawnPoint = this.map.findObject("Objects", obj => obj.name === "spawnPoint");                    // Find the spawn point object in the Tiled map
         this.spawnPlayer(spawnPoint.x, spawnPoint.y);                                                           // Spawn the player at the spawn point location
-        // COLLISIONS SETUP FOR PLAYER WITH LAYERS           
-        this.physics.add.collider(this.player.hitbox, this.groundLayer);
-        this.physics.add.collider(this.player.hitbox, this.objectLayerTop, null, (player, tile) => {            // Custom collision callback for one-way platforms
-            const body = player.body;                                                                           // player's hitbox physics body
-            if (tile && tile.properties && tile.properties.death) {                                             // Check if the tile has the 'death' property
-                this.player.die();                                                                              // Trigger player death on death tiles
-                return false;                                                                                   // Prevent further collision handling
-            }
-            if (body.velocity.y <= 0) return false;                                                             // Pass-through when moving up (jumping)
-            const prevBottom = body.prev.y + body.height;                                                       // previous bottom edge
-            const tileTop = tile.getTop();                                                                      // world Y of tile top
-            return prevBottom <= tileTop;                                                                       // Collide only if the player's bottom was above the tile's top in the previous frame
-        });
+        // OBJECTS SETUP
         this.addLights();                                                                                       // Add lighting effects
         this.spawnSigns();                                                                                      // Spawn signs with text
         this.spawnPoles();                                                                                      // Spawn poles for swinging
@@ -117,47 +105,8 @@ export class Game extends Phaser.Scene {
         this.spawnMunchers();                                                                                   // Spawn muncher enemies
         this.spawnDNAs();                                                                                       // Spawn DNA collectables
         this.spawnClouds();                                                                                     // Spawn background clouds
-        // COLLISIONS SETUP FOR PLAYER WITH GROUND INSIDE LAYER
-        this.physics.add.overlap(this.player.hitbox, this.groundInsideLayer, (_, tile) => {
-            if (tile && tile.properties.overlaps) {                                                             // Check if the tile has the 'overlaps' property
-                if (!this.isOverlappingGroundInsideLayer) {                                                     // Only trigger once when starting to overlap
-                    this.isOverlappingGroundInsideLayer = true;                                                 // Set flag to true
-                    this.tweenAmbientLight(this.nightAmbientColour);                                            // Dim light
-                    if (!this.caveAmbience.isPlaying) {                                                         // Play cave ambience if not already playing
-                        this.caveAmbience.stop();                                                               // Ensure it's stopped before playing again
-                        this.caveAmbience.play();                                                               // Play cave ambience
-                    }
-                }
-            } else {
-                if (this.isOverlappingGroundInsideLayer) {                                                      // Only trigger once when stopping overlap
-                    this.isOverlappingGroundInsideLayer = false;                                                // Set flag to false
-                    this.tweenAmbientLight(this.daylightAmbientColour);                                         // Full white light
-                    if (this.caveAmbience.isPlaying) this.caveAmbience.stop();                                  // Stop cave ambience
-                }
-            }
-        });
-        this.physics.add.overlap(this.player.hitbox, this.objectLayer, (_, tile) => {                           // Check overlap with object layer
-            if (tile && tile.properties.exit && !this.levelExiting) {                                           // Check if the tile has the 'exit' property
-                this.levelExiting = true;                                                                       // Prevent multiple triggers
-                this.levelReady = false;                                                                        // Mark level as not ready during transition
-                this.player.disableMovement = true;                                                             // Disable player movement
-                this.player.hitbox.body.setVelocity(0, 0);                                                      // Stop player movement
-                this.cameras.main.fadeOut(1000, 255, 255, 255).once('camerafadeoutcomplete', () => {            // Fade out the camera over 1 second once
-                    switch (this.levelKey) {                                                                    // Determine the next level based on current level key
-                        case 'level1': this.levelKey = 'level2'; this.transitionToLevel(this.levelKey); break;  // Transition to level 2
-                        case 'level2': this.levelKey = 'level3'; this.transitionToLevel(this.levelKey); break;  // Transition to level 3
-                        case 'level3': this.levelKey = 'GameOver'; this.scene.start('GameOver'); break;         // Transition to Game Over scene
-                        default: console.error('Unknown level key:', this.levelKey); break;                     // Handle unknown level keys
-                    }
-                });
-            }
-            if (tile && tile.properties && tile.properties.spawnPoint) {                                        // Check if the tile has the 'spawnPoint' property
-                if (
-                    this.player.checkpoint.x !== tile.getCenterX()                                              // New checkpoint X
-                    || this.player.checkpoint.y !== tile.getBottom()                                            // New checkpoint Y
-                ) this.player.setCheckpoint(tile.getCenterX(), tile.getBottom());                               // Set new checkpoint at tile center
-            }
-        });
+        // COLLISIONS SETUP
+        this.setCollisions();
 
         this.cameras.main.fadeIn(500, 255, 255, 255).once('camerafadeincomplete', () => {                       // Fade in the camera over 0.5 seconds once
             this.uiManager.startTimerEvent(this.uiManager.elapsed);                                             // Start the level timer                                   
@@ -206,14 +155,68 @@ export class Game extends Phaser.Scene {
         }
     }
 
+    setCollisions() {
+        this.physics.add.collider(this.player.hitbox, this.groundLayer);
+        this.physics.add.collider(this.player.hitbox, this.objectLayerTop, null, (player, tile) => {            // Custom collision callback for one-way platforms
+            const body = player.body;                                                                           // player's hitbox physics body
+            if (tile && tile.properties && tile.properties.death) {                                             // Check if the tile has the 'death' property
+                this.player.die();                                                                              // Trigger player death on death tiles
+                return false;                                                                                   // Prevent further collision handling
+            }
+            if (body.velocity.y <= 0) return false;                                                             // Pass-through when moving up (jumping)
+            const prevBottom = body.prev.y + body.height;                                                       // previous bottom edge
+            const tileTop = tile.getTop();                                                                      // world Y of tile top
+            return prevBottom <= tileTop;                                                                       // Collide only if the player's bottom was above the tile's top in the previous frame
+        });
+        this.physics.add.overlap(this.player.hitbox, this.groundInsideLayer, (_, tile) => {
+            if (tile && tile.properties.overlaps) {                                                             // Check if the tile has the 'overlaps' property
+                if (!this.isOverlappingGroundInsideLayer) {                                                     // Only trigger once when starting to overlap
+                    this.isOverlappingGroundInsideLayer = true;                                                 // Set flag to true
+                    this.tweenAmbientLight(this.nightAmbientColour);                                            // Dim light
+                    if (!this.caveAmbience.isPlaying) {                                                         // Play cave ambience if not already playing
+                        this.caveAmbience.stop();                                                               // Ensure it's stopped before playing again
+                        this.caveAmbience.play();                                                               // Play cave ambience
+                    }
+                }
+            } else {
+                if (this.isOverlappingGroundInsideLayer) {                                                      // Only trigger once when stopping overlap
+                    this.isOverlappingGroundInsideLayer = false;                                                // Set flag to false
+                    this.tweenAmbientLight(this.daylightAmbientColour);                                         // Full white light
+                    if (this.caveAmbience.isPlaying) this.caveAmbience.stop();                                  // Stop cave ambience
+                }
+            }
+        });
+        this.physics.add.overlap(this.player.hitbox, this.objectLayer, (_, tile) => {                           // Check overlap with object layer
+            if (tile && tile.properties.exit && !this.levelExiting) {                                           // Check if the tile has the 'exit' property
+                this.levelExiting = true;                                                                       // Prevent multiple triggers
+                this.levelReady = false;                                                                        // Mark level as not ready during transition
+                this.player.disableMovement = true;                                                             // Disable player movement
+                this.player.hitbox.body.setVelocity(0, 0);                                                      // Stop player movement
+                this.cameras.main.fadeOut(1000, 255, 255, 255).once('camerafadeoutcomplete', () => {            // Fade out the camera over 1 second once
+                    switch (this.levelKey) {                                                                    // Determine the next level based on current level key
+                        case 'level1': this.levelKey = 'level2'; this.transitionToLevel(this.levelKey); break;  // Transition to level 2
+                        case 'level2': this.levelKey = 'level3'; this.transitionToLevel(this.levelKey); break;  // Transition to level 3
+                        case 'level3': this.levelKey = 'GameOver'; this.scene.start('GameOver'); break;         // Transition to Game Over scene
+                        default: console.error('Unknown level key:', this.levelKey); break;                     // Handle unknown level keys
+                    }
+                });
+            }
+            if (tile && tile.properties && tile.properties.spawnPoint) {                                        // Check if the tile has the 'spawnPoint' property
+                if (
+                    this.player.checkpoint.x !== tile.getCenterX()                                              // New checkpoint X
+                    || this.player.checkpoint.y !== tile.getBottom()                                            // New checkpoint Y
+                ) this.player.setCheckpoint(tile.getCenterX(), tile.getBottom());                               // Set new checkpoint at tile center
+            }
+        });
+    }
 
     spawnGeysers() {
         this.geysers = this.physics.add.group({ allowGravity: false });                                         // Create a group for geysers
         if (!this.anims.exists('gustAnim')) {                                                                   // IF GUST ANIMATION DOESN'T EXIST 
             this.anims.create({                                                                                 // Create gust animation
                 key: 'gustAnim',
-                frames: this.anims.generateFrameNumbers('gust', { start: 0, end: 8 }),
-                frameRate: 8,
+                frames: this.anims.generateFrameNumbers('gust', { start: 0, end: 11 }),
+                frameRate: 16,
                 repeat: -1
             });
         }
