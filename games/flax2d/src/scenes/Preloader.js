@@ -61,7 +61,6 @@ export class Preloader extends Phaser.Scene {
         // TILES AND TILEMAPS
         this.load.tilemapTiledJSON('level1', '/levels/level1.json');        // Load the level1 tilemap JSON file. 
         this.load.tilemapTiledJSON('level2', '/levels/level2.json');        // Load the level2 tilemap JSON file.
-        this.load.tilemapTiledJSON('level3', '/levels/level3.json');        // Load the level3 tilemap JSON file.
         this.load.image('groundTiles', '/levels/Tileset_Ground.png');       // Load the GroundTile tileset image.
         this.load.image('objectTiles', '/levels/ObjectsTileSet.png');       // Load the ObjectTileSet tileset image.
 
@@ -75,6 +74,8 @@ export class Preloader extends Phaser.Scene {
         this.load.image('teleporterPad', '/Objects/teleporterPad.png');
         this.load.image('geyser', '/Objects/geyser.png');
         this.load.spritesheet('gust', '/Objects/gust.png', { frameWidth: 192, frameHeight: 192 });
+        this.load.image('ring_behind', '/Objects/ring_behind.png');
+        this.load.image('ring_infront', '/Objects/ring_infront.png');
 
         // AUDIO
         this.load.audio('mainMenuMusic', '/audio/Song 2 09.11.25.mp3');

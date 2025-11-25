@@ -37,6 +37,7 @@ export class Game extends Phaser.Scene {
         this.tpSenders = [];                                                                                    // Array to hold Teleporters
         this.tpReceivers = [];                                                                                  // Array to hold Teleporters
         this.geysers = [];                                                                                      // Array to hold Geysers
+        this.rings = [];                                                                                        // Array to hold Rings
         this.levelExiting = false;                                                                              // Flag to indicate if the level is exiting
         this.levelReady = false;                                                                                // Flag to indicate if the level is ready
         this.musicManager = new musicManager(this);                                                             // Music manager instance
@@ -101,6 +102,7 @@ export class Game extends Phaser.Scene {
         this.spawnWheels();                                                                                     // Spawn wheels
         this.spawnGeysers();                                                                                    // Spawn geysers
         this.spawnTeleporters();                                                                                // Spawn teleporters
+        this.spawnRings();
         this.spawnGlizzards();                                                                                  // Spawn glizzard enemies
         this.spawnMunchers();                                                                                   // Spawn muncher enemies
         this.spawnDNAs();                                                                                       // Spawn DNA collectables
@@ -132,6 +134,7 @@ export class Game extends Phaser.Scene {
         this.destroyGroup(this.tpSenders);                                                                      // Destroy teleporter senders
         this.destroyGroup(this.tpReceivers);                                                                    // Destroy teleporter receivers
         this.destroyGroup(this.geysers);                                                                        // Destroy geysers
+        this.destroyGroup(this.rings);                                                                          // Destroy rings
 
         if (this.player) this.player.setTilemapAndLayer(null, null);                                            // Clear player's tilemap and layer references
         if (this.lights) this.lights.destroy();                                                                 // Destroy the Lights Manager
@@ -149,9 +152,12 @@ export class Game extends Phaser.Scene {
     }
 
     destroyGroup(group) {
-        if (group && group.children) {                                                                          // Check if group and its children exist
-            group.children.each(child => child.destroy());                                                      // Destroy each child in the group
-            group.clear(true, true);                                                                            // Clear the group
+        if (group && group.children) {
+            group.children.each(child => {
+                if (child.ringBehind) child.ringBehind.destroy();
+                child.destroy();
+            });
+            group.clear(true, true);
         }
     }
 
@@ -210,12 +216,49 @@ export class Game extends Phaser.Scene {
         });
     }
 
+    spawnRings() {
+        this.rings = this.physics.add.group({ allowGravity: false });                                           // Create a group for rings
+        const ringPoints = this.map.filterObjects("Objects", obj => obj.name === "ringPoint");                  // Find all ring points based on their names
+        ringPoints.forEach(ringPoint => {                                                                       // Iterate over each ring point
+            const ringRotation = ringPoint.properties.find(prop => prop.name === 'rotation').value;             // Get rotation from properties
+            const ringScale = ringPoint.properties.find(prop => prop.name === 'scale').value;                   // Get scale from properties
+            const ringBehind = this.add.image(ringPoint.x, ringPoint.y, 'ring_behind')                          // Create ring behind sprite
+                .setDepth(4)
+                .setAngle(ringRotation)
+                .setScale(ringScale);                                                                           // Set scale from properties
+            const ringInfront = this.add.image(ringPoint.x, ringPoint.y, 'ring_infront')                        // Create ring in front sprite
+                .setDepth(11)
+                .setAngle(ringRotation)                                                                         // Set angle from properties
+                .setScale(ringScale);                                                                           // Set scale from properties
+            ringInfront.collected = false;                                                                      // Initialise collected flag
+            ringInfront.ringBehind = ringBehind;                                                                // Link to the behind ring
+            const ringTween = this.tweens.add({                                                                 // Create a tween to rotate the ring
+                targets: [ringBehind, ringInfront],                                                             // Target both ring sprites
+                y: ringPoint.y - 32,                                                                            // Move up by 10 pixels
+                duration: 1000,
+                yoyo: true,
+                ease: 'Sine.easeInOut',
+                repeat: -1,
+            });
+            ringInfront.ringTween = ringTween;                                                                  // Link tween to the ring
+            this.rings.add(ringInfront);                                                                        // Add ring to the group
+        });
+        this.physics.add.overlap(this.player.hitbox, this.rings, (player, ring) => {                            // Overlap handler for collecting rings
+            if (ring.collected) return;                                                                         // Prevent double collection
+            this.uiManager.updateScore(this.player.state === 'glide_spinning' ? 20 : 10);                      // Update score based on player state
+            ring.setTint(0xAAAAAA);                                                                             // Tint ring to indicate collection
+            ring.ringBehind.setTint(0xAAAAAA);                                                                  // Tint behind ring to indicate collection
+            ring.ringTween.stop();                                                                              // Stop ring animation
+            ring.collected = true;                                                                              // Mark ring as collected
+        });
+    }
+
     spawnGeysers() {
         this.geysers = this.physics.add.group({ allowGravity: false });                                         // Create a group for geysers
         if (!this.anims.exists('gustAnim')) {                                                                   // IF GUST ANIMATION DOESN'T EXIST 
             this.anims.create({                                                                                 // Create gust animation
                 key: 'gustAnim',
-                frames: this.anims.generateFrameNumbers('gust', { start: 0, end: 11 }),
+                frames: this.anims.generateFrameNumbers('gust', { start: 0, end: 8 }),
                 frameRate: 16,
                 repeat: -1
             });
