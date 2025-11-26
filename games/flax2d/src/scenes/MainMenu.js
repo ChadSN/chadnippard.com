@@ -103,15 +103,20 @@ export class MainMenu extends Phaser.Scene {
 
     showGroups(show) {
         this.startButtonGroup.getChildren().forEach(child => child.setVisible(!show));              // Show or hide start button group 
-        this.clearScoreButtonGroup.getChildren().forEach(child => child.setVisible(!show));         // Show or hide clear score button group
+        if (this.validHighScore())                                                                  // Only show clear high score button if a valid high score exists
+            this.clearScoreButtonGroup.getChildren().forEach(child => child.setVisible(!show));     // Show or hide clear score button group
         this.controlsButtonGroup.getChildren().forEach(child => child.setVisible(!show));           // Show or hide controls button group
 
         this.controlsInfoGroup.getChildren().forEach(child => child.setVisible(show));              // Show or hide controls info group  
     }
 
+    validHighScore() {
+        const highScore = loadHighScore();
+        return highScore !== null;
+    }
+
     createClearHighScoreButton() {
-        const highScore = loadHighScore();                                                          // Load the high score
-        if (highScore) {
+        if (this.validHighScore()) {
             const clearScoreButton = this.add.image(960, 900, 'startGameButton')                    // Add the clear high score button image
                 .setDepth(3)
                 .setInteractive({ useHandCursor: true });                                           // Make the button interactive with a hand cursor

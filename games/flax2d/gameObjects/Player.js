@@ -58,6 +58,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.checkpoint = { x: x, y: y };                                                       // initial checkpoint
         this.onPlatform = null;                                                                 // reference to the platform the player is on
         this.onCrate = null;
+        this.glideTurnCooldown = true;                                                          // cooldown flag for glide turns
     }
 
     // Update method called every frame
@@ -125,6 +126,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     onLanded() {
+        this.glideTurnCooldown = true;                                                          // cooldown flag for glide turns
+        console.log('Landed');
         this.hitbox.body.setDragX(this.groundDrag);                                             // ground drag
         this.handleCollision();                                                                 // handle collision
         switch (this.currentTileSoundType) {
@@ -253,23 +256,25 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             || this.state === STATES.GLIDE_SPINNING                                             // OR IF ALREADY SPINNING
             || this.state === STATES.GLIDE_TURNING) return;                                     // OR ALREADY TURNING - prevent glide turn
         if (this.flipX !== isFlipX) return;                                                     // no need to turn if already facing the right direction
+        if (!this.glideTurnCooldown) return;                                                    // prevent multiple glide turns
+        this.glideTurnCooldown = false;                                                         // reset cooldown flag
         this.endTailwhip(true);                                                                 // end tailwhip if active
         this.setState(STATES.GLIDE_TURNING);                                                    // set glideTurning to true
         this.disableMovement = true;                                                            // disable movement during spin
         const storeVelocity = this.hitbox.body.velocity.clone();                                // store initial velocity
         const radius = 50;                                                                      // Radius of the circular path
         const duration = 500;                                                                   // Duration of the circular motion in milliseconds
-        const startAngle = 270;                                                                 // Starting angle for the circular path at the top
+        const startAngle = 90;                                                                  // Starting angle for the circular path at the top
         const endAngle = isFlipX                                                                // Ending angle based on turn direction
             ? (startAngle + this.glideAngle) + 90                                               // clockwise
             : (startAngle - this.glideAngle) - 90;                                              // counter-clockwise 
         const path = new Phaser.Curves.Ellipse(                                                 // Create a circular path around the player
-            this.x, this.y + radius,                                                            // center of the ellipse
+            this.x, this.y - radius,                                                            // center of the ellipse
             radius, radius,                                                                     // radii
             startAngle, endAngle,                                                               // angles
-            isFlipX);                                                                           // clockwise based on turn direction
+            !isFlipX);                                                                          // clockwise based on turn direction
         //this.drawPathDebug(path);                                                             // DEBUG - draw the path
-        const toAngle = this.hitbox.angle + (isFlipX ? -1 : 1) * (270 - this.glideAngle);       // Total angle to rotate during the motion
+        const toAngle = this.hitbox.angle + (isFlipX ? 1 : -1) * (300 - this.glideAngle);       // Total angle to rotate during the motion
         this.stopActiveTween();                                                                 // Stop any existing tween
         this.activeTween = this.scene.tweens.add({                                              // Create a tween to follow the path
             targets: this.hitbox,                                                               // Target the hitbox
@@ -288,6 +293,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                 const speedX = Math.abs(storeVelocity.x);                                       // maintain horizontal speed magnitude
                 const dir = (!isFlipX) ? -1 : 1;                                                // left turn -1, right turn +1
                 this.hitbox.body.setVelocity(dir * speedX, storeVelocity.y);                    // restore horizontal velocity in new direction
+                this.scene.time.delayedCall(500, () => this.glideTurnCooldown = true);          // reset cooldown after delay
             }
         });
     }
@@ -565,8 +571,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             this.footStepSoundIsPlaying = false;                                                // Reset the flag 
         });
     }
-
-    getObjectSoundType() { }
 
     getTileSoundType() {
         if (!this.tilemap || (!this.groundLayer && !this.objectLayerTop)) return null;          // Ensure tilemap and groundLayer/objectLayerTop are defined

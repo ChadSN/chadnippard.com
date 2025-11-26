@@ -23,7 +23,7 @@ export class Glizzard extends Phaser.Physics.Arcade.Sprite {
 
     // Spawn a projectile
     spawnProjectile() {
-        this.projectile = new GlizzardProjectile(this.scene, this.x, this.y);
+        this.projectile = new GlizzardProjectile(this.scene, this.x, this.y).setDepth(4);
         this.scene.physics.add.collider(this.projectile, this.scene.groundLayer, (projectile, player) => {
             this.projectile.init(this);
         });
