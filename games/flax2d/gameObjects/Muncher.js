@@ -1,5 +1,5 @@
 export class Muncher extends Phaser.Physics.Arcade.Sprite {
-    constructor(scene, x, y, chaseDistance = 320, speed = 200) {
+    constructor(scene, x, y, chaseDistance = 256, speed = 200) {
         super(scene, x, y, 'muncher_Idle');                                         // Call the parent class constructor
         scene.add.existing(this);                                                   // Add the muncher to the scene
         this.setOrigin(0.5, 1);                                                     // Set origin to bottom-center
@@ -117,6 +117,7 @@ export class Muncher extends Phaser.Physics.Arcade.Sprite {
 
     death(xVel = 0) {
         this.scene.uiManager.addScoreText(this.x, this.y - this.height, 10);                        // show score text
+        this.scene.newDNA(this.x, this.y - this.height / 2);                                        // spawn dna at muncher position
         this.isDead = true;                                                                         // set isDead to true
         this.body.enable = false;                                                                   // disable physics
         this.setTexture('muncher_Idle', 1);                                                         // set to a specific frame to avoid blank sprite

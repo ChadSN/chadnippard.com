@@ -8,6 +8,8 @@ import { UIManager } from '../utils/UIManager.js';
 import { DamageBox } from '../../gameObjects/damageBox.js';
 import { CloudSpawner } from '../utils/CloudSpawner.js';
 import { musicManager } from '../utils/musicManager.js';
+import { saveHighScore } from '../utils/HighScoreManager.js';
+
 
 export class Game extends Phaser.Scene {
 
@@ -111,7 +113,9 @@ export class Game extends Phaser.Scene {
         this.setCollisions();
 
         this.cameras.main.fadeIn(500, 255, 255, 255).once('camerafadeincomplete', () => {                       // Fade in the camera over 0.5 seconds once
-            this.uiManager.startTimerEvent(this.uiManager.elapsed);                                             // Start the level timer                                   
+            this.uiManager.startTimerEvent(this.uiManager.elapsed);                                             // Start the level timer 
+            this.player.disableMovement = false;                                                                // Enable player movement
+            this.uiManager.resumeTimer();                                                                       // Resume the timer
         });
         this.levelReady = true;                                                                                 // Mark level as ready after creation
     }
@@ -198,11 +202,12 @@ export class Game extends Phaser.Scene {
                 this.levelReady = false;                                                                        // Mark level as not ready during transition
                 this.player.disableMovement = true;                                                             // Disable player movement
                 this.player.hitbox.body.setVelocity(0, 0);                                                      // Stop player movement
+                this.uiManager.pauseTimer();
                 this.cameras.main.fadeOut(1000, 255, 255, 255).once('camerafadeoutcomplete', () => {            // Fade out the camera over 1 second once
                     switch (this.levelKey) {                                                                    // Determine the next level based on current level key
                         case 'level1': this.levelKey = 'level2'; this.transitionToLevel(this.levelKey); break;  // Transition to level 2
                         case 'level2': this.levelKey = 'level3'; this.transitionToLevel(this.levelKey); break;  // Transition to level 3
-                        case 'level3': this.levelKey = 'GameOver'; this.scene.start('GameOver'); break;         // Transition to Game Over scene
+                        case 'level3': this.endGame(); break;         // Transition to Game Over scene
                         default: console.error('Unknown level key:', this.levelKey); break;                     // Handle unknown level keys
                     }
                 });
@@ -216,8 +221,19 @@ export class Game extends Phaser.Scene {
         });
     }
 
+    endGame() {
+        this.destroyLevel();                                                                                    // Clean up the current level                    
+        this.musicManager.fadeOutAndStop(500);                                                                  // Pause the music
+        this.time.delayedCall(500, () => {                                                                      // Delay to allow music fade out
+            const score = this.uiManager.score;                                                                 // Get final score
+            const elapsed = this.uiManager.elapsed;                                                             // Get elapsed time
+            saveHighScore(score, elapsed);                                                                      // Save high score if it's a new record
+            this.scene.start('GameOver', { score, elapsed });                                                   // Transition to Game Over scene with score and time data
+        });
+    }
+
     spawnRings() {
-        this.rings = this.physics.add.group({ allowGravity: false });                                           // Create a group for rings
+        this.rings = this.physics.add.staticGroup();                                                            // Create a group for rings
         const ringPoints = this.map.filterObjects("Objects", obj => obj.name === "ringPoint");                  // Find all ring points based on their names
         ringPoints.forEach(ringPoint => {                                                                       // Iterate over each ring point
             const ringRotation = ringPoint.properties.find(prop => prop.name === 'rotation').value;             // Get rotation from properties
@@ -254,7 +270,7 @@ export class Game extends Phaser.Scene {
     }
 
     spawnGeysers() {
-        this.geysers = this.physics.add.group({ allowGravity: false });                                         // Create a group for geysers
+        this.geysers = this.physics.add.staticGroup();                                         // Create a group for geysers
         if (!this.anims.exists('gustAnim')) {                                                                   // IF GUST ANIMATION DOESN'T EXIST 
             this.anims.create({                                                                                 // Create gust animation
                 key: 'gustAnim',
@@ -288,7 +304,7 @@ export class Game extends Phaser.Scene {
     }
 
     spawnTeleporters() {
-        this.tpSenders = this.physics.add.group({ allowGravity: false });                                       // Create a group for teleporters
+        this.tpSenders = this.physics.add.staticGroup();                                       // Create a group for teleporters
         this.tpReceivers = this.add.group();                                                                    // Create a group for teleporters
         const tpSenders = this.map.filterObjects("Objects", obj => obj.name === "TPSender");                    // Find all teleporter points based on their names
         tpSenders.forEach(tpSender => {                                                                         // Add teleporters to the group
@@ -615,17 +631,17 @@ export class Game extends Phaser.Scene {
         });
     }
 
-    // Spawn DNA collectables               
     spawnDNAs() {
         this.dnas = this.physics.add.staticGroup();                                                             // Create a static group for DNAs
-        const dnaPoints = this.map.filterObjects("Objects", obj => obj.name === "dnaPoint");                    // Find all DNA spawn points
-        dnaPoints.forEach(dnaPoint => {                                                                         // Iterate through each dnaPoint and create a DNA at its position
-            const dna = new DNA(this, dnaPoint.x, dnaPoint.y);                                                  // create dna at point
-            this.dnas.add(dna).setDepth(4);                                                                     // add to the group
-        });
         this.physics.add.overlap(this.player.hitbox, this.dnas, (_, dna) => {                                   // player collects dna
             this.player.collectDNA(dna);                                                                        // Handle DNA collection
         });
+    }
+
+    newDNA(x, y) {
+        const dna = new DNA(this, x, y)                                                                         // create dna at point
+            .setDepth(4);
+        this.dnas.add(dna);                                                                                     // add to the group
     }
 
     // Spawn muncher enemies    
@@ -633,7 +649,8 @@ export class Game extends Phaser.Scene {
         this.munchers = this.physics.add.group({ runChildUpdate: true });                                       // Create a group for munchers
         const muncherPoints = this.map.filterObjects("Objects", obj => obj.name === "muncherPoint");            // Find all muncher spawn points
         muncherPoints.forEach(muncherPoint => {                                                                 // Iterate through each muncherPoint and create a Muncher at its position
-            const muncher = new Muncher(this, muncherPoint.x, muncherPoint.y);                                  // create muncher at point
+            const chaseDistance = muncherPoint.properties?.find(prop => prop.name === 'chaseDistance')?.value;   // Get patrol distance from properties or default to 0
+            const muncher = new Muncher(this, muncherPoint.x, muncherPoint.y, chaseDistance);                                  // create muncher at point
             this.munchers.add(muncher).setDepth(4);                                                                         // add to the group
             const damageBox = new DamageBox(this, muncher);                                                     // create damage box for muncher
             muncher.setDamageBox(damageBox);                                                                    // assign damage box to muncher

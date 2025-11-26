@@ -1,5 +1,15 @@
 import { DNA } from '../../gameObjects/DNA.js';
 
+export function formatElapsedTime(ms) {                                                 // Format time as mm:ss:ms
+    const totalSeconds = Math.floor(ms / 1000);                                         // Total elapsed seconds
+    const minutes = Math.floor(totalSeconds / 60);                                      // Calculate minutes
+    const seconds = totalSeconds % 60;                                                  // Calculate seconds
+    const centiseconds = Math.floor((ms % 1000) / 10);                                  // Calculate centiseconds  
+    return `${minutes.toString().padStart(2, '0')}:` +                                  // Format minutes with leading zero
+        `${seconds.toString().padStart(2, '0')}:` +                                     // Format seconds with leading zero
+        `${centiseconds.toString().padStart(2, '0')}`;                                  // Format centiseconds with leading zero
+}
+
 export class UIManager {
     constructor(scene) {
         this.scene = scene;                                                             // Reference to the main game scene
@@ -7,6 +17,7 @@ export class UIManager {
         this.healthDNA = null;                                                          // Group to hold health DNA collectables
         this.timerEvent = null;                                                         // Timer event for updating the timer
         this.timeText = null;                                                           // Text object for displaying time
+        this.elapsed = 0;                                                               // Elapsed time in milliseconds
         this.create();                                                                  // Initialise UI elements
     }
 
@@ -31,7 +42,7 @@ export class UIManager {
                 .setOrigin(0.5)                                                         // Center origin
                 .setFontSize(fontSize)                                                  // Set font size
                 .setFontFamily(fontFamily)                                              // Set font family
-                .setFill('#fff')                                                        // Set text color to white
+                .setFill('white')                                                       // Set text color to white
                 .setText(initialText);                                                  // Set initial text
         };
         this.healthPanel = this.scene.add.sprite
@@ -66,83 +77,79 @@ export class UIManager {
     }
 
     initHealthDisplay() {
-        this.healthDNA = this.scene.add.group();                                                // Create a group for DNA collectables
-        for (let i = 0; i < this.scene.player.maxHealth; i++) {                                 // Loop to create DNA collectables for health display
-            const dna = new DNA(this.scene, 208 + 64 * i, 80);                                  // Example DNA collectable for health
-            this.healthDNA.add(dna);                                                            // Add DNA to the health group
-            dna.setScale(1.5);                                                                  // Scale up the DNA
-            dna.setScrollFactor(0);                                                             // Fix to camera
-            dna.setDepth(1000);                                                                 // Set depth
+        this.healthDNA = this.scene.add.group();                                        // Create a group for DNA collectables
+        for (let i = 0; i < this.scene.player.maxHealth; i++) {                         // Loop to create DNA collectables for health display
+            const dna = new DNA(this.scene, 208 + 64 * i, 80);                          // Example DNA collectable for health
+            this.healthDNA.add(dna);                                                    // Add DNA to the health group
+            dna.setScale(1.5);                                                          // Scale up the DNA
+            dna.setScrollFactor(0);                                                     // Fix to camera
+            dna.setDepth(1000);                                                         // Set depth
         }
     }
 
     // Method to update health display                                  
     updateHealth(health) {
-        this.healthDNA.children.iterate((dna, index) => {                                       // Iterate through each DNA in the health group
-            if (index < health) {                                                               // If index is less than current health
-                dna.setVisible(true);                                                           // show the DNA
-            } else {                                                                            // If index is greater than or equal to current health
-                dna.setTint(0xff0000);                                                          // set tint to red
-                this.scene.time.delayedCall(200, () => {                                        // after 0.2 seconds
-                    dna.clearTint();                                                            // clear the tint
-                    dna.setVisible(false);                                                      // hide the DNA
+        this.healthDNA.children.iterate((dna, index) => {                               // Iterate through each DNA in the health group
+            if (index < health) {                                                       // If index is less than current health
+                dna.setVisible(true);                                                   // show the DNA
+            } else {                                                                    // If index is greater than or equal to current health
+                dna.setTint(0xff0000);                                                  // set tint to red
+                this.scene.time.delayedCall(200, () => {                                // after 0.2 seconds
+                    dna.clearTint();                                                    // clear the tint
+                    dna.setVisible(false);                                              // hide the DNA
                 });
             }
         });
     }
 
     startTimerEvent(elapsed = 0) {
+        this.elapsed = elapsed;                                                         // Initialise elapsed time
         if (!this.timerEvent) {
-            this.timerEvent = this.scene.time.addEvent({                                            // Create a repeating timed event
-                delay: 10,                                                                          // Delay of 10 milliseconds
-                loop: true,                                                                         // Repeat indefinitely
-                callback: () => {                                                                   // Callback function to update the timer
-                    elapsed += 10;                                                                  // Increment elapsed time
-                    this.updateTimer(elapsed);                                                      // Update the timer display
+            this.timerEvent = this.scene.time.addEvent({                                // Create a repeating timed event
+                delay: 10,                                                              // Delay of 10 milliseconds
+                loop: true,                                                             // Repeat indefinitely
+                callback: () => {                                                       // Callback function to update the timer
+                    this.elapsed += 10;                                                 // Increment elapsed time
+                    this.updateTimer(this.elapsed);                                     // Update the timer display
                 }
             });
         }
     }
 
     updateTimer(elapsed) {
-        if (!this.timerCache) this.timerCache = { minutes: 0, seconds: 0, milliseconds: 0 };    // Cache for time components
-        const totalSeconds = Math.floor(elapsed / 1000);                                        // Total elapsed seconds
-        this.timerCache.minutes = Math.floor(totalSeconds / 60);                                // Calculate minutes
-        this.timerCache.seconds = totalSeconds % 60;                                            // Calculate seconds
-        this.timerCache.milliseconds = Math.floor((elapsed % 1000) / 10);                       // Calculate milliseconds
-        this.timeText.setText(
-            `${this.timerCache.minutes.toString().padStart(2, '0')}:` +                         // Format minutes with leading zero
-            `${this.timerCache.seconds.toString().padStart(2, '0')}:` +                         // Format seconds with leading zero
-            `${this.timerCache.milliseconds.toString().padStart(2, '0')}`                       // Format milliseconds with leading zero
-        );
+        this.timeText.setText(formatElapsedTime(elapsed));
     }
 
     pauseTimer() {
-        this.timerEvent.paused = true;                                                          // Pause the timer event
+        this.timerEvent.paused = true;                                                  // Pause the timer event
+    }
+
+    resumeTimer() {
+        this.timerEvent.paused = false;                                                 // Resume the timer event
     }
 
     addScoreText(worldX, worldY, amount) {
-        const cam = this.scene.cameras.main;                                                    // Get the main camera
-        const screenX = worldX - cam.scrollX;                                                   // Convert world X to screen X
-        const screenY = worldY - cam.scrollY;                                                   // Convert world Y to screen Y
-        const floatText = this.scene.add.text(screenX, screenY, `+${amount}`)                   // Create floating score text
-            .setFontSize(64)                                                                    // font size
-            .setFontFamily('Impact')                                                            // font family
-            .setFill('white')                                                                   // white color
-            .setDepth(1001)                                                                     // above other UI
-            .setOrigin(0.5)                                                                     // center origin
-            .setScrollFactor(0);                                                                // fix to camera
-        this.scene.tweens.add({                                                                 // Create a tween for the floating text
-            targets: floatText,                                                                 // Target the floating text
-            x: this.scoreText.x,                                                                // Move to score text X position
-            y: this.scoreText.y,                                                                // Move to score text Y position
-            alpha: { from: 1, to: .5 },                                                         // Fade out slightly
-            scale: { from: 1, to: .5 },                                                         // Scale down slightly
-            duration: 500,                                                                      // Duration of the tween
-            ease: 'Cubic.easeIn',                                                               // Easing function
-            onComplete: () => {                                                                 // Callback when tween completes
-                this.updateScore(amount);                                                       // Update the score
-                floatText.destroy();                                                            // Destroy the floating text
+        const cam = this.scene.cameras.main;                                            // Get the main camera
+        const screenX = worldX - cam.scrollX;                                           // Convert world X to screen X
+        const screenY = worldY - cam.scrollY;                                           // Convert world Y to screen Y
+        const floatText = this.scene.add.text(screenX, screenY, `+${amount}`)           // Create floating score text
+            .setFontSize(64)                                                            // font size
+            .setFontFamily('Impact')                                                    // font family
+            .setFill('white')                                                           // white color
+            .setDepth(1001)                                                             // above other UI
+            .setOrigin(0.5)                                                             // center origin
+            .setScrollFactor(0);                                                        // fix to camera
+        this.scene.tweens.add({                                                         // Create a tween for the floating text
+            targets: floatText,                                                         // Target the floating text
+            x: this.scoreText.x,                                                        // Move to score text X position
+            y: this.scoreText.y,                                                        // Move to score text Y position
+            alpha: { from: 1, to: .5 },                                                 // Fade out slightly
+            scale: { from: 1, to: .5 },                                                 // Scale down slightly
+            duration: 500,                                                              // Duration of the tween
+            ease: 'Cubic.easeIn',                                                       // Easing function
+            onComplete: () => {                                                         // Callback when tween completes
+                this.updateScore(amount);                                               // Update the score
+                floatText.destroy();                                                    // Destroy the floating text
             }
         });
     }

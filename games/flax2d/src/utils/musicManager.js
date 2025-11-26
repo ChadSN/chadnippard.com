@@ -1,9 +1,9 @@
 export class musicManager {
-    static shouldPlayMusic = true;                              // Static property to persist mute state across instances
+    static shouldPlayMusic = true;                                                                      // Static property to persist mute state across instances
 
     constructor(scene) {
-        this.scene = scene;                                     // Reference to the scene
-        this.currentMusic = null;                               // Currently playing music track
+        this.scene = scene;                                                                             // Reference to the scene
+        this.currentMusic = null;                                                                       // Currently playing music track
     }
 
     setMusic(track) {
@@ -20,22 +20,22 @@ export class musicManager {
     }
 
     togglePlay(icon) {
-        if (!this.currentMusic) return;                                     // IF NO MUSIC IS SET, EXIT                 
-        if (musicManager.shouldPlayMusic) {                                 // IF MUSIC IS PLAYING, PAUSE IT
-            this.currentMusic.pause();                                      // Pause the music
-            icon.setAlpha(0.5);                                             // Dim the icon to indicate muted state
-            musicManager.shouldPlayMusic = false;                                   // Update instance mute state
-        } else {                                                            // IF MUSIC IS PAUSED, PLAY IT
-            icon.setAlpha(1);                                               // Set icon to full opacity to indicate unmuted state
-            musicManager.shouldPlayMusic = true;                                    // Update instance mute state
-            if (this.scene.scene.key === 'MainMenu') this.resumeMusic();    // Resume music if in MainMenu
+        if (!this.currentMusic) return;                                                                 // IF NO MUSIC IS SET, EXIT                 
+        if (musicManager.shouldPlayMusic) {                                                             // IF MUSIC IS PLAYING, PAUSE IT
+            this.currentMusic.pause();                                                                  // Pause the music
+            icon.setAlpha(0.5);                                                                         // Dim the icon to indicate muted state
+            musicManager.shouldPlayMusic = false;                                                       // Update instance mute state
+        } else {                                                                                        // IF MUSIC IS PAUSED, PLAY IT
+            icon.setAlpha(1);                                                                           // Set icon to full opacity to indicate unmuted state
+            musicManager.shouldPlayMusic = true;                                                        // Update instance mute state
+            if (this.scene.scene.key === 'MainMenu') this.resumeMusic();                                // Resume music if in MainMenu
         }
     }
 
-    fadeOutAndStop(duration, nextScene = null) {
-        if (this.currentMusic) {
+    fadeOutAndStop(duration, nextScene = null) { 
+        if (this.currentMusic) {                                                                        // IF MUSIC IS PLAYING
             this.scene.tweens.add({
-                targets: this.currentMusic,
+                targets: this.currentMusic, 
                 volume: 0,
                 duration: duration,
                 onComplete: () => {

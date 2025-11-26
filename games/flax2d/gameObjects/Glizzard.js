@@ -96,6 +96,7 @@ export class Glizzard extends Phaser.Physics.Arcade.Sprite {
     }
 
     death(velX = 0) {
+        this.scene.newDNA(this.x, this.y - this.height / 2);                // spawn dna at muncher position
         this.isDead = true;                                                 // set isDead to true
         this.body.enable = false;                                           // disable physics
         this.scene.uiManager.updateScore(10);                               // update score

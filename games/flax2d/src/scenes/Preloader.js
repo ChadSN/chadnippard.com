@@ -61,6 +61,7 @@ export class Preloader extends Phaser.Scene {
         // TILES AND TILEMAPS
         this.load.tilemapTiledJSON('level1', '/levels/level1.json');        // Load the level1 tilemap JSON file. 
         this.load.tilemapTiledJSON('level2', '/levels/level2.json');        // Load the level2 tilemap JSON file.
+        this.load.tilemapTiledJSON('level3', '/levels/level3.json');        // Load the level3 tilemap JSON file.
         this.load.image('groundTiles', '/levels/Tileset_Ground.png');       // Load the GroundTile tileset image.
         this.load.image('objectTiles', '/levels/ObjectsTileSet.png');       // Load the ObjectTileSet tileset image.
 
@@ -82,6 +83,7 @@ export class Preloader extends Phaser.Scene {
         this.load.audio('level1Music', '/audio/Piano Song.mp3');
         this.load.audio('footstepGrass', '/audio/footstep-grass.wav');
         this.load.audio('footstepDirt', '/audio/Steps-Dirt_3a.ogg');
+        this.load.audio('footstepSnow', '/audio/footstep_snow.wav');
         this.load.audio('footstepWood', '/audio/wood-step.wav');
         this.load.audio('tailwhipSound', '/audio/woosh(edited).mp3');
         this.load.audio('poleSwingSound', '/audio/Fast Whoosh.wav');

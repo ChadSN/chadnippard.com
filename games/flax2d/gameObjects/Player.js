@@ -46,6 +46,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.footstepGrassSound = this.scene.sound.add('footstepGrass', { volume: 1 });         // footstep sound
         this.footstepDirtSound = this.scene.sound.add('footstepDirt', { volume: 0.3 });         // footstep dirt sound
         this.footstepWoodSound = this.scene.sound.add('footstepWood', { volume: 0.1 });         // footstep wood sound
+        this.footstepSnowSound = this.scene.sound.add('footstepSnow', { volume: 0.3 });         // footstep snow sound
         this.tailwhipSound = this.scene.sound.add('tailwhipSound', { volume: 0.5 });            // tailwhip sound
         this.poleSwingSound = this.scene.sound.add('poleSwingSound', { volume: 0.5 });          // pole swing sound
         this.checkpointSound = this.scene.sound.add('checkpointSound', { volume: 0.5 });        // checkpoint sound
@@ -130,6 +131,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             case 'grass': this.playFootstepSound(this.footstepGrassSound); break;               // play landing sound based on tile type
             case 'dirt': this.playFootstepSound(this.footstepDirtSound); break;
             case 'wood': this.playFootstepSound(this.footstepWoodSound); break;
+            case 'snow': this.playFootstepSound(this.footstepSnowSound); break;
             default: break;
         }
         this._wasOnGround = true;                                                               // set ground flag
@@ -541,6 +543,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                     this.playFootstepSound(this.footstepDirtSound);                             // play dirt footstep sound
                 else if (this.currentTileSoundType === 'wood')                                  // check if current tile sound type is wood
                     this.playFootstepSound(this.footstepWoodSound);                             // play wood footstep sound
+                else if (this.currentTileSoundType === 'snow')                                 // check if current tile sound type is snow
+                    this.playFootstepSound(this.footstepSnowSound);                             // play snow footstep sound
             }
         }
     }

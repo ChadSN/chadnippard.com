@@ -42,4 +42,4 @@ const config = {
     ]
 };
 
-new Phaser.Game(config);
+new Phaser.Game(config);                                // Create a new Phaser Game instance with the specified configuration
