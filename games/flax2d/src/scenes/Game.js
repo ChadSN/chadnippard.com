@@ -10,9 +10,7 @@ import { CloudSpawner } from '../utils/CloudSpawner.js';
 import { musicManager } from '../utils/musicManager.js';
 import { saveHighScore } from '../utils/HighScoreManager.js';
 
-
 export class Game extends Phaser.Scene {
-
     constructor() {
         super('Game');
         this.worldWidth;                                                                                        // Set world width
@@ -59,7 +57,7 @@ export class Game extends Phaser.Scene {
         //this.relayer();                                                                                       // Adjust layer depths
     }
 
-    update(time, delta) {
+    update() {
         this.handlePlayerInput();                                                                               // Handle player input
         this.updateWheelPlatforms();                                                                            // Update wheel platform positions
         this.player.lastVel = this.player.hitbox.body.velocity.clone();                                         // Store the player's last velocity
@@ -651,7 +649,7 @@ export class Game extends Phaser.Scene {
         muncherPoints.forEach(muncherPoint => {                                                                 // Iterate through each muncherPoint and create a Muncher at its position
             const chaseDistance = muncherPoint.properties?.find(prop => prop.name === 'chaseDistance')?.value;   // Get patrol distance from properties or default to 0
             const muncher = new Muncher(this, muncherPoint.x, muncherPoint.y, chaseDistance);                                  // create muncher at point
-            this.munchers.add(muncher).setDepth(4);                                                                         // add to the group
+            this.munchers.add(muncher);                                                                         // add to the group
             const damageBox = new DamageBox(this, muncher);                                                     // create damage box for muncher
             muncher.setDamageBox(damageBox);                                                                    // assign damage box to muncher
             muncher.body.setImmovable(true);                                                                             // make muncher immovable
@@ -673,7 +671,7 @@ export class Game extends Phaser.Scene {
             const patrolDistance = glizzardPoint.properties?.find(prop => prop.name === 'patrolDistance')?.value;   // Get patrol distance from properties or default to 0
             const detectionRange = glizzardPoint.properties?.find(prop => prop.name === 'detectionRange')?.value;   // Get detection range from properties or default to 300
             const glizzard = new Glizzard(this, glizzardPoint.x, glizzardPoint.y, patrolDistance, detectionRange);  // create glizzard at point
-            this.glizzards.add(glizzard).setDepth(4);                                                               // add to the group
+            this.glizzards.add(glizzard);                                                               // add to the group
         });
         this.physics.add.overlap(this.player.hitbox, this.glizzards, (player, glizzard) => {                        // player stomps glizzard
             if (player.y < glizzard.y - glizzard.height                                                             // IF PLAYER IS ABOVE GLIZZARD
