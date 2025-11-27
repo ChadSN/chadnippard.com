@@ -1,6 +1,6 @@
 import { Player } from '../../gameObjects/Player.js';
-import { Glizzard } from '../../gameObjects/Glizzard.js';
-import { Muncher } from '../../gameObjects/Muncher.js';
+import { Glizzard } from '../../gameObjects/NPCs/Glizzard.js';
+import { Muncher } from '../../gameObjects/NPCs/Muncher.js';
 import { DNA } from '../../gameObjects/DNA.js';
 import { Crate } from '../../gameObjects/Crate.js';
 import { InputManager } from '../utils/InputManager.js';
