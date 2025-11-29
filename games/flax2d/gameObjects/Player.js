@@ -547,7 +547,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         }
     }
 
-
     setAbovePlatform() {
         const tile = this.getTileHit();                                                         // get the tile directly below the player
         if (tile) {
