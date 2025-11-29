@@ -12,6 +12,7 @@ export class Glizzard extends Enemy {
         this.play('fly', true);                                                                                     // Play flying animation
         this.setVelocityX(this.speed * this.direction);                                                             // Set initial velocity
         this.spawnProjectile();                                                                                     // Spawn the projectile
+        this.deathSound = scene.sound.add('glizzardDeath', { volume: 0.5 });                                             // Glizzard death sound
     }
 
     update() {
@@ -44,7 +45,8 @@ export class Glizzard extends Enemy {
     }
 
     findPlayer() {
-        if (Math.abs(this.x - this.player.hitbox.x) <= this.detectionRange) {                                       // IF PLAYER IN RANGE
+        if (Phaser.Math.Distance.Between(this.x, this.y, this.player.hitbox.x, this.player.hitbox.y)                // IF THE DISTANCE BETWEEN GLIZZARD AND PLAYER
+            <= this.detectionRange) {                                                                               // IS LESS THAN DETECTION RANGE
             this.canAttack = true;                                                                                  // Set attack flag
             this.attackPlayer();                                                                                    // Attack player
         } else if (this.canAttack) {                                                                                // IF PLAYER OUT OF RANGE
@@ -64,6 +66,7 @@ export class Glizzard extends Enemy {
     }
 
     death(xVel = 0) {
+        this.deathSound.play();                                                                                     // Play death sound
         super.die(10, 1, xVel);                                                                                     // Call parent die method with parameters
     }
 

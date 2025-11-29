@@ -41,15 +41,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.didStartPoleJump = false;                                                          // flag to indicate if pole jump has just started
         this.disableMovement = false;                                                           // flag to disable all player movement
         this.state = null;                                                                      // current player state
-        this.setState(STATES.IDLE);                                                             // set initial state to IDLE
         this.activePole = null;                                                                 // reference to the pole being swung on
-        this.footstepGrassSound = this.scene.sound.add('footstepGrass', { volume: 1 });         // footstep sound
-        this.footstepDirtSound = this.scene.sound.add('footstepDirt', { volume: 0.3 });         // footstep dirt sound
-        this.footstepWoodSound = this.scene.sound.add('footstepWood', { volume: 0.1 });         // footstep wood sound
-        this.footstepSnowSound = this.scene.sound.add('footstepSnow', { volume: 0.3 });         // footstep snow sound
-        this.tailwhipSound = this.scene.sound.add('tailwhipSound', { volume: 0.5 });            // tailwhip sound
-        this.poleSwingSound = this.scene.sound.add('poleSwingSound', { volume: 0.5 });          // pole swing sound
-        this.checkpointSound = this.scene.sound.add('checkpointSound', { volume: 0.5 });        // checkpoint sound
+        this.initAudio();
+        this.glidingSoundTween = null;                                                          // gliding sound tween reference
         this.footstepGrassSoundIsPlaying = false;                                               // footstep sound playing flag
         this.tilemap = null;                                                                    // Initialise the tilemap
         this.groundLayer = null;                                                                // Initialise the ground layer
@@ -59,9 +53,19 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.onPlatform = null;                                                                 // reference to the platform the player is on
         this.onCrate = null;
         this.glideTurnCooldown = true;                                                          // cooldown flag for glide turns
+        this.setState(STATES.IDLE);                                                             // set initial state to IDLE
+    }
+    initAudio() {
+        this.footstepGrassSound = this.scene.sound.add('footstepGrass', { volume: 1 });         // footstep sound
+        this.footstepDirtSound = this.scene.sound.add('footstepDirt', { volume: 0.3 });         // footstep dirt sound
+        this.footstepWoodSound = this.scene.sound.add('footstepWood', { volume: 0.1 });         // footstep wood sound
+        this.footstepSnowSound = this.scene.sound.add('footstepSnow', { volume: 0.3 });         // footstep snow sound
+        this.tailwhipSound = this.scene.sound.add('tailwhipSound', { volume: 0.5 });            // tailwhip sound
+        this.poleSwingSound = this.scene.sound.add('poleSwingSound', { volume: 0.5 });          // pole swing sound
+        this.checkpointSound = this.scene.sound.add('checkpointSound', { volume: 0.5 });        // checkpoint sound
+        this.glidingSound = this.scene.sound.add('glidingSound', { loop: true });               // gliding sound
     }
 
-    // Update method called every frame
     preUpdate(time, delta) {
         if (!this.scene.levelReady) return;                                                     // safety check
         if (!this.hitbox.body) return;                                                          // safety check
@@ -127,7 +131,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     onLanded() {
         this.glideTurnCooldown = true;                                                          // cooldown flag for glide turns
-        console.log('Landed');
         this.hitbox.body.setDragX(this.groundDrag);                                             // ground drag
         this.handleCollision();                                                                 // handle collision
         switch (this.currentTileSoundType) {
@@ -157,7 +160,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     jump() {
         switch (this.state) {
-            case STATES.POLE_SWINGING: this.stopPoleSwing(); break;                             // jump off pole
+            case STATES.POLE_SWINGING: this.stopPoleSwing(); console.log('Jump called. State:', this.state, 'didStartPoleJump:', this.didStartPoleJump);
+                break;                             // jump off pole
             case STATES.GLIDING: this.stopGlide(); break;                                       // stop gliding if currently gliding
             case STATES.IDLE: case STATES.RUNNING:                                              // CASE IDLE or RUNNING
                 this.hitbox.body.setVelocityY(-this.jumpVel); break;                            // set vertical velocity to jump
@@ -171,6 +175,18 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         if (this.didStartGlide || this.state === STATES.GLIDE_SPINNING) return;                 // prevent multiple glide starts
         this.didStartGlide = true;                                                              // flag to indicate glide has started
         this.play('glide_Start', true);                                                         // play glide start animation
+        this.glidingSound?.stop();                                                              // Stop any existing gliding sound
+        this.glidingSound.play();                                                               // Play gliding sound
+        this.glidingSoundTween?.stop();                                                         // stop the tween
+        this.glidingSoundTween = null;                                                          // clear the reference
+        this.glidingSoundTween = this.scene.tweens.add({                                        // tween to fade in gliding sound
+            targets: this.glidingSound,
+            volume: { from: 0, to: 0.3 },
+            duration: 500,
+            onComplete: () => {
+                this.glidingSoundTween = null;                                                  // clear the reference
+            }
+        })
         this.activeTween = this.scene.tweens.add({                                              // tween to rotate and move down
             targets: this.hitbox,                                                               // target the muncher
             angle: glideAngle,                                                                  // rotate to 360 degrees
@@ -186,7 +202,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     glide() {
         this.play('glide', true);                                                               // play glide animation
-        //this.hitbox.body.setVelocityY(0);                                                       // limit downward speed
         this.hitbox.body.setGravity(0, -2500);                                                  // Reduce gravity for the player
         const glideSpeed = this.originalMoveSpeed * 3 / 4;                                      // calculate reduced horizontal speed while gliding
         this.hitbox.body.setAccelerationX(this.currentMoveSpeed * (this.flipX ? -1 : 1));       // maintain horizontal acceleration
@@ -195,12 +210,29 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     stopGlide() {
         if (!this.isInGlideFamily()) return;                                                    // only stop gliding if currently gliding
+        this.endGlideSound();                                                                   // end gliding sound
         this.setState(STATES.IDLE);                                                             // set state to IDLE
         this.hitbox.body.setGravity(0);                                                         // Re-enable normal gravity
         this.currentMoveSpeed = this.originalMoveSpeed;                                         // reset speed
         if (this.state === STATES.GLIDE_SPINNING || this.state === STATES.GLIDE_TURNING)        // IF GLIDE SPINNING or TURNING
             return;                                                                             // prevent stopping glide
         this.tweenAngleToZero(this.hitbox, 100);                                                // tween angle back to zero over 100ms
+    }
+
+    endGlideSound() {
+        if (this.glidingSound.isPlaying) {                                                      // IF GLIDING SOUND IS PLAYING AND TWEEN ACTIVE
+            this.glidingSoundTween?.stop();                                                     // stop any existing tween
+            this.glidingSoundTween = null;                                                      // clear the reference
+            this.glidingSoundTween = this.scene.tweens.add({                                    // tween to fade out gliding sound
+                targets: this.glidingSound,
+                volume: { from: this.glidingSound.volume, to: 0 },
+                duration: 500,
+                onComplete: () => {
+                    this.glidingSound?.stop();                                                  // Stop the gliding sound
+                    this.glidingSoundTween = null;                                              // clear the reference
+                }
+            });
+        }
     }
 
     glideSpin() {
@@ -337,11 +369,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     poleSwing(pole) {
         if (this.state === STATES.POLE_SWINGING || this.didStartPoleJump) return                // prevent multiple pole swings
+        if (!pole || this.activePole === pole) return;                                          // Prevent re-triggering on same pole
         this.didStartPoleJump = false;                                                          // set pole jump flag
-        this.stopActiveTween();                                                                 // Stop any active tweens
-        this.endTailwhip(true);                                                                     // End tailwhip if active
         this.didStartGlide = false;                                                             // Reset glide start flag
         this.disableMovement = false;                                                           // Ensure movement is enabled
+        this.stopActiveTween();                                                                 // Stop any active tweens
+        this.endGlideSound();                                                                   // end gliding sound
+        this.endTailwhip(true);                                                                 // End tailwhip if active
         this.activePole = pole;                                                                 // Store reference to the pole being swung on
         this.setState(STATES.POLE_SWINGING);                                                    // Set state to pole swinging
         // SET IN ORDER FOR CORRECT BEHAVIOR
@@ -379,7 +413,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.hitbox.body.setImmovable(false);                                                   // Make the hitbox movable again
         this.hitbox.body.setAllowGravity(true);                                                 // Enable gravity
         this.hitbox.body.setGravity(0);                                                         // reset gravity
-
         const angleRad = Phaser.Math.DegToRad(this.hitbox.angle + 90);                          // calculate launch angle
         const launchSpeedX = Math.cos(angleRad) * 2000;                                         // calculate launch velocity
         const launchSpeedY = Math.sin(angleRad) < 0.3 ? -1000 : 0;                              // calculate launch velocity
@@ -404,12 +437,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         });
     }
 
-    crouch() {
-        // Implement crouch functionality MAYBE
-    }
-
     damagePlayer(amount, attacker) {
         this.takeDamage(amount);                                                                // Reduce player health
+        if (this.state === STATES.POLE_SWINGING) return;                                        // No knockback if swinging on pole
         this.hitbox.body.setVelocityY(-600);                                                    // Knockback upwards
         if (attacker.x < this.x) this.hitbox.body.setVelocityX(600);                            // Knockback to the right
         else this.hitbox.body.setVelocityX(-600);                                               // Knockback to the left
@@ -429,7 +459,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.scene.uiManager.updateHealth(this.health);                                         // Update health text
     }
 
-    // Function to handle DNA collection                
     collectDNA(dna) {
         if (this.health >= this.maxHealth) return;                                              // Don't collect if health is full
         dna.disableBody(true, true);                                                            // Remove the collected DNA
@@ -461,7 +490,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             this.hitbox.x = 0 + this.hitbox.body.width / 2;                                     // Keep player within left boundary
             this.stopActiveTween();                                                             // Stop any active tweens
         }
-
         if (this.hitbox.x > this.scene.worldWidth - this.hitbox.body.width / 2) {               // Check right boundary
             this.hitbox.x = this.scene.worldWidth - this.hitbox.body.width / 2;
             this.stopActiveTween();                                                             // Stop any active tweens
@@ -476,7 +504,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.damageBox = damageBox;                                                             // Assign the DamageBox to the player
     }
 
-    // stop activeTween method
     stopActiveTween() {
         if (this.activeTween) {                                                                 // if there is an active tween
             this.activeTween.stop();                                                            // stop the tween
@@ -485,6 +512,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     handleCollision() {
+        this.endGlideSound();                                                                   // end gliding sound
         this.stopActiveTween();                                                                 // stop any active tween
         if (this.state === STATES.GLIDING) this.stopGlide();                                    // stop gliding
         if (this.state === STATES.GLIDE_TURNING) {                                              // if currently gliding spin
@@ -542,16 +570,14 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     playFootstepAnimationSound() {
         if (this.anims.currentAnim?.key === 'run') {                                            // only play during running animation
             const frameIndex = this.anims.currentFrame.index;                                   // get current frame index
-            if ([4, 10].includes(frameIndex)) {                                                 // play sound on frames 4 and 10
-                if (this.currentTileSoundType === 'grass')                                      // check if current tile sound type is grass
-                    this.playFootstepSound(this.footstepGrassSound);                            // play grass footstep sound
-                else if (this.currentTileSoundType === 'dirt')                                  // check if current tile sound type is dirt
-                    this.playFootstepSound(this.footstepDirtSound);                             // play dirt footstep sound
-                else if (this.currentTileSoundType === 'wood')                                  // check if current tile sound type is wood
-                    this.playFootstepSound(this.footstepWoodSound);                             // play wood footstep sound
-                else if (this.currentTileSoundType === 'snow')                                 // check if current tile sound type is snow
-                    this.playFootstepSound(this.footstepSnowSound);                             // play snow footstep sound
-            }
+            if ([4, 10].includes(frameIndex))                                                  // play sound on frames 4 and 10
+                switch (this.currentTileSoundType) {                                            // switch based on current surface type
+                    case 'grass': this.playFootstepSound(this.footstepGrassSound); break;       // play grass sound
+                    case 'dirt': this.playFootstepSound(this.footstepDirtSound); break;         // play dirt sound
+                    case 'wood': this.playFootstepSound(this.footstepWoodSound); break;         // play wood sound
+                    case 'snow': this.playFootstepSound(this.footstepSnowSound); break;         // play snow sound
+                    default: break;
+                }
         }
     }
 
@@ -608,7 +634,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         });
     }
 
-    // Define player animations
     initAnimations() {
         if (!this.anims.exists('idle'))                                                         // check if animation already exists
             this.anims.create({                                                                 // create idle animation
@@ -666,54 +691,4 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                 repeat: -1
             });
     }
-
 }
-
-// WRITE ABOUT HOW THIS WAS CHANGED TO USE CIRCULAR MOTION INSTEAD OF MULTIPLE TWEENS
-// glideSpin() {
-//     if (this.isGlidingSpinning) return;
-//     if (!this.isGliding) return;
-//     this.isGlidingSpinning = true;
-
-//     this.scene.tweens.add({                 // tween to rotate and move down
-//         targets: this,                      // target the player
-//         y: this.y - 200,                    // move up by 300 pixels
-//         x: this.x + (this.flipX ? -200 : 200),                // move left or right based on facing direction
-//         angle: this.angle + (this.flipX ? 90 : -90), // rotate by 180 degrees
-//         duration: 250,                      // Duration of the tween in milliseconds
-//         ease: 'Sine.easeInOut',
-//         onComplete: () => {
-//             this.scene.tweens.add({         // second tween to rotate again
-//                 targets: this,
-//                 x: this.x + (this.flipX ? 200 : -200),                // move left or right based on facing direction
-//                 y: this.y - 200,                    // move up by 300 pixels
-//                 angle: this.angle + (this.flipX ? 90 : -90), // rotate by another 180 degrees
-//                 duration: 250,              // Duration of the second tween
-//                 ease: 'Sine.easeInOut',
-//                 onComplete: () => {
-//                     this.scene.tweens.add({         // second tween to rotate again
-//                         targets: this,
-//                         x: this.x + (this.flipX ? 200 : -200),                // move left or right based on facing direction
-//                         y: this.y + 200,                    // move up by 300 pixels
-//                         angle: this.angle + (this.flipX ? 90 : -90), // rotate by another 180 degrees
-//                         duration: 250,              // Duration of the second tween
-//                         ease: 'Sine.easeInOut',
-//                         onComplete: () => {
-//                             this.scene.tweens.add({         // second tween to rotate again
-//                                 targets: this,
-//                                 x: this.x + (this.flipX ? -200 : 200),                // move left or right based on facing direction
-//                                 y: this.y + 200,                    // move up by 300 pixels
-//                                 angle: this.angle + (this.flipX ? 90 : -90), // rotate by another 180 degrees
-//                                 duration: 250,              // Duration of the second tween
-//                                 ease: 'Sine.easeInOut',
-//                                 onComplete: () => {
-//                                     this.isGlidingSpinning = false;                  // destroy the muncher after the tween
-//                                 }
-//                             });
-//                         }
-//                     });
-//                 }
-//             });
-//         }
-//     });
-// }

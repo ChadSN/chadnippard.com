@@ -91,8 +91,13 @@ export class Preloader extends Phaser.Scene {
         this.load.audio('breakingCrate', '/audio/443293__deathscyp__wood-break.wav');
         this.load.audio('muncherDeath', '/audio/muncher-death.wav');
         this.load.audio('muncherAttack', '/audio/crunch.wav');
+        this.load.audio('glizzardProjectile', '/audio/glizzardProjectile.mp3');
+        this.load.audio('glizzardDeath', '/audio/glizzardDeath.wav');
         this.load.audio('scorePoints', '/audio/ScorePoints.wav');
         this.load.audio('checkpointSound', '/audio/Checkpoint.wav');
+        this.load.audio('wheelCreak', '/audio/wheelCreak.wav');
+        this.load.audio('geyserSound', '/audio/geyserSound.wav');
+        this.load.audio('glidingSound', '/audio/gliding.wav');
     }
 
     create() {

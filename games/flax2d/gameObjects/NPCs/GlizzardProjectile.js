@@ -13,10 +13,12 @@ export class GlizzardProjectile extends Phaser.Physics.Arcade.Sprite {
         this.body.enable = false;                                                       // Disable the physics body to stop collisions
         this.initAnimations();                                                          // Initialise projectile animations
         this.player = scene.player;                                                     // Reference to the player
+        this.deathSound = this.scene.sound.add('glizzardProjectile', { volume: 0.3 });  // Load death sound
     }
 
     init() {
         this.play('glizzardProjectile_Death', true);                                    // Play death animation
+        this.deathSound.play();                                                         // Play death sound
         this.setVelocity(0);                                                            // Reset velocity
         this.body.enable = false;                                                       // Disable the physics body to stop collisions
         this.on('animationupdate', (animation, frame) => {                              // Listen for animation updates to scale the projectile

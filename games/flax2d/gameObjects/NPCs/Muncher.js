@@ -79,15 +79,12 @@ export class Muncher extends Enemy {
         });
     }
 
-
     death(xVel = 0) {
         this.deathSound.play();                                                                     // play muncher death sound
         super.die(10, 1, xVel);                                                                     // Call parent die method with parameters
     }
 
-    setDamageBox(damageBox) {
-        this.damageBox = damageBox;                                                                 // Assign the DamageBox to the player
-    }
+    setDamageBox(damageBox) { this.damageBox = damageBox; }                                         // Assign the DamageBox to the player
 
     initAnimations() {
         if (!this.scene.anims.exists('walk'))
