@@ -23,18 +23,6 @@ export class UIManager {
 
     create() {
         const cam = this.scene.cameras.main;                                            // Get the main camera
-        const BackgroundWidth = 352;                                                    // Width of the background rectangles
-        const BackgroundHeight = 96;                                                    // Height of the background rectangles
-        const backgroundCenterX = cam.x + cam.width - BackgroundWidth / 2 - 16;         // X position for centering backgrounds
-        const timerBackgroundY = BackgroundHeight / 2 + 16;                             // Y position for timer background
-        const scoreBackgroundY = timerBackgroundY + BackgroundHeight + 16;              // Y position for score background
-        const createBackground = (x, y) => {                                            // Create reusable method for backgrounds
-            return this.scene.add.rectangle(x, y, BackgroundWidth, BackgroundHeight)    // Create rectangle for background
-                .setDepth(1000)                                                         // Set depth to ensure it's above other game objects
-                .setScrollFactor(0)                                                     // Fix to camera
-                .setOrigin(0.5)                                                         // Center origin
-                .setFillStyle(0x000000, 0.5);                                           // Semi-transparent black fill
-        };
         const createText = (x, y, fontSize, fontFamily, initialText) => {               // Create reusable method for text
             return this.scene.add.text(x, y)                                            // Add text at specified position
                 .setDepth(1000)                                                         // Set depth for text
@@ -45,25 +33,26 @@ export class UIManager {
                 .setFill('white')                                                       // Set text color to white
                 .setText(initialText);                                                  // Set initial text
         };
-        this.healthPanel = this.scene.add.sprite
-            (16, 16, 'healthPanel')
-            .setDepth(1000)                                                             // Set depth for health panel
-            .setOrigin(0, 0)                                                            // Set origin to left center
-            .setScrollFactor(0);                                                        // Health panel background   
-        this.timerBackground = createBackground(backgroundCenterX, timerBackgroundY);   // Create timer background
-        this.timeText = createText(this.timerBackground.x, this.timerBackground.y,      // Create timer text
-            64,                                                                         // font size
-            'Courier New',                                                              // font family
-            '00:00:00');                                                                // initial text
-        this.scoreBackground = createBackground(backgroundCenterX, scoreBackgroundY);   // Create score background
-        this.scoreText = createText(this.scoreBackground.x, this.scoreBackground.y,     // Create score text
-            64,                                                                         // font size
-            'Impact',                                                                   // font family
-            'Score: 0');                                                                // initial text
+        this.healthPanel = this.scene.add.sprite(16, 16, 'healthPanel')
+            .setOrigin(0, 0).setDepth(1000).setScrollFactor(0);                                            // Set origin to left center
+        const camTopRightX = cam.x + cam.width - 380;                                   // Calculate top-right X position of the camera
+        const camTopRightY = cam.y + 16;                                                // Calculate top-right Y position of the camera
+        const timerGraphics = this.scene.add.graphics();                                // Create semi-transparent rounded rectangle graphics
+        this.setGraphicsProperties(timerGraphics, camTopRightX, camTopRightY);          // Set graphics properties
+        this.timeText = createText(timerGraphics.x + 364 / 2, timerGraphics.y + 50,     // Create timer text
+            64, 'Courier New', '00:00:00');                                                                // initial text
+        const scoreGraphics = this.scene.add.graphics();                                // Create semi-transparent rounded rectangle graphics
+        this.setGraphicsProperties(scoreGraphics, camTopRightX, camTopRightY + 116);    // Set graphics properties
+        this.scoreText = createText(scoreGraphics.x + 364 / 2, scoreGraphics.y + 50,    // Create score text
+            64, 'Impact', 'Score: 0');                                                                // initial text
         this.scorePoints = this.scene.sound.add('scorePoints', { volume: 0.3 });        // Add score points sound
     }
 
-    // Method to update score display
+    setGraphicsProperties(graphics, posX, posY) {                                       // Set properties for background graphics
+        graphics.fillStyle(0x000000, 0.5).fillRoundedRect(0, 0, 364, 100, 16)
+            .setPosition(posX, posY).setDepth(1000).setScrollFactor(0);
+    }
+
     updateScore(amount) {
         this.scorePoints.play();                                                        // Play score points sound
         this.score += amount;                                                           // Increase score by the specified amount

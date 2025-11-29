@@ -7,6 +7,17 @@ export function rescaleTarget(scene, target, scale, duration = 200) {           
     });
 }
 
+export function setButtonHoverEffect(scene, button, secondary = null) {
+    button.on('pointerover', () => {
+        rescaleTarget(scene, button, 1.1);
+        if (secondary) rescaleTarget(scene, secondary, 1.1);
+    });
+    button.on('pointerout', () => {
+        rescaleTarget(scene, button, 1);
+        if (secondary) rescaleTarget(scene, secondary, 1);
+    });
+}
+
 export function createMusicMuteButton(scene, musicManager) {
     const cam = scene.cameras.main;                                                             // Get the main camera
     const musicMuteButton = scene.add.image(cam.width - 128, cam.height - 128, 'smallButton')   // Create music mute button
@@ -18,14 +29,7 @@ export function createMusicMuteButton(scene, musicManager) {
     musicMuteButton.on('pointerdown', () => {                                                   // Handle button click
         musicManager.togglePlay(quaverIcon);                                                    // Toggle music play/pause and update icon alpha
     });
-    musicMuteButton.on('pointerover', () => {                                                   // Hover effect for the button
-        rescaleTarget(scene, musicMuteButton, 1.1);                                             // Enlarge the button on hover
-        rescaleTarget(scene, quaverIcon, 1.1);                                                  // Enlarge the quaver icon on hover
-    });
-    musicMuteButton.on('pointerout', () => {                                                    // Hover out effect for the button
-        rescaleTarget(scene, musicMuteButton, 1);                                               // Reset button size when not hovered
-        rescaleTarget(scene, quaverIcon, 1);                                                    // Reset quaver icon size when not hovered
-    });
+    setButtonHoverEffect(scene, musicMuteButton, quaverIcon);
 }
 
 export function createQuitButton(scene) {
@@ -38,14 +42,7 @@ export function createQuitButton(scene) {
     quitButton.on('pointerdown', () => {                                                        // Handle button click
         exit();                                                                                 // Call quit method
     });                                                                                         // Listen for button click
-    quitButton.on('pointerover', () => {                                                        // Hover effect for the button
-        rescaleTarget(scene, quitButton, 1.1);                                                  // Enlarge the button on hover
-        rescaleTarget(scene, exitIcon, 1.1);                                                    // Enlarge the exit icon on hover
-    });
-    quitButton.on('pointerout', () => {                                                         // Hover out effect for the button
-        rescaleTarget(scene, quitButton, 1);                                                    // Reset button 
-        rescaleTarget(scene, exitIcon, 1);                                                      // Reset exit icon
-    });
+    setButtonHoverEffect(scene, quitButton, exitIcon);                                          // Set hover effects for quit button
 }
 
 function exit() {

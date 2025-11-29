@@ -14,7 +14,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     constructor(scene, x, y) {
         super(scene, x, y);                                                                     // Call the parent class constructor
         scene.add.existing(this);                                                               // Add the player to the scene
-        const hitboxAlpha = 0;                                                                  // set to 0 to make hitbox invisible
+        const hitboxAlpha = 0;                                                                  // set to 0 to make hitbox invisible, 1 for visible debugging
         const hitbox = scene.add.rectangle(x, y, 50, 100, 0x00ff00, hitboxAlpha);               // create the hitbox rectangle
         scene.physics.add.existing(hitbox);                                                     // now hitbox.body is an Arcade.Body
         this.hitbox = hitbox;                                                                   // reference the hitbox from the player
@@ -160,13 +160,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     jump() {
         switch (this.state) {
-            case STATES.POLE_SWINGING: this.stopPoleSwing(); console.log('Jump called. State:', this.state, 'didStartPoleJump:', this.didStartPoleJump);
-                break;                             // jump off pole
+            case STATES.POLE_SWINGING: this.stopPoleSwing(); break;                             // jump off pole
             case STATES.GLIDING: this.stopGlide(); break;                                       // stop gliding if currently gliding
             case STATES.IDLE: case STATES.RUNNING:                                              // CASE IDLE or RUNNING
                 this.hitbox.body.setVelocityY(-this.jumpVel); break;                            // set vertical velocity to jump
-            case STATES.JUMPING: case STATES.FALLING: if (this.hitbox.body.velocity.x != 0)     // IF MOVING HORIZONTALLY
-                this.startGlide(this.flipX ? -this.glideAngle : this.glideAngle); break;        // start glide
+            case STATES.JUMPING: case STATES.FALLING:                                           // CASE JUMPING or FALLING
+                if (this.hitbox.body.velocity.x != 0)                                           // IF MOVING HORIZONTALLY
+                    this.startGlide(this.flipX ? -this.glideAngle : this.glideAngle); break;    // start glide
             default: break;                                                                     // default case
         }
     }
