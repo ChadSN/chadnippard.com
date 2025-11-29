@@ -45,9 +45,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.initAudio();
         this.glidingSoundTween = null;                                                          // gliding sound tween reference
         this.footstepGrassSoundIsPlaying = false;                                               // footstep sound playing flag
-        this.tilemap = null;                                                                    // Initialise the tilemap
-        this.groundLayer = null;                                                                // Initialise the ground layer
-        this.objectLayerTop = null;                                                             // Initialise the object layer top
         this.currentTileSoundType = null;                                                       // current tile sound type
         this.checkpoint = { x: x, y: y };                                                       // initial checkpoint
         this.onPlatform = null;                                                                 // reference to the platform the player is on
@@ -561,12 +558,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         }
     }
 
-    setTilemapAndLayer(tilemap, groundLayer, objectLayerTop) {
-        this.tilemap = tilemap;                                                                 // Assign the tilemap
-        this.groundLayer = groundLayer;                                                         // Assign the ground layer
-        this.objectLayerTop = objectLayerTop;
-    }
-
     playFootstepAnimationSound() {
         if (this.anims.currentAnim?.key === 'run') {                                            // only play during running animation
             const frameIndex = this.anims.currentFrame.index;                                   // get current frame index
@@ -599,16 +590,16 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     getTileSoundType() {
-        if (!this.tilemap || (!this.groundLayer && !this.objectLayerTop)) return null;          // Ensure tilemap and groundLayer/objectLayerTop are defined
-        const topTile = this.getTileHit(this.objectLayerTop);                                   // Check top object layer first
+        if (!this.scene.map || (!this.scene.groundLayer && !this.scene.objectLayerTop)) return null;          // Ensure tilemap and groundLayer/objectLayerTop are defined
+        const topTile = this.getTileHit(this.scene.objectLayerTop);                                   // Check top object layer first
         if (topTile.properties?.soundType) return topTile.properties.soundType;                 // return if found
-        const groundTile = this.getTileHit(this.groundLayer);                                   // then check ground layer
+        const groundTile = this.getTileHit(this.scene.groundLayer);                                   // then check ground layer
         if (groundTile.properties?.soundType) return groundTile.properties.soundType;           // return if found
         return null;                                                                            // return null if no soundType found
     }
 
     getTileHit(layer) {
-        return this.tilemap.getTileAtWorldXY(this.hitbox.x, this.hitbox.body.bottom, true, this.scene.cameras.main, layer);
+        return this.scene.map.getTileAtWorldXY(this.hitbox.x, this.hitbox.body.bottom, true, this.scene.cameras.main, layer);
     }
 
     setCheckpoint(x, y) {

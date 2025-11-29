@@ -142,7 +142,6 @@ export class Game extends Phaser.Scene {
         this.destroyGroup(this.dnas);                                                                           // Destroy DNA collectables
         this.soundAttenuators.forEach(a => a.destroy());                                                        // Destroy sound attenuators
         this.soundAttenuators = [];                                                                             // Clear sound attenuators array
-        this.player.setTilemapAndLayer(null, null);                                                             // Clear player's tilemap and layer references
         this.lights.destroy();                                                                                  // Destroy the Lights Manager
         this.groundLayer = null;                                                                                // Clear ground layer reference
         this.groundInsideLayer = null;                                                                          // Clear ground inside layer reference
@@ -227,7 +226,6 @@ export class Game extends Phaser.Scene {
         this.cameras.main.stopFollow();                                                                         // Temporarily stop camera from following player
         this.cameras.main.centerOn(x, y);                                                                       // Center camera on player spawn point
         this.time.delayedCall(100, () => this.cameras.main.startFollow(this.player, false, 0.08, 0.08));        // Make the camera follow the player smoothly
-        this.player.setTilemapAndLayer(this.map, this.groundLayer, this.objectLayerTop);                        // Provide player with tilemap and layer references
         this.uiManager.updateHealth(this.player.health);                                                        // Update health display in UI
         this.player.checkpoint = { x: x, y: y };                                                                // Set player's checkpoint to spawn point
     }
