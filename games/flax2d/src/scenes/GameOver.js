@@ -7,35 +7,21 @@ export class GameOver extends Phaser.Scene {
     }
 
     create(data) {
-        this.background = this.add.image(960, 540, 'sky')
-            .setDepth(0);
-
-        this.cameras.main.fadeIn(1000, 255, 255, 255);
-
-        const elapsed = data.elapsed;
-        const formattedTime = formatElapsedTime(elapsed);
-
-        this.add.text(960, 440, 'The end!')
-            .setOrigin(0.5)
-            .setFontFamily('Impact')
-            .setFontSize('128px')
-            .setColor('white')
-            .setScrollFactor(0);
-
-        this.add.text(960, 540, `Score: ${data.score}`)
-            .setOrigin(0.5)
-            .setFontFamily('Impact')
-            .setFontSize('64px')
-            .setColor('white')
-            .setScrollFactor(0);
-
-        this.add.text(960, 640, `Time: ${formattedTime}`)
-            .setOrigin(0.5)
-            .setFontFamily('Impact')
-            .setFontSize('64px')
-            .setColor('white')
-            .setScrollFactor(0);
-
-        createQuitButton(this);
+        this.background = this.add.image(960, 540, 'sky');      // Set background image
+        this.cameras.main.fadeIn(1000, 255, 255, 255);          // Fade in effect
+        const elapsed = data.elapsed;                           // Get elapsed time from data
+        const formattedTime = formatElapsedTime(elapsed);       // Format elapsed time
+        const createText = (x, y, text, fontSize) => {          // Create reusable method for text
+            return this.add.text(x, y, text)                    // Add text at specified position
+                .setOrigin(0.5)
+                .setFontFamily('Impact')
+                .setFontSize(fontSize)
+                .setColor('white')
+                .setScrollFactor(0);
+        };
+        createText(960, 440, 'The End!', '128px');              // Create "The End!" text
+        createText(960, 605, `Score: ${data.score}`, '64px');   // Create Score text
+        createText(960, 705, `Time: ${formattedTime}`, '64px'); // Create Time text
+        createQuitButton(this);                                 // Create Quit button
     }
 }

@@ -13,7 +13,7 @@ export class GlizzardProjectile extends Phaser.Physics.Arcade.Sprite {
         this.body.enable = false;                                                       // Disable the physics body to stop collisions
         this.initAnimations();                                                          // Initialise projectile animations
         this.player = scene.player;                                                     // Reference to the player
-        this.deathSound = this.scene.sound.add('glizzardProjectile', { volume: 0.3 });  // Load death sound
+        this.deathSound = scene.sound.add('glizzardProjectile', { volume: 0.3 });       // Load death sound
     }
 
     init() {
@@ -82,7 +82,7 @@ export class GlizzardProjectile extends Phaser.Physics.Arcade.Sprite {
         if (!this.scene.anims.exists('glizzardProjectile_Death')) {
             this.scene.anims.create({
                 key: 'glizzardProjectile_Death',
-                frames: this.anims.generateFrameNumbers('glizzardProjectileDeath', { start: 0, end: 5 }),
+                frames: this.scene.anims.generateFrameNumbers('glizzardProjectileDeath', { start: 0, end: 5 }),
                 frameRate: 50,
                 repeat: 0
             });

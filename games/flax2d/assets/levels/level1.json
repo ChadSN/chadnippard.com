@@ -3534,15 +3534,27 @@
                 }, 
                 {
                  "height":0,
-                 "id":342,
+                 "id":347,
+                 "name":"cratePointSmall",
+                 "point":true,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":2080,
+                 "y":2944
+                }, 
+                {
+                 "height":0,
+                 "id":363,
                  "name":"spawnPoint",
                  "point":true,
                  "rotation":0,
                  "type":"",
                  "visible":true,
                  "width":0,
-                 "x":64,
-                 "y":2944
+                 "x":12609,
+                 "y":1466
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -3551,7 +3563,7 @@
          "y":0
         }],
  "nextlayerid":8,
- "nextobjectid":343,
+ "nextobjectid":364,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.11.2",

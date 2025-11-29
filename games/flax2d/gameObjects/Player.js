@@ -635,58 +635,58 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     initAnimations() {
-        if (!this.anims.exists('idle'))                                                         // check if animation already exists
-            this.anims.create({                                                                 // create idle animation
-                key: 'idle',                                                                    // Animation for idle state
-                frames: this.anims.generateFrameNumbers('flax_Idle', { start: 0, end: 4 }),     // Assuming frames 0-4 are for idle
-                frameRate: 4,                                                                   // Adjust frameRate as needed
-                repeat: -1                                                                      // Loop the animation
+        if (!this.scene.anims.exists('idle'))                                                       // check if animation already exists
+            this.scene.anims.create({                                                               // create idle animation
+                key: 'idle',                                                                        // Animation for idle state
+                frames: this.scene.anims.generateFrameNumbers('flax_Idle', { start: 0, end: 4 }),   // Frames 0-4 are for idle
+                frameRate: 4,                                                                       // Adjust frameRate as needed
+                repeat: -1                                                                          // Loop the animation
             });
-        if (!this.anims.exists('run'))
-            this.anims.create({
+        if (!this.scene.anims.exists('run'))
+            this.scene.anims.create({
                 key: 'run',
-                frames: this.anims.generateFrameNumbers('flax_Run', { start: 0, end: 11 }),
+                frames: this.scene.anims.generateFrameNumbers('flax_Run', { start: 0, end: 11 }),
                 frameRate: 12,
                 repeat: -1
             });
-        if (!this.anims.exists('jump'))
-            this.anims.create({
+        if (!this.scene.anims.exists('jump'))
+            this.scene.anims.create({
                 key: 'jump',
-                frames: this.anims.generateFrameNumbers('flax_Jump', { start: 0, end: 4 }),
+                frames: this.scene.anims.generateFrameNumbers('flax_Jump', { start: 0, end: 4 }),
                 frameRate: 24,
                 repeat: 0
             });
-        if (!this.anims.exists('fall'))
-            this.anims.create({
+        if (!this.scene.anims.exists('fall'))
+            this.scene.anims.create({
                 key: 'fall',
-                frames: this.anims.generateFrameNumbers('flax_Falling', { start: 0, end: 2 }),
+                frames: this.scene.anims.generateFrameNumbers('flax_Falling', { start: 0, end: 2 }),
                 frameRate: 12,
                 repeat: -1
             });
-        if (!this.anims.exists('tailwhip'))
-            this.anims.create({
+        if (!this.scene.anims.exists('tailwhip'))
+            this.scene.anims.create({
                 key: 'tailwhip',
-                frames: this.anims.generateFrameNumbers('flax_Tailwhip', { start: 0, end: 17 }),
+                frames: this.scene.anims.generateFrameNumbers('flax_Tailwhip', { start: 0, end: 17 }),
                 frameRate: 48,
                 repeat: 0
             });
-        if (!this.anims.exists('glide_Start'))
-            this.anims.create({
+        if (!this.scene.anims.exists('glide_Start'))
+            this.scene.anims.create({
                 key: 'glide_Start',
-                frames: this.anims.generateFrameNumbers('flax_Start', { start: 0, end: 2 }),
+                frames: this.scene.anims.generateFrameNumbers('flax_Start', { start: 0, end: 2 }),
                 repeat: 0
             });
-        if (!this.anims.exists('glide'))
-            this.anims.create({
+        if (!this.scene.anims.exists('glide'))
+            this.scene.anims.create({
                 key: 'glide',
-                frames: this.anims.generateFrameNumbers('flax_Glide', { start: 0, end: 5 }),
+                frames: this.scene.anims.generateFrameNumbers('flax_Glide', { start: 0, end: 5 }),
                 frameRate: 12,
                 repeat: 0
             });
-        if (!this.anims.exists('poleSwing'))
-            this.anims.create({
+        if (!this.scene.anims.exists('poleSwing'))
+            this.scene.anims.create({
                 key: 'poleSwing',
-                frames: this.anims.generateFrameNumbers('flax_poleSwing', { start: 0, end: 2 }),
+                frames: this.scene.anims.generateFrameNumbers('flax_poleSwing', { start: 0, end: 2 }),
                 frameRate: 12,
                 repeat: -1
             });

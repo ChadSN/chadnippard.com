@@ -13,11 +13,21 @@ export class Muncher extends Enemy {
         this.attackSound = scene.sound.add('muncherAttack', { volume: 0.3 });                       // Muncher attack sound
         this.setVelocityX(this.speed * this.direction);                                             // Start moving
         this.damageBox = null;                                                                      // reference to the DamageBox
+        this.setCollisions();                                                                       // Set up collisions
     }
 
     update() {
         if (this.isDead) return;                                                                    // Stop updating if dead
         this.chasePlayer();                                                                         // Chase the player
+    }
+
+    setCollisions() {
+        this.scene.physics.add.collider(this.scene.player.hitbox, this, (player, _) => {            // player collides with muncher
+            const stomp = this.scene.player.lastVel.y > 200 && player.body.touching.down;           // check if player is falling fast enough to stomp
+            if (!stomp) return;                                                                     // if not a stomp, exit
+            player.body.setVelocityY(-600);                                                         // bounce the player up
+            this.death();                                                                           // destroy the muncher
+        });
     }
 
     chasePlayer() {

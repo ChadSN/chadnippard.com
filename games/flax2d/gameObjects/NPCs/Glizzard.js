@@ -12,7 +12,8 @@ export class Glizzard extends Enemy {
         this.play('fly', true);                                                                                     // Play flying animation
         this.setVelocityX(this.speed * this.direction);                                                             // Set initial velocity
         this.spawnProjectile();                                                                                     // Spawn the projectile
-        this.deathSound = scene.sound.add('glizzardDeath', { volume: 0.5 });                                             // Glizzard death sound
+        this.deathSound = scene.sound.add('glizzardDeath', { volume: 0.5 });                                        // Glizzard death sound
+        this.setCollisions();                                                                                       // Set up collisions
     }
 
     update() {
@@ -20,12 +21,22 @@ export class Glizzard extends Enemy {
         this.flyOnPath();
     }
 
+    setCollisions() {
+        this.scene.physics.add.overlap(this.scene.player.hitbox, this, (player, _) => {                             // player stomps glizzard
+            if (player.y < this.y - this.height                                                                     // IF PLAYER IS ABOVE GLIZZARD
+                && this.scene.player.lastVel.y >= 200) {                                                            // AND IF PLAYER IS FALLING FAST ENOUGH
+                player.body.setVelocityY(-600);                                                                     // bounce the player up
+                this.death();                                                                                       // destroy the glizzard
+            }
+        });
+    }
+
     spawnProjectile() {
         this.projectile = new GlizzardProjectile(this.scene, this.x, this.y);                                       // Create a new projectile
-        this.scene.physics.add.collider(this.projectile, this.scene.groundLayer, () => this.projectile.init()); // Set collider with ground
+        this.scene.physics.add.collider(this.projectile, this.scene.groundLayer, () => this.projectile.init());     // Set collider with ground
         this.scene.physics.add.overlap(this.projectile, this.scene.player.hitbox, () => {                           // Set overlap with player
             this.scene.player.damagePlayer(1, this.projectile);                                                     // Damage the player
-            this.projectile.init();                                                                             // Deactivate the projectile
+            this.projectile.init();                                                                                 // Deactivate the projectile
         });
     }
 
@@ -74,7 +85,7 @@ export class Glizzard extends Enemy {
         if (!this.scene.anims.exists('fly')) {
             this.anims.create({
                 key: 'fly',
-                frames: this.anims.generateFrameNumbers('glizzard', { start: 0, end: 7 }),
+                frames: this.scene.anims.generateFrameNumbers('glizzard', { start: 0, end: 7 }),
                 frameRate: 5,
                 repeat: -1
             });

@@ -24,20 +24,18 @@ export class Preloader extends Phaser.Scene {
 
     preload() {
         this.load.setPath('assets');
-
         // MAIN MENU ASSETS
         this.load.image('sky', '/levels/sky.webp');
         this.load.image('title', '/UI/Flax2D_Title.png');
         this.load.image('startGameButton', '/UI/StartGameButton.png');
         this.load.image('cloud', '/levels/Cloud.png');
-
         // UI ASSETS
         this.load.spritesheet('dna', '/Objects/DNA_Anim.png', { frameWidth: 64, frameHeight: 64 });
         this.load.image('healthPanel', '/UI/Health_Panel.png');
         this.load.image('smallButton', '/UI/SmallButton.png');
         this.load.image('quaver', '/UI/quaver.png');
         this.load.image('exit', '/UI/exit.png');
-
+        this.load.image('websiteIcon', '/UI/websiteIcon.png');
         // PLAYER ASSETS
         this.load.spritesheet('flax_Idle', '/Flax/Idle_128.png', { frameWidth: 128, frameHeight: 128 });
         this.load.spritesheet('flax_Run', '/Flax/Run_128.png', { frameWidth: 128, frameHeight: 128 });
@@ -47,24 +45,20 @@ export class Preloader extends Phaser.Scene {
         this.load.spritesheet('flax_Glide', '/Flax/Glide_128.png', { frameWidth: 128, frameHeight: 128 });
         this.load.spritesheet('flax_Start', '/Flax/GlideStart_128.png', { frameWidth: 128, frameHeight: 128 });
         this.load.spritesheet('flax_poleSwing', '/Flax/PoleSwinging_128.png', { frameWidth: 128, frameHeight: 128 });
-
         // ENEMY GLIZZARD ASSETS
         this.load.spritesheet('glizzard', '/Glizzard/Glizzard_flying.png', { frameWidth: 64, frameHeight: 64 });
         this.load.spritesheet('glizzardProjectile', '/Glizzard/Glizzard_Projectile.png', { frameWidth: 16, frameHeight: 16 });
         this.load.spritesheet('glizzardProjectileDeath', '/Glizzard/Glizzard_Projectile_Death.png', { frameWidth: 16, frameHeight: 16 });
-
         // ENEMY MUNCHER ASSETS
         this.load.spritesheet('muncher_Idle', '/Muncher/Idle_64.png', { frameWidth: 64, frameHeight: 64 });
         this.load.spritesheet('muncher_Walk', '/Muncher/Walk_64.png', { frameWidth: 64, frameHeight: 64 });
         this.load.spritesheet('muncher_Attack', '/Muncher/Attack_64.png', { frameWidth: 64, frameHeight: 64 });
-
         // TILES AND TILEMAPS
         this.load.tilemapTiledJSON('level1', '/levels/level1.json');        // Load the level1 tilemap JSON file. 
         this.load.tilemapTiledJSON('level2', '/levels/level2.json');        // Load the level2 tilemap JSON file.
         this.load.tilemapTiledJSON('level3', '/levels/level3.json');        // Load the level3 tilemap JSON file.
         this.load.image('groundTiles', '/levels/Tileset_Ground.png');       // Load the GroundTile tileset image.
         this.load.image('objectTiles', '/levels/ObjectsTileSet.png');       // Load the ObjectTileSet tileset image.
-
         // OBJECTS ASSETS
         this.load.image('pole', '/Objects/pole.png');
         this.load.spritesheet('crate', '/Objects/crate.png', { frameWidth: 64, frameHeight: 64 });
@@ -77,19 +71,18 @@ export class Preloader extends Phaser.Scene {
         this.load.spritesheet('gust', '/Objects/gust.png', { frameWidth: 192, frameHeight: 192 });
         this.load.image('ring_behind', '/Objects/ring_behind.png');
         this.load.image('ring_infront', '/Objects/ring_infront.png');
-
         // AUDIO
-        this.load.audio('mainMenuMusic', '/audio/Song 2 09.11.25.mp3');
-        this.load.audio('level1Music', '/audio/Piano Song.mp3');
-        this.load.audio('footstepGrass', '/audio/footstep-grass.wav');
-        this.load.audio('footstepDirt', '/audio/Steps-Dirt_3a.ogg');
+        this.load.audio('mainMenuMusic', '/audio/Song2.mp3');
+        this.load.audio('level1Music', '/audio/PianoSong.mp3');
+        this.load.audio('footstepGrass', '/audio/footstep_grass.wav');
+        this.load.audio('footstepDirt', '/audio/footstep_dirt.ogg');
         this.load.audio('footstepSnow', '/audio/footstep_snow.wav');
-        this.load.audio('footstepWood', '/audio/wood-step.wav');
-        this.load.audio('tailwhipSound', '/audio/woosh(edited).mp3');
-        this.load.audio('poleSwingSound', '/audio/Fast Whoosh.wav');
-        this.load.audio('caveAmbience', '/audio/ambience cave (edited).mp3');
-        this.load.audio('breakingCrate', '/audio/443293__deathscyp__wood-break.wav');
-        this.load.audio('muncherDeath', '/audio/muncher-death.wav');
+        this.load.audio('footstepWood', '/audio/footstep_wood.wav');
+        this.load.audio('tailwhipSound', '/audio/tailwhip.mp3');
+        this.load.audio('poleSwingSound', '/audio/poleSwing.wav');
+        this.load.audio('caveAmbience', '/audio/caveAmbience.mp3');
+        this.load.audio('breakingCrate', '/audio/crate.wav');
+        this.load.audio('muncherDeath', '/audio/muncherDeath.wav');
         this.load.audio('muncherAttack', '/audio/crunch.wav');
         this.load.audio('glizzardProjectile', '/audio/glizzardProjectile.mp3');
         this.load.audio('glizzardDeath', '/audio/glizzardDeath.wav');
@@ -98,6 +91,7 @@ export class Preloader extends Phaser.Scene {
         this.load.audio('wheelCreak', '/audio/wheelCreak.wav');
         this.load.audio('geyserSound', '/audio/geyserSound.wav');
         this.load.audio('glidingSound', '/audio/gliding.wav');
+        this.load.audio('teleporterSound', '/audio/teleporter.wav');
     }
 
     create() {

@@ -20,6 +20,7 @@ export class MainMenu extends Phaser.Scene {
         this.createControlsInfoMenu();                                                              // Create the controls info menu
         this.createClearHighScoreButton();                                                          // Create the clear high score button
         this.createCreditsText();                                                                   // Create and display credits text
+        this.createWebsiteLinkButton();                                                             // Create the website link button
         this.musicManager.setMusic('mainMenuMusic');                                                // Load and set main menu music
         createMusicMuteButton(this, this.musicManager);                                             // Create the music mute button
         this.cloudSpawner = new CloudSpawner(this);                                                 // Create a CloudSpawner instance
@@ -33,8 +34,8 @@ export class MainMenu extends Phaser.Scene {
         this.highScoreGroup = this.add.group();                                                                                     // Group for high score display
         const highScore = loadHighScore();                                                                                          // Load the high score
         if (highScore) {                                                                                                            // If a high score exists
-            const graphics = this.add.graphics().fillStyle(0x000000, 0.5).fillRoundedRect(0, 0, 600, 200, 20)                      // Create semi-transparent rounded rectangle graphics
-                .setPosition(16, 864);                                                                                          // Position the graphics
+            const graphics = this.add.graphics().fillStyle(0x000000, 0.5).fillRoundedRect(0, 0, 600, 200, 20)                       // Create semi-transparent rounded rectangle graphics
+                .setPosition(16, 864);                                                                                              // Position the graphics
             const timeText = this.add.text(graphics.x + 300, graphics.y + 50, `Best Time: ${formatElapsedTime(highScore.time)}`);   // Create best time text
             const scoreText = this.add.text(graphics.x + 300, graphics.y + 150, `Score: ${highScore.score}`);                       // Create high score text
             [scoreText, timeText].forEach(text => this.setTextProperties(text));                                                    // Set text properties
@@ -47,11 +48,11 @@ export class MainMenu extends Phaser.Scene {
         const startButton = this.add.image(960, 500, 'startGameButton')                                             // Add the start game button image
             .setInteractive({ useHandCursor: true });                                                               // Make the button interactive with a hand cursor
         this.startButtonGroup.add(startButton);                                                                     // Add to start button group
-        const startButtonText = this.add.text(startButton.x, startButton.y, 'Start Game');                           // Text on the button
+        const startButtonText = this.add.text(startButton.x, startButton.y, 'Start Game');                          // Text on the button
         this.setTextProperties(startButtonText);
         this.startButtonGroup.add(startButtonText);                                                                 // Add to start button group
         startButton.on('pointerdown', () => this.startGame());                                                      // Start the game when the button is clicked
-        setButtonHoverEffect(this, startButton, startButtonText);                                                    // Set hover effects for start button
+        setButtonHoverEffect(this, startButton, startButtonText);                                                   // Set hover effects for start button
     }
 
     createControlsButton() {
@@ -59,11 +60,11 @@ export class MainMenu extends Phaser.Scene {
         const controlsButton = this.add.image(960, 700, 'startGameButton')                                          // Add the controls button image
             .setInteractive({ useHandCursor: true });                                                               // Make the button interactive with a hand cursor
         this.controlsButtonGroup.add(controlsButton);                                                               // Add to controls button group
-        const controlsButtonText = this.add.text(controlsButton.x, controlsButton.y, 'Controls');                    // Text on the button
+        const controlsButtonText = this.add.text(controlsButton.x, controlsButton.y, 'Controls');                   // Text on the button
         this.setTextProperties(controlsButtonText);
         this.controlsButtonGroup.add(controlsButtonText);                                                           // Add to controls button group
         controlsButton.on('pointerdown', () => this.showGroups(true));                                              // Show controls menu when the button is clicked
-        setButtonHoverEffect(this, controlsButton, controlsButtonText);                                               // Set hover effects for controls button
+        setButtonHoverEffect(this, controlsButton, controlsButtonText);                                             // Set hover effects for controls button
     }
 
     createControlsInfoMenu() {
@@ -75,7 +76,7 @@ export class MainMenu extends Phaser.Scene {
             'Glide Spin: E, X, or Right Mouse Click',
             'Pause: ESC or P',
         ].join('\n');                                                                                               // Join lines with newline characters
-        const graphics = this.add.graphics().fillStyle(0x000000, 0.5).fillRoundedRect(0, 0, 850, 250, 32)          // Create semi-transparent rounded rectangle graphics
+        const graphics = this.add.graphics().fillStyle(0x000000, 0.5).fillRoundedRect(0, 0, 850, 250, 32)           // Create semi-transparent rounded rectangle graphics
             .setPosition(535, 415);
         this.controlsInfoGroup.add(graphics).setVisible(false);                                                     // Add to controls info group
         const controlsInfoText = this.add.text(graphics.x + 425, graphics.y + 125, controlsText)                    // Create controls info text
@@ -87,7 +88,7 @@ export class MainMenu extends Phaser.Scene {
         const backButtonIcon = this.add.image(backButton.x, backButton.y, 'exit');                                  // Add the back button icon
         this.controlsInfoGroup.add(backButtonIcon).setVisible(false);                                               // Add to controls info group
         backButton.on('pointerdown', () => this.showGroups(false));                                                 // Hide controls menu when back button is clicked
-        setButtonHoverEffect(this, backButton, backButtonIcon);                                                      // Set hover effects for back button
+        setButtonHoverEffect(this, backButton, backButtonIcon);                                                     // Set hover effects for back button
     }
 
     createClearHighScoreButton() {
@@ -104,42 +105,54 @@ export class MainMenu extends Phaser.Scene {
                 this.clearScoreButtonGroup.getChildren().forEach(child => child.setVisible(false));                 // Hide clear score button group
                 this.highScoreGroup.getChildren().forEach(child => child.setVisible(false));                        // Hide high score display
             });
-            setButtonHoverEffect(this, clearScoreButton, clearScoreButtonText);                                        // Set hover effects for clear score button
+            setButtonHoverEffect(this, clearScoreButton, clearScoreButtonText);                                     // Set hover effects for clear score button
         }
     }
 
     createCreditsText() {
-        const creditText = this.add.text(960, 1080 - 32 - 16, 'Created by Chad Nippard');                               // Add the credits text
+        const creditText = this.add.text(960, 1080 - 32 - 16, 'Created by Chad Nippard');                           // Add the credits text
         this.setTextProperties(creditText, 'Impact', '32px', 'black');
     }
 
+    createWebsiteLinkButton() {
+        const cam = this.cameras.main;
+        const websiteButton = this.add.image(cam.width - 128, cam.height - 278, 'smallButton')                      // Add the website link button image
+            .setDepth(1000)
+            .setInteractive({ useHandCursor: true });                                                               // Make the button interactive with a hand cursor
+        const websiteButtonIcon = this.add.image(websiteButton.x, websiteButton.y, 'websiteIcon')                   // Add the website icon on the button
+            .setDepth(1000);
+        websiteButton.on('pointerdown', () => {                                                                     // Open website when the button is clicked
+            window.open('https://chadnippard.com/', '_blank');                                                      // Open the website in a new tab
+        });
+        setButtonHoverEffect(this, websiteButton, websiteButtonIcon);                                               // Set hover effects for website button
+    }
 
     // START GAME ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     startGame() {
-        const duration = 1000;                                                                      // Duration of the fade out and music fade
-        for (const child of this.children.list)                                                     // Loop through all children in the scene
-            if (child.input && child.input.enabled)                                                 // If the child is interactive
-                child.disableInteractive();                                                         // Disable further interaction with all interactive children
-        this.cameras.main.fadeOut(duration, 255, 255, 255);                                         // Fade out the screen
-        this.musicManager.fadeOutAndStop(duration, 'Game');                                         // Fade out and stop the music
+        const duration = 1000;                                                                                      // Duration of the fade out and music fade
+        for (const child of this.children.list)                                                                     // Loop through all children in the scene
+            if (child.input && child.input.enabled)                                                                 // If the child is interactive
+                child.disableInteractive();                                                                         // Disable further interaction with all interactive children
+        this.cameras.main.fadeOut(duration, 255, 255, 255);                                                         // Fade out the screen
+        this.musicManager.fadeOutAndStop(duration, 'Game');                                                         // Fade out and stop the music
     }
 
     // HELPER METHODS ------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     validHighScore() {
-        return loadHighScore() !== null;                                                            // Check if a high score exists
+        return loadHighScore() !== null;                                                                            // Check if a high score exists
     }
 
     showGroups(show) {
-        this.startButtonGroup.getChildren().forEach(child => child.setVisible(!show));              // Show or hide start button group 
-        if (this.validHighScore())                                                                  // Only show clear high score button if a valid high score exists
-            this.clearScoreButtonGroup.getChildren().forEach(child => child.setVisible(!show));     // Show or hide clear score button group
-        this.controlsButtonGroup.getChildren().forEach(child => child.setVisible(!show));           // Show or hide controls button group
-        this.controlsInfoGroup.getChildren().forEach(child => child.setVisible(show));              // Show or hide controls info group  
+        this.startButtonGroup.getChildren().forEach(child => child.setVisible(!show));                              // Show or hide start button group 
+        if (this.validHighScore())                                                                                  // Only show clear high score button if a valid high score exists
+            this.clearScoreButtonGroup.getChildren().forEach(child => child.setVisible(!show));                     // Show or hide clear score button group
+        this.controlsButtonGroup.getChildren().forEach(child => child.setVisible(!show));                           // Show or hide controls button group
+        this.controlsInfoGroup.getChildren().forEach(child => child.setVisible(show));                              // Show or hide controls info group  
     }
 
-    setTextProperties(text, fontFamily = 'Impact', fontSize = '64px', color = 'white') {            // Helper method to set common text properties
+    setTextProperties(text, fontFamily = 'Impact', fontSize = '64px', color = 'white') {                            // Helper method to set common text properties
         text.setOrigin(0.5)
             .setFontFamily(fontFamily)
             .setFontSize(fontSize)

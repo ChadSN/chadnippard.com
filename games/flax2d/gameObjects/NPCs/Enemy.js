@@ -19,7 +19,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         this.isDead = true;                                     // Mark enemy as dead
         this.body.enable = false;                               // Disable physics body
         this.setTexture(this.texture.key, frame);               // Change to death frame
-        this.scene.newDNA(this.x, this.y - this.height / 2);    // Spawn new DNA at enemy's position
+        this.scene.spawnDNA(this.x, this.y - this.height / 2);  // Spawn new DNA at enemy's position
         this.scene.uiManager.updateScore(score);                // Update player's score
         this.scene.tweens.add({                                 // Death animation
             targets: this,                                      // Target this enemy

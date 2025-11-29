@@ -36,7 +36,7 @@ export class Pause extends Phaser.Scene {
             .setDepth(1000)                                                                     // Set depth to ensure it's above other game objects
             .setFontFamily('Impact')                                                            // Set font family
             .setFontSize('96px')                                                                // Set font size
-            .setColor('#009999');                                                               // Set text color
+            .setColor('white');                                                                 // Set text color
     }
 
 
