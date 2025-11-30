@@ -1,5 +1,5 @@
 import { CloudSpawner } from '../utils/CloudSpawner.js';
-import { MusicManager } from '../utils/ASD.js';
+import { MusicManager } from '../utils/MusicManager.js';
 import { setButtonHoverEffect } from '../utils/Utils.js';
 import { createMusicMuteButton } from '../utils/Utils.js';
 import { loadHighScore } from '../utils/HighScoreManager.js';
