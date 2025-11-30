@@ -606,7 +606,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     playFootstepAnimationSound() {
         if (this.anims.currentAnim?.key === 'run') {                                            // only play during running animation
             const frameIndex = this.anims.currentFrame.index;                                   // get current frame index
-            if ([4, 10].includes(frameIndex))                                                  // play sound on frames 4 and 10
+            if ([4, 10].includes(frameIndex))                                                   // play sound on frames 4 and 10
                 switch (this.currentTileSoundType) {                                            // switch based on current surface type
                     case 'grass': this.playFootstepSound(this.footstepGrassSound); break;       // play grass sound
                     case 'dirt': this.playFootstepSound(this.footstepDirtSound); break;         // play dirt sound
@@ -633,10 +633,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     getTileSoundType() {
-        if (!this.scene.map || (!this.scene.groundLayer && !this.scene.objectLayerTop)) return null;          // Ensure tilemap and groundLayer/objectLayerTop are defined
-        const topTile = this.getTileHit(this.scene.objectLayerTop);                                   // Check top object layer first
+        if (!this.scene.map || (!this.scene.groundLayer && !this.scene.objectLayerTop)) return null;    // Ensure tilemap and groundLayer/objectLayerTop are defined
+        const topTile = this.getTileHit(this.scene.objectLayerTop);                             // Check top object layer first
         if (topTile.properties?.soundType) return topTile.properties.soundType;                 // return if found
-        const groundTile = this.getTileHit(this.scene.groundLayer);                                   // then check ground layer
+        const groundTile = this.getTileHit(this.scene.groundLayer);                             // then check ground layer
         if (groundTile.properties?.soundType) return groundTile.properties.soundType;           // return if found
         return null;                                                                            // return null if no soundType found
     }
