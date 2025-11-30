@@ -1,36 +1,7 @@
-*,
-*::before,
-*::after {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-html,
-body {
-    width: 100%;
-    height: 100%;
-}
-
-body {
-    line-height: 1;
-    font-family: Arial, sans-serif;
-    background-color: #040218;
-}
-
-ol,
-ul {
-    list-style: none;
-}
-
-img,
-video {
-    max-width: 100%;
-    height: auto;
-    display: block;
-}
-
-a {
-    text-decoration: none;
-    color: inherit;
+body {                              
+    width: 100%;                    /* Set width to 100% */
+    height: 100%;                   /* Set height to 100% */
+    background-color: #000000;    /* Set background colour to black*/
+    margin: 0;                      /* Set margin to 0 */
+    box-sizing: border-box;         /* Set box-sizing to border-box */
 }

@@ -7,14 +7,14 @@ export function rescaleTarget(scene, target, scale, duration = 200) {           
     });
 }
 
-export function setButtonHoverEffect(scene, button, secondary = null) {
-    button.on('pointerover', () => {
-        rescaleTarget(scene, button, 1.1);
-        if (secondary) rescaleTarget(scene, secondary, 1.1);
+export function setButtonHoverEffect(scene, button, secondary = null) {                         // Set hover effects for a button and optional secondary target
+    button.on('pointerover', () => {                                                            // On pointer over
+        rescaleTarget(scene, button, 1.1);                                                      // Scale up the button
+        if (secondary) rescaleTarget(scene, secondary, 1.1);                                    // Scale up the secondary target if provided
     });
-    button.on('pointerout', () => {
-        rescaleTarget(scene, button, 1);
-        if (secondary) rescaleTarget(scene, secondary, 1);
+    button.on('pointerout', () => {                                                             // On pointer out
+        rescaleTarget(scene, button, 1);                                                        // Scale down the button
+        if (secondary) rescaleTarget(scene, secondary, 1);                                      // Scale down the secondary target if provided
     });
 }
 
@@ -29,7 +29,7 @@ export function createMusicMuteButton(scene, musicManager) {
     musicMuteButton.on('pointerdown', () => {                                                   // Handle button click
         musicManager.togglePlay(quaverIcon);                                                    // Toggle music play/pause and update icon alpha
     });
-    setButtonHoverEffect(scene, musicMuteButton, quaverIcon);
+    setButtonHoverEffect(scene, musicMuteButton, quaverIcon);                                   // Set hover effects for music mute button
 }
 
 export function createQuitButton(scene) {

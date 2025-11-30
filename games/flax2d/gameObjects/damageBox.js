@@ -28,5 +28,4 @@ export class DamageBox extends Phaser.Physics.Arcade.Sprite {
         //this.rectangle.setActive(false);    // Set inactive
         //this.rectangle.setVisible(false);   // Set invisible
     }
-
 }

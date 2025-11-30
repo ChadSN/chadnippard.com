@@ -1,5 +1,4 @@
 import { Enemy } from "./Enemy.js";
-
 export class Muncher extends Enemy {
     constructor(scene, x, y, chaseDistance = 256) {
         super(scene, x, y, 'muncher_Idle');
@@ -22,6 +21,7 @@ export class Muncher extends Enemy {
     }
 
     setCollisions() {
+        this.scene.physics.add.collider(this, this.scene.groundLayer);                              // munchers collide with ground layer
         this.scene.physics.add.collider(this.scene.player.hitbox, this, (player, _) => {            // player collides with muncher
             const stomp = this.scene.player.lastVel.y > 200 && player.body.touching.down;           // check if player is falling fast enough to stomp
             if (!stomp) return;                                                                     // if not a stomp, exit
@@ -84,7 +84,7 @@ export class Muncher extends Enemy {
         this.off('animationupdate', onAnimUpdate);                                                  // remove existing listener if any
         this.on('animationupdate', onAnimUpdate, this);                                             // add new listener
         this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, (animation) => {
-            if (animation.key === 'muncher_Attack')                                                // when muncher_Attack animation completes
+            if (animation.key === 'muncher_Attack')                                                 // when muncher_Attack animation completes
                 this.damageBox.deactivate();                                                        // reset damage box position
         });
     }

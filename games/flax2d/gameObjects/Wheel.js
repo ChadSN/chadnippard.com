@@ -1,5 +1,4 @@
 import { SoundAttenuator } from '../src/utils/SoundAttenuator.js';
-
 export class Wheel extends Phaser.Physics.Arcade.Sprite {
     constructor(scene, x, y, duration = 1000, ropeAngle = 0) {
         super(scene, x, y, 'wheel');

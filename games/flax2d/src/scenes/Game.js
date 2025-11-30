@@ -7,7 +7,7 @@ import { InputManager } from '../utils/InputManager.js';
 import { UIManager } from '../utils/UIManager.js';
 import { DamageBox } from '../../gameObjects/damageBox.js';
 import { CloudSpawner } from '../utils/CloudSpawner.js';
-import { musicManager } from '../utils/musicManager.js';
+import { MusicManager } from '../utils/MusicManager.js';
 import { saveHighScore } from '../utils/HighScoreManager.js';
 import { Teleporter } from '../../gameObjects/Teleporters.js';
 import { Wheel } from '../../gameObjects/Wheel.js';
@@ -33,7 +33,7 @@ export class Game extends Phaser.Scene {
         this.nightAmbientColour = 0x555555;                                                                             // Nighttime color
         this.levelExiting = false;                                                                                      // Flag to indicate if the level is exiting
         this.levelReady = false;                                                                                        // Flag to indicate if the level is ready
-        this.musicManager = new musicManager(this);                                                                     // Music manager instance
+        this.musicManager = new MusicManager(this);                                                                     // Music manager instance
         this.hasMovementInput = false;                                                                                  // Track if there was movement input in the previous frame
         this.playerLastVel = { x: 0, y: 0 };                                                                            // Store the player's last velocity
     }
@@ -66,8 +66,6 @@ export class Game extends Phaser.Scene {
 
     update() {
         this.handlePlayerInput();                                                                                       // Handle player input
-        this.updatePlayerOnPlatform();                                                                                  // Update wheel platform positions
-        this.player.lastVel = this.player.hitbox.body.velocity.clone();                                                 // Store the player's last velocity
     }
 
     // LEVEL CREATION AND DESTRUCTION ------------------------------------------------------------------------------------------------------------------------------------------------
@@ -116,7 +114,7 @@ export class Game extends Phaser.Scene {
         this.spawnMunchers();                                                                                   // Spawn muncher enemies
         this.spawnClouds();                                                                                     // Spawn background clouds
         // COLLISIONS SETUP
-        this.setCollisions();
+        this.player.setCollisions();
         // FINAL LEVEL SETUP
         this.cameras.main.fadeIn(500, 255, 255, 255).once('camerafadeincomplete', () => {                       // Fade in the camera over 0.5 seconds once
             this.uiManager.startTimerEvent(this.uiManager.elapsed);                                             // Start the level timer 
@@ -150,6 +148,18 @@ export class Game extends Phaser.Scene {
         this.objectLayerTop = null;                                                                             // Clear object layer top reference
         this.map.destroy();                                                                                     // Destroy the tilemap
         this.tweens.killAll();                                                                                  // Stop all tweens
+    }
+
+    changeLevel() {
+        this.uiManager.pauseTimer();
+        this.cameras.main.fadeOut(1000, 255, 255, 255).once('camerafadeoutcomplete', () => {                    // Fade out the camera over 1 second once
+            switch (this.levelKey) {                                                                            // Determine the next level based on current level key
+                case 'level1': this.levelKey = 'level2'; this.transitionToLevel(this.levelKey); break;          // Transition to level 2
+                case 'level2': this.levelKey = 'level3'; this.transitionToLevel(this.levelKey); break;          // Transition to level 3
+                case 'level3': this.endGame(); break;                                                           // Transition to Game Over scene          
+                default: break;                                                                                 // Handle unknown level keys
+            }
+        });
     }
 
     endGame() {
@@ -223,11 +233,11 @@ export class Game extends Phaser.Scene {
             this.uiManager.initHealthDisplay();                                                                 // Initialise health display in UI
         }
         this.player.hitbox.setPosition(x, y);                                                                   // Set player hitbox position to spawn point
+        this.player.checkpoint = { x: x, y: y };                                                                // Set player's checkpoint to spawn point
+        this.uiManager.updateHealth(this.player.health);                                                        // Update health display in UI
         this.cameras.main.stopFollow();                                                                         // Temporarily stop camera from following player
         this.cameras.main.centerOn(x, y);                                                                       // Center camera on player spawn point
         this.time.delayedCall(100, () => this.cameras.main.startFollow(this.player, false, 0.08, 0.08));        // Make the camera follow the player smoothly
-        this.uiManager.updateHealth(this.player.health);                                                        // Update health display in UI
-        this.player.checkpoint = { x: x, y: y };                                                                // Set player's checkpoint to spawn point
     }
 
     addLights() {
@@ -325,15 +335,6 @@ export class Game extends Phaser.Scene {
         this.wheelPlatforms.add(new WheelPlatform(this, posX, posY, wheelPos, duration));                       // Add platform to the wheel platforms group
     }
 
-    updatePlayerOnPlatform() {
-        if (this.player.onPlatform) {                                                                           // If the player is on a platform
-            this.player.hitbox.x += this.player.onPlatform._deltaX;                                             // Move player horizontally with platform
-            this.player.hitbox.y += this.player.onPlatform._deltaY;                                             // Move player vertically with platform
-            if (!this.player.hitbox.body.blocked.down)                                                          // If player is no longer on the platform
-                this.player.onPlatform = null;                                                                  // Clear the onPlatform reference
-        }
-    }
-
     spawnGeysers() {
         const geyserPoints = this.map.filterObjects("Objects", obj => obj.name === "geyserPoint");              // Find all geyser points based on their names
         geyserPoints.forEach(geyserPoint => {                                                                   // Iterate over each geyser point
@@ -412,68 +413,6 @@ export class Game extends Phaser.Scene {
                 this.player.damagePlayer(damageBox.damage, damageBox);                                              // Damage the player
             });
         }
-    }
-
-    setCollisions() {
-        // GROUND LAYER COLLIDER
-        this.physics.add.collider(this.player.hitbox, this.groundLayer);                                            // player collides with ground layer
-        this.physics.add.collider(this.munchers, this.groundLayer);                                                 // munchers collide with ground layer
-        this.physics.add.collider(this.crates, this.groundLayer);                                                   // Enable collision between ground layer and crates
-        // OBJECT LAYER TOP COLLIDER            
-        this.physics.add.collider(this.player.hitbox, this.objectLayerTop, null, (player, tile) => {                // Custom collision callback for one-way platforms
-            const body = player.body;                                                                               // player's hitbox physics body
-            if (tile && tile.properties && tile.properties.death) {                                                 // Check if the tile has the 'death' property
-                this.player.die();                                                                                  // Trigger player death on death tiles
-                return false;                                                                                       // Prevent further collision handling
-            }
-            if (body.velocity.y <= 0) return false;                                                                 // Pass-through when moving up (jumping)
-            const prevBottom = body.prev.y + body.height;                                                           // previous bottom edge
-            const tileTop = tile.getTop();                                                                          // world Y of tile top
-            return prevBottom <= tileTop;                                                                           // Collide only if the player's bottom was above the tile's top in the previous frame
-        });
-        // GROUND INSIDE LAYER OVERLAP          
-        this.physics.add.overlap(this.player.hitbox, this.groundInsideLayer, (_, tile) => {
-            if (tile && tile.properties.overlaps) {                                                                 // Check if the tile has the 'overlaps' property
-                if (!this.isOverlappingGroundInsideLayer) {                                                         // Only trigger once when starting to overlap
-                    this.isOverlappingGroundInsideLayer = true;                                                     // Set flag to true
-                    this.tweenAmbientLight(this.nightAmbientColour);                                                // Dim light
-                    if (!this.caveAmbience.isPlaying) {                                                             // Play cave ambience if not already playing
-                        this.caveAmbience.stop();                                                                   // Ensure it's stopped before playing again
-                        this.caveAmbience.play();                                                                   // Play cave ambience
-                    }
-                }
-            } else {
-                if (this.isOverlappingGroundInsideLayer) {                                                          // Only trigger once when stopping overlap
-                    this.isOverlappingGroundInsideLayer = false;                                                    // Set flag to false
-                    this.tweenAmbientLight(this.daylightAmbientColour);                                             // Full white light
-                    if (this.caveAmbience.isPlaying) this.caveAmbience.stop();                                      // Stop cave ambience
-                }
-            }
-        });
-        // OBJECT LAYER OVERLAP         
-        this.physics.add.overlap(this.player.hitbox, this.objectLayer, (_, tile) => {                               // Check overlap with object layer
-            if (tile && tile.properties.exit && !this.levelExiting) {                                               // Check if the tile has the 'exit' property
-                this.levelExiting = true;                                                                           // Prevent multiple triggers
-                this.levelReady = false;                                                                            // Mark level as not ready during transition
-                this.player.disableMovement = true;                                                                 // Disable player movement
-                this.player.hitbox.body.setVelocity(0, 0);                                                          // Stop player movement
-                this.uiManager.pauseTimer();
-                this.cameras.main.fadeOut(1000, 255, 255, 255).once('camerafadeoutcomplete', () => {                // Fade out the camera over 1 second once
-                    switch (this.levelKey) {                                                                        // Determine the next level based on current level key
-                        case 'level1': this.levelKey = 'level2'; this.transitionToLevel(this.levelKey); break;      // Transition to level 2
-                        case 'level2': this.levelKey = 'level3'; this.transitionToLevel(this.levelKey); break;      // Transition to level 3
-                        case 'level3': this.endGame(); break;                                                       // Transition to Game Over scene          
-                        default: console.error('Unknown level key:', this.levelKey); break;                         // Handle unknown level keys
-                    }
-                });
-            }
-            if (tile && tile.properties && tile.properties.spawnPoint                                               // Check if the tile has the 'spawnPoint' property
-                && (this.player.checkpoint.x !== tile.getCenterX()                                                  // New checkpoint X
-                    || this.player.checkpoint.y !== tile.getBottom()))                                              // New checkpoint Y
-                this.player.setCheckpoint(tile.getCenterX(), tile.getBottom());                                     // Set new checkpoint at tile center
-        });
-        // POLES
-        this.physics.add.overlap(this.player.hitbox, this.poles, (_, pole) => this.player.poleSwing(pole));         // player swings on pole
     }
 
     // HELPER METHODS -------------------------------------------------------------------------------------------------------------------------------------------------------------------

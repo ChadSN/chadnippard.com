@@ -14,17 +14,18 @@ export class InputManager {
         this.keyESC = scene.input.keyboard.addKey('ESC');       // Add ESC key for pause menu
         this.keyP = scene.input.keyboard.addKey('P');           // Add P key for pause menu
 
-        this.scene.input.on("pointerdown", (pointer) => {              // Listen for pointer down
+        this.scene.input.on("pointerdown", (pointer) => {       // Listen for pointer down
             if (pointer.buttons === 1)                          // Left mouse button
                 this.scene.pointerLeftPressed();                // Call the scene's pointerPressed method
             else if (pointer.buttons === 2)                     // Right mouse button
-                this.scene.pointerRightPressed();
+                this.scene.pointerRightPressed();               // Call the scene's pointerRightPressed method    
         });
-        this.scene.input.on("pointerup", (pointer) => {                // Listen for pointer up
-            if (pointer.buttons === 1)                          // Left mouse button
-                this.scene.pointerLeftReleased();               // Call the scene's pointerReleased method
-            else if (pointer.buttons === 2)                     // Right mouse button
-                this.scene.pointerRightReleased();
-        });
+        // NO IMPLEMENTATATION FOR POINTER UP
+        // this.scene.input.on("pointerup", (pointer) => {      // Listen for pointer up
+        //     if (pointer.buttons === 1)                       // Left mouse button
+        //         this.scene.pointerLeftReleased();            // Call the scene's pointerReleased method
+        //     else if (pointer.buttons === 2)                  // Right mouse button
+        //         this.scene.pointerRightReleased();           // Call the scene's pointerRightReleased method
+        // });
     }
 }

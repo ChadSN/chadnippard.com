@@ -34,17 +34,17 @@ export class UIManager {
                 .setText(initialText);                                                  // Set initial text
         };
         this.healthPanel = this.scene.add.sprite(16, 16, 'healthPanel')
-            .setOrigin(0, 0).setDepth(1000).setScrollFactor(0);                                            // Set origin to left center
+            .setOrigin(0, 0).setDepth(1000).setScrollFactor(0);                         // Set origin to left center
         const camTopRightX = cam.x + cam.width - 380;                                   // Calculate top-right X position of the camera
         const camTopRightY = cam.y + 16;                                                // Calculate top-right Y position of the camera
         const timerGraphics = this.scene.add.graphics();                                // Create semi-transparent rounded rectangle graphics
         this.setGraphicsProperties(timerGraphics, camTopRightX, camTopRightY);          // Set graphics properties
         this.timeText = createText(timerGraphics.x + 364 / 2, timerGraphics.y + 50,     // Create timer text
-            64, 'Courier New', '00:00:00');                                                                // initial text
+            64, 'Courier New', '00:00:00');                                             // initial text
         const scoreGraphics = this.scene.add.graphics();                                // Create semi-transparent rounded rectangle graphics
         this.setGraphicsProperties(scoreGraphics, camTopRightX, camTopRightY + 116);    // Set graphics properties
         this.scoreText = createText(scoreGraphics.x + 364 / 2, scoreGraphics.y + 50,    // Create score text
-            64, 'Impact', 'Score: 0');                                                                // initial text
+            64, 'Impact', 'Score: 0');                                                  // initial text
         this.scorePoints = this.scene.sound.add('scorePoints', { volume: 0.3 });        // Add score points sound
     }
 
@@ -93,7 +93,7 @@ export class UIManager {
 
     startTimerEvent(elapsed = 0) {
         this.elapsed = elapsed;                                                         // Initialise elapsed time
-        if (!this.timerEvent) {
+        if (!this.timerEvent)
             this.timerEvent = this.scene.time.addEvent({                                // Create a repeating timed event
                 delay: 10,                                                              // Delay of 10 milliseconds
                 loop: true,                                                             // Repeat indefinitely
@@ -102,20 +102,11 @@ export class UIManager {
                     this.updateTimer(this.elapsed);                                     // Update the timer display
                 }
             });
-        }
     }
 
-    updateTimer(elapsed) {
-        this.timeText.setText(formatElapsedTime(elapsed));
-    }
-
-    pauseTimer() {
-        this.timerEvent.paused = true;                                                  // Pause the timer event
-    }
-
-    resumeTimer() {
-        this.timerEvent.paused = false;                                                 // Resume the timer event
-    }
+    updateTimer(elapsed) { this.timeText.setText(formatElapsedTime(elapsed)); }         // Update timer text display
+    pauseTimer() { this.timerEvent.paused = true; }                                     // Pause the timer event
+    resumeTimer() { this.timerEvent.paused = false; }                                   // Resume the timer event
 
     addScoreText(worldX, worldY, amount) {
         const cam = this.scene.cameras.main;                                            // Get the main camera

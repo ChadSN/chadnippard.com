@@ -13,9 +13,9 @@ export class Ring extends Phaser.Physics.Arcade.Sprite {
     }
 
     setTween() {
-        this.tween = this.scene.tweens.add({                                                                 // Create a tween to rotate the ring
+        this.tween = this.scene.tweens.add({                                                            // Create a tween to rotate the ring
             targets: [this, this.ringBehind],                                                           // Target both ring sprites
-            y: this.y - 32,                                                                                  // Move up by 32 pixels
+            y: this.y - 32,                                                                             // Move up by 32 pixels
             duration: 1000,                                                                             // Duration of one full cycle
             yoyo: true,                                                                                 // Yoyo effect to return to original position
             ease: 'Sine.easeInOut',                                                                     // Easing function for smooth animation

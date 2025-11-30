@@ -1,5 +1,5 @@
 import { CloudSpawner } from '../utils/CloudSpawner.js';
-import { musicManager } from '../utils/musicManager.js';
+import { MusicManager } from '../utils/MusicManager.js';
 import { setButtonHoverEffect } from '../utils/Utils.js';
 import { createMusicMuteButton } from '../utils/Utils.js';
 import { loadHighScore } from '../utils/HighScoreManager.js';
@@ -11,7 +11,7 @@ export class MainMenu extends Phaser.Scene {
     }
 
     create() {
-        this.musicManager = new musicManager(this);                                                 // Create a music manager instance
+        this.musicManager = new MusicManager(this);                                                 // Create a music manager instance
         this.background = this.add.image(960, 540, 'sky').setDepth(-1);                             // Add background image at depth 0   
         this.title = this.add.image(960, 200, 'title').setScale(2);                                 // Add title image at depth 2 and scale it up
         this.createHighScoreText();                                                                 // Create and display high score text
@@ -115,9 +115,7 @@ export class MainMenu extends Phaser.Scene {
         const websiteButton = this.add.image(cam.width - 128, cam.height - 278, 'smallButton')                      // Add the website link button image
             .setInteractive({ useHandCursor: true });                                                               // Make the button interactive with a hand cursor
         const websiteButtonIcon = this.add.image(websiteButton.x, websiteButton.y, 'websiteIcon');                  // Add the website icon on the button
-        websiteButton.on('pointerdown', () => {                                                                     // Open website when the button is clicked
-            window.open('https://chadnippard.com/', '_blank');                                                      // Open the website in a new tab
-        });
+        websiteButton.on('pointerdown', () => window.open('https://chadnippard.com/', '_blank'));                   // Open website in new tab when the button is clicked
         setButtonHoverEffect(this, websiteButton, websiteButtonIcon);                                               // Set hover effects for website button
     }
 
@@ -159,8 +157,7 @@ export class MainMenu extends Phaser.Scene {
             'Sound: "nice wind seamless loop" by LeavidenceDesign (https://freesound.org/people/LeavidenceDesign/sounds/554805/)',
             'Sound: "Sci Fi portal" by Bzourk (https://freesound.org/people/Bzourk/sounds/322059/)'
         ].join('\n');
-        const gWidth = 1500;
-        const gHeight = 700;
+        const gWidth = 1500, gHeight = 700;
         const graphics = this.add.graphics().fillStyle(0x000000, 0.75).fillRoundedRect(0, 0, gWidth, gHeight, 32)           // Create semi-transparent rounded rectangle graphics
             .setPosition((this.cameras.main.width - gWidth) / 2, 80);                                                       // Center the graphics
         this.creditTextGroup.add(graphics).setVisible(false);                                                               // Add to controls info group
@@ -171,7 +168,6 @@ export class MainMenu extends Phaser.Scene {
         this.creditTextGroup.addMultiple([creditsTextText, soundsTextText]).setVisible(false);                              // Add to controls info group
         this.createBackButton(this.creditTextGroup, 2);                                                                     // Create back button for credits info
     }
-
 
     // START GAME ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 

@@ -1,15 +1,14 @@
 export class CloudSpawner {
     constructor(scene) {
         this.scene = scene;
-        this.clouds = [];
+        this.clouds = [];                                                               // Array to hold active clouds
     }
 
     spawnClouds(depth, cloudYMin, cloudYMax) {
-        this.destroyClouds();                                       // Clear any existing clouds
-        for (let i = 0; i < 20; i++) {                              // Create the initial clouds
-            this.createCloud(depth, true, cloudYMin, cloudYMax);    // Create a cloud at the random X position
-        }
-        this.scheduleNextCloud(depth, false, cloudYMin, cloudYMax); // Start the cloud spawning timer
+        this.destroyClouds();                                                           // Clear any existing clouds
+        for (let i = 0; i < 20; i++)                                                    // Create the initial clouds
+            this.createCloud(depth, true, cloudYMin, cloudYMax);                        // Create a cloud at the random X position
+        this.scheduleNextCloud(depth, false, cloudYMin, cloudYMax);                     // Start the cloud spawning timer
     }
 
     createCloud(depth, areInitialClouds, cloudYMin, cloudYMax) {
@@ -28,7 +27,6 @@ export class CloudSpawner {
         this.cloudTween(newCloud);                                                      // Create a tween to move the cloud across the screen
     }
 
-    // Schedule the next cloud spawn
     scheduleNextCloud(depth, cloudX, cloudYMin, cloudYMax) {
         const randomDelay = Phaser.Math.Between(1000, 3000);                            // Random delay between 1 and 3 seconds
         this.scene.time.addEvent({                                                      // Create a timed event
@@ -38,7 +36,6 @@ export class CloudSpawner {
         });
     }
 
-    // Create a tween for the cloud movement
     cloudTween(cloud) {
         const velocity = Phaser.Math.Between(50, 100);                                  // Set a constant velocity (pixels per second)
         const distance = cloud.x;                                                       // Distance to travel (from current x to off-screen at -cloud.width)
@@ -48,9 +45,7 @@ export class CloudSpawner {
             x: 0 - cloud.width,                                                         // Move cloud off-screen to the left
             duration: duration,                                                         // Use the calculated duration
             ease: 'Linear',                                                             // Linear easing for constant speed
-            onComplete: () => {                                                         // When the tween is complete
-                cloud.destroy();                                                        // Destroy cloud after it moves off-screen
-            }
+            onComplete: () => cloud.destroy()                                           // Destroy cloud after it moves off-screen
         });
     }
 

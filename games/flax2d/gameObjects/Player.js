@@ -51,7 +51,56 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.onCrate = null;
         this.glideTurnCooldown = true;                                                          // cooldown flag for glide turns
         this.setState(STATES.IDLE);                                                             // set initial state to IDLE
+        this.setCollisions();
     }
+
+    setCollisions() {
+        const scene = this.scene;
+        scene.physics.add.collider(this.hitbox, scene.groundLayer);                             // player collides with ground layer
+        scene.physics.add.collider(this.hitbox, scene.objectLayerTop, null, (hitbox, tile) => { // Custom collision callback for one-way platforms
+            if (tile && tile.properties && tile.properties.death) {                             // Check if the tile has the 'death' property
+                this.die();                                                                     // Trigger player death on death tiles
+                return false;                                                                   // Prevent further collision handling
+            }
+            if (hitbox.body.velocity.y <= 0) return false;                                      // Pass-through when moving up (jumping)
+            const prevBottom = hitbox.body.prev.y + hitbox.body.height;                         // previous bottom edge
+            const tileTop = tile.getTop();                                                      // world Y of tile top
+            return prevBottom <= tileTop;                                                       // Collide only if the player's bottom was above the tile's top in the previous frame
+        });
+        scene.physics.add.overlap(this.hitbox, scene.groundInsideLayer, (_, tile) => {
+            if (tile && tile.properties.overlaps) {                                             // Check if the tile has the 'overlaps' property
+                if (!scene.isOverlappingGroundInsideLayer) {                                    // Only trigger once when starting to overlap
+                    scene.isOverlappingGroundInsideLayer = true;                                // Set flag to true
+                    scene.tweenAmbientLight(scene.nightAmbientColour);                          // Dim light
+                    if (!scene.caveAmbience.isPlaying) {                                        // Play cave ambience if not already playing
+                        scene.caveAmbience.stop();                                              // Ensure it's stopped before playing again
+                        scene.caveAmbience.play();                                              // Play cave ambience
+                    }
+                }
+            } else {
+                if (scene.isOverlappingGroundInsideLayer) {                                     // Only trigger once when stopping overlap
+                    scene.isOverlappingGroundInsideLayer = false;                               // Set flag to false
+                    scene.tweenAmbientLight(scene.daylightAmbientColour);                       // Full white light
+                    if (scene.caveAmbience.isPlaying) scene.caveAmbience.stop();                // Stop cave ambience
+                }
+            }
+        });
+        scene.physics.add.overlap(this.hitbox, scene.objectLayer, (_, tile) => {                // Check overlap with object layer
+            if (tile && tile.properties.exit && !scene.levelExiting) {                          // Check if the tile has the 'exit' property
+                scene.levelExiting = true;                                                      // Prevent multiple triggers
+                scene.levelReady = false;                                                       // Mark level as not ready during transition
+                this.disableMovement = true;                                                    // Disable player movement
+                this.hitbox.body.setVelocity(0, 0);                                             // Stop player movement
+                this.scene.changeLevel();
+            }
+            if (tile && tile.properties && tile.properties.spawnPoint                           // Check if the tile has the 'spawnPoint' property
+                && (this.checkpoint.x !== tile.getCenterX()                                     // New checkpoint X
+                    || this.checkpoint.y !== tile.getBottom()))                                 // New checkpoint Y
+                this.setCheckpoint(tile.getCenterX(), tile.getBottom());                        // Set new checkpoint at tile center
+        });
+        scene.physics.add.overlap(this.hitbox, scene.poles, (_, pole) => this.poleSwing(pole)); // player swings on pole
+    }
+
     initAudio() {
         this.footstepGrassSound = this.scene.sound.add('footstepGrass', { volume: 1 });         // footstep sound
         this.footstepDirtSound = this.scene.sound.add('footstepDirt', { volume: 0.3 });         // footstep dirt sound
@@ -71,7 +120,14 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         const body = this.hitbox.body;
         this.setPosition(this.hitbox.x, this.hitbox.y);                                         // sync player sprite position with hitbox
         this.angle = this.hitbox.angle;                                                         // sync player sprite angle with hitbox
+        this.lastVel = this.hitbox.body.velocity.clone();                                       // Store the player's last velocity
         this.outOfBoundsCheck();                                                                // check if out of bounds
+        if (this.onPlatform) {                                                                  // If the player is on a platform
+            this.hitbox.x += this.onPlatform._deltaX;                                           // Move player horizontally with platform
+            this.hitbox.y += this.onPlatform._deltaY;                                           // Move player vertically with platform
+            if (!this.hitbox.body.blocked.down)                                                 // If player is no longer on the platform
+                this.onPlatform = null;                                                         // Clear the onPlatform reference
+        }
         if (this.state === STATES.GLIDING) body.setMaxVelocityY(300);                           // limit falling speed when gliding
         else body.setMaxVelocityY(1200);                                                        // reset max falling speed
         if (this.isTailwhipping) {                                                              // during tailwhip

@@ -2162,7 +2162,99 @@
                 }, 
                 {
                  "height":0,
-                 "id":465,
+                 "id":466,
+                 "name":"ringPoint",
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"rotation",
+                         "type":"int",
+                         "value":0
+                        }, 
+                        {
+                         "name":"scale",
+                         "type":"int",
+                         "value":1
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":3776,
+                 "y":576
+                }, 
+                {
+                 "height":0,
+                 "id":467,
+                 "name":"ringPoint",
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"rotation",
+                         "type":"int",
+                         "value":0
+                        }, 
+                        {
+                         "name":"scale",
+                         "type":"int",
+                         "value":1
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":4480,
+                 "y":768
+                }, 
+                {
+                 "height":0,
+                 "id":468,
+                 "name":"ringPoint",
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"rotation",
+                         "type":"int",
+                         "value":0
+                        }, 
+                        {
+                         "name":"scale",
+                         "type":"int",
+                         "value":1
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":4160,
+                 "y":1984
+                }, 
+                {
+                 "height":0,
+                 "id":469,
+                 "name":"ringPoint",
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"rotation",
+                         "type":"int",
+                         "value":0
+                        }, 
+                        {
+                         "name":"scale",
+                         "type":"int",
+                         "value":1
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":4608,
+                 "y":2048
+                }, 
+                {
+                 "height":0,
+                 "id":472,
                  "name":"spawnPoint",
                  "point":true,
                  "rotation":0,
@@ -2179,7 +2271,7 @@
          "y":0
         }],
  "nextlayerid":8,
- "nextobjectid":466,
+ "nextobjectid":473,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.11.2",

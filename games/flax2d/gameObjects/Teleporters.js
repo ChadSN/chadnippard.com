@@ -1,19 +1,18 @@
 import { SoundAttenuator } from '../src/utils/SoundAttenuator.js';
-
 export class Teleporter extends Phaser.Physics.Arcade.Sprite {
     constructor(scene, x, y, channel = null) {
-        super(scene, x, y, 'teleporter');                                                                       // Call the parent class constructor
-        this.scene = scene;                                                                                     // Store scene reference
-        this.scene.add.existing(this);                                                                          // Add the teleporter to the scene
-        this.scene.physics.add.existing(this, true);                                                            // Enable physics on the teleporter
-        this.glow = scene.add.sprite(x, y - 64, 'teleporter').setDepth(11);                                     // Add teleporter glow above pad
-        this.pad = scene.add.image(x, y - 64, 'teleporterPad').setDepth(11).setPipeline('Light2D');             // Add teleporter pad below
-        this.channel = channel;                                                                                 // Teleporter channel identifier
-        this.initAnimations();                                                                                  // Initialise teleporter animations
-        this.glow.play('teleporterAnim', true);                                                                 // Play teleporter animation
-        this.teleporterSound = scene.sound.add('teleporterSound');                                              // Load teleporter hum sound
-        this.attenuator = new SoundAttenuator(scene, this.glow, this.teleporterSound, 0.1, 1600, true);         // Create sound attenuator for teleporter hum sound
-        this.setCollisions();
+        super(scene, x, y, 'teleporter');                                                                               // Call the parent class constructor
+        this.scene = scene;                                                                                             // Store scene reference
+        this.scene.add.existing(this);                                                                                  // Add the teleporter to the scene
+        this.scene.physics.add.existing(this, true);                                                                    // Enable physics on the teleporter
+        this.glow = scene.add.sprite(x, y - 64, 'teleporter').setDepth(11);                                             // Add teleporter glow above pad
+        this.pad = scene.add.image(x, y - 64, 'teleporterPad').setDepth(11).setPipeline('Light2D');                     // Add teleporter pad below
+        this.channel = channel;                                                                                         // Teleporter channel identifier
+        this.initAnimations();                                                                                          // Initialise teleporter animations
+        this.glow.play('teleporterAnim', true);                                                                         // Play teleporter animation
+        this.teleporterSound = scene.sound.add('teleporterSound');                                                      // Load teleporter hum sound
+        this.attenuator = new SoundAttenuator(scene, this.glow, this.teleporterSound, 0.1, 1600, true);                 // Create sound attenuator for teleporter hum sound
+        this.setCollisions();                                                                                           // Set up collision handling
     }
 
     setCollisions() {

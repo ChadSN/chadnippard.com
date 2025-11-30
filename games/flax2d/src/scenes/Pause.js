@@ -38,6 +38,4 @@ export class Pause extends Phaser.Scene {
             .setFontSize('96px')                                                                // Set font size
             .setColor('white');                                                                 // Set text color
     }
-
-
 }

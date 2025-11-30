@@ -78,7 +78,6 @@ export class GlizzardProjectile extends Phaser.Physics.Arcade.Sprite {
                 repeat: -1
             });
         }
-
         if (!this.scene.anims.exists('glizzardProjectile_Death')) {
             this.scene.anims.create({
                 key: 'glizzardProjectile_Death',
@@ -88,5 +87,4 @@ export class GlizzardProjectile extends Phaser.Physics.Arcade.Sprite {
             });
         }
     }
-
 }

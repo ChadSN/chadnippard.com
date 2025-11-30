@@ -5,7 +5,7 @@ export class SoundAttenuator {
         this.sprite = sprite;                                                                   // reference to the sprite
         this.sound = sound;                                                                     // reference to the sound
         this.maxRange = maxRange;                                                               // maximum range for attenuation
-        this.maxVolume = maxVolume;
+        this.maxVolume = maxVolume;                                                             // maximum volume 
         scene.events.on('update', this.update, this);                                           // listen to scene update events
         sound.play({ loop: loop });                                                             // play the sound with looping option
     }

@@ -3,6 +3,7 @@ export class Crate extends Phaser.Physics.Arcade.Sprite {
         super(scene, x, y, 'crate');                                                    // Call the parent class constructor
         scene.add.existing(this);                                                       // Add the DNA to the scene
         scene.physics.add.existing(this);                                               // Enable physics on the crate 
+        this.setCollisions();                                                           // Set up collisions
         this.setPipeline('Light2D')                                                     // Enable lighting effects on the crate
         this.setOrigin(0.5, 1);                                                         // Set origin to bottom center
         this.setScale(scale.x, scale.y);                                                // Scale the crate based on its type
@@ -11,11 +12,10 @@ export class Crate extends Phaser.Physics.Arcade.Sprite {
         this.soundType = 'wood';                                                        // Set sound type for footsteps
         this.startX = x;                                                                // Store initial X position
         this.broken = false;                                                            // Track if crate is broken
-        this.crateBreakSound = scene.sound.add('breakingCrate', { volume: 0.1 });  // Crate breaking sound
+        this.crateBreakSound = scene.sound.add('breakingCrate', { volume: 0.1 });       // Crate breaking sound
         this.body.setDragX(1000);                                                       // High horizontal drag to stop sliding
         this.body.setMaxVelocity(0, 500);                                               // Limit max vertical velocity
         this.refreshBody();                                                             // Refresh body to apply changes
-        this.setCollisions();                                                           // Set up collisions
     }
 
     preUpdate(time, delta) {
@@ -35,6 +35,9 @@ export class Crate extends Phaser.Physics.Arcade.Sprite {
     }
 
     setCollisions() {
+        this.scene.physics.add.collider(this, this.scene.groundLayer);                  // Enable collision between ground layer and crates
+        this.scene.physics.add.collider(this, this.scene.crates, null, (_, crateB) =>   // Enable collision between crates if neither is broken
+            !this.broken && !crateB.broken);                                            // Collision condition
         this.scene.physics.add.collider(this.scene.player.hitbox, this,                 // Enable collision between player and crate
             (hitbox, _) => {                                                            // on collision
                 this.body.setVelocity(0);                                               // Stop crate movement on player collision
@@ -45,13 +48,10 @@ export class Crate extends Phaser.Physics.Arcade.Sprite {
                 else if (hitbox.body.blocked.down &&
                     hitbox.body.bottom <= this.body.top)                                // IF COLLIDING FROM TOP
                     this.scene.player.onCrate = this;                                   // Set the player's onPlatform reference
-            },
-            () => !this.broken
+            }, () => !this.broken                                                       // Collision condition - only if crate is not broken
         );
         this.scene.physics.add.overlap(this.scene.player.damageBox, this, () =>         // Enable overlap between player damage box and crate
             this.break());                                                              // Break the crate on overlap
-        this.scene.physics.add.collider(this, this.scene.crates, null, (_, crateB) =>   // Enable collision between crates if neither is broken
-            !this.broken && !crateB.broken);                                            // Collision condition
     }
 
     break() {
