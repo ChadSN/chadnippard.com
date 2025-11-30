@@ -319,9 +319,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                 target.setPosition(point.x, point.y);                                           // Set the hitbox's position
                 this.handleGlideSpinCollision();                                                // handle collisions during glide spin
             },
-            onComplete: () => {                                                                 // When the circular motion is complete
-                this.endGlideSpin(STATES.GLIDING, storeVelocity);                               // end glide spin and resume gliding
-            }
+            onComplete: () => this.endGlideSpin(STATES.GLIDING, storeVelocity)                  // When the circular motion is complete
         });
     }
 
@@ -553,15 +551,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         }
     }
 
-    setDamageBox(damageBox) {
-        this.damageBox = damageBox;                                                             // Assign the DamageBox to the player
-    }
+    setDamageBox(damageBox) { this.damageBox = damageBox; }                                     // Assign the DamageBox to the player
 
     stopActiveTween() {
-        if (this.activeTween) {                                                                 // if there is an active tween
-            this.activeTween.stop();                                                            // stop the tween
-            this.activeTween = null;                                                            // clear the reference
-        }
+        this.activeTween?.stop();                                                               // IF ACTIVE TWEEN EXISTS, stop it
+        this.activeTween = null;                                                                // clear the reference
     }
 
     handleCollision() {
@@ -583,23 +577,19 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     handleGlideSpinCollision() {
         if (this.hitbox.body.blocked.up) {                                                      // IF COLLIDED UP
             this.endGlideSpin(STATES.FALLING);                                                  // end glide spin and start falling
-            this.hitbox.y += this.hitbox.body.height / 2;                                       // Reset y position to previous to avoid getting stuck
-            return;
+            this.hitbox.y += this.hitbox.body.height / 2; return;                               // Reset y position to previous to avoid getting stuck
         }
         if (this.hitbox.body.blocked.down) {                                                    // IF COLLIDED DOWN
             this.endGlideSpin(STATES.IDLE);                                                     // end glide spin and start idle
-            this.setAbovePlatform();                                                            // Position player above the platform
-            return;
+            this.setAbovePlatform(); return;                                                    // Position player above the platform
         }
         if (this.hitbox.body.blocked.left) {                                                    // IF COLLIDED LEFT
             this.endGlideSpin(STATES.FALLING);                                                  // end glide spin and start falling
-            this.hitbox.x += this.hitbox.body.width / 2;                                        // Reset x position to previous to avoid getting stuck
-            return;
+            this.hitbox.x += this.hitbox.body.width / 2; return;                                // Reset x position to previous to avoid getting stuck
         }
         if (this.hitbox.body.blocked.right) {                                                   // IF COLLIDED RIGHT
             this.endGlideSpin(STATES.FALLING);                                                  // end glide spin and start falling
-            this.hitbox.x -= this.hitbox.body.width / 2;                                        // Reset x position to previous to avoid getting stuck
-            return;
+            this.hitbox.x -= this.hitbox.body.width / 2; return;                                // Reset x position to previous to avoid getting stuck
         }
     }
 
@@ -639,9 +629,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         sound.setDetune(Phaser.Math.Between(-100, 100));                                        // Add some variation to the sound
         sound.play();                                                                           // Play the footstep sound
         this.footStepSoundIsPlaying = true;                                                     // Set the flag to true
-        sound.once('complete', () => {                                                          // When the sound completes
-            this.footStepSoundIsPlaying = false;                                                // Reset the flag 
-        });
+        sound.once('complete', () => this.footStepSoundIsPlaying = false);                      // Reset the flag when the sound completes
     }
 
     getTileSoundType() {
@@ -653,9 +641,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         return null;                                                                            // return null if no soundType found
     }
 
-    getTileHit(layer) {
-        return this.scene.map.getTileAtWorldXY(this.hitbox.x, this.hitbox.body.bottom, true, this.scene.cameras.main, layer);
-    }
+    getTileHit(layer) { return this.scene.map.getTileAtWorldXY(this.hitbox.x, this.hitbox.body.bottom, true, this.scene.cameras.main, layer); } // get tile directly below player
 
     setCheckpoint(x, y) {
         if (this.checkpoint && this.checkpoint.x === x && this.checkpoint.y === y) return;      // Prevent setting the same checkpoint again
@@ -674,9 +660,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             duration: 150,                                                                      // Duration of fade-in
             hold: 1000,                                                                         // Hold at full opacity for 1 second
             yoyo: true,                                                                         // Fade out after hold
-            onComplete: () => {                                                                 // On complete of fade-in and hold
-                checkpointText.destroy();                                                       // Destroy the text object
-            }
+            onComplete: () => checkpointText.destroy()                                          // Destroy text after tween completes
         });
     }
 
@@ -685,7 +669,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             this.scene.anims.create({                                                               // create idle animation
                 key: 'idle',                                                                        // Animation for idle state
                 frames: this.scene.anims.generateFrameNumbers('flax_Idle', { start: 0, end: 4 }),   // Frames 0-4 are for idle
-                frameRate: 4,                                                                       // Adjust frameRate as needed
+                frameRate: 4,                                                                       // Frame rate of 4 fps
                 repeat: -1                                                                          // Loop the animation
             });
         if (!this.scene.anims.exists('run'))

@@ -59,7 +59,6 @@ export class Game extends Phaser.Scene {
         this.munchers = this.physics.add.group({ runChildUpdate: true });                                               // Create a group for munchers
         this.glizzards = this.add.group({ runChildUpdate: true });                                                      // Create a group for glizzards
         this.dnas = this.physics.add.staticGroup();                                                                     // Create a static group for DNAs
-        this.soundAttenuators = [];                                                                                     // Create a group for sound attenuators
         // CREATE LEVEL -------------------------------------------------------------------------------------------------------------------------------------------------------------
         this.createLevel('level1');                                                                                     // Create level 1
     }
@@ -138,8 +137,6 @@ export class Game extends Phaser.Scene {
         this.destroyGroup(this.glizzards);                                                                      // Destroy glizzard enemies
         this.destroyGroup(this.munchers);                                                                       // Destroy muncher enemies
         this.destroyGroup(this.dnas);                                                                           // Destroy DNA collectables
-        this.soundAttenuators.forEach(a => a.destroy());                                                        // Destroy sound attenuators
-        this.soundAttenuators = [];                                                                             // Clear sound attenuators array
         this.lights.destroy();                                                                                  // Destroy the Lights Manager
         this.groundLayer = null;                                                                                // Clear ground layer reference
         this.groundInsideLayer = null;                                                                          // Clear ground inside layer reference
@@ -294,9 +291,8 @@ export class Game extends Phaser.Scene {
 
     spawnPoles() {
         const polePoints = this.map.filterObjects("Objects", obj => obj.name === "polePoint");                  // Find all pole spawn points
-        polePoints.forEach(polePoint => {                                                                       // Iterate through each polePoint and create a pole at its position
-            this.poles.create(polePoint.x, polePoint.y, 'pole').setScale(2).refreshBody().setDepth(4);          // Create pole sprite, scale it, refresh body for physics, and set depth
-        });
+        polePoints.forEach(polePoint =>                                                                         // Iterate through each polePoint and create a pole at its position
+            this.poles.create(polePoint.x, polePoint.y, 'pole').setScale(2).refreshBody().setDepth(4));         // Create pole sprite, scale it, refresh body for physics, and set depth
     }
 
     spawnCrates() {
@@ -455,5 +451,4 @@ export class Game extends Phaser.Scene {
         this.destroyLevel();                                                                                        // Clean up the current level
         this.createLevel(levelKey);                                                                                 // Load the new level
     }
-
 }
