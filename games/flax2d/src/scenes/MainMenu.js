@@ -12,8 +12,8 @@ export class MainMenu extends Phaser.Scene {
 
     create() {
         this.musicManager = new MusicManager(this);                                                 // Create a music manager instance
-        this.background = this.add.image(960, 540, 'sky').setDepth(-1);                             // Add background image at depth 0   
-        this.title = this.add.image(960, 200, 'title').setScale(2);                                 // Add title image at depth 2 and scale it up
+        this.add.image(960, 540, 'sky').setDepth(-1);                                               // Add background image at depth 0   
+        this.add.image(960, 200, 'title').setScale(2);                                              // Add title image at depth 2 and scale it up
         this.createHighScoreText();                                                                 // Create and display high score text
         this.createStartButton();                                                                   // Create the start button
         this.createControlsButton();                                                                // Create the controls button

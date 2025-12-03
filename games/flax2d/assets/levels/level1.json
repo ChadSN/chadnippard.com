@@ -3546,7 +3546,7 @@
                 }, 
                 {
                  "height":0,
-                 "id":372,
+                 "id":374,
                  "name":"spawnPoint",
                  "point":true,
                  "rotation":0,
@@ -3563,7 +3563,7 @@
          "y":0
         }],
  "nextlayerid":8,
- "nextobjectid":373,
+ "nextobjectid":378,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.11.2",

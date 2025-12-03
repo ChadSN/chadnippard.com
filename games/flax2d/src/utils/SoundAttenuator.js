@@ -1,13 +1,14 @@
 export class SoundAttenuator {
-    constructor(scene, sprite, sound, maxVolume = 1, maxRange = 600, loop = false) {
+    constructor(scene, sprite, sound, maxVolume = 0, maxRange = 600, loop = false) {
         this.scene = scene;                                                                     // reference to the scene
         this.cam = scene.cameras.main;                                                          // reference to the main camera
         this.sprite = sprite;                                                                   // reference to the sprite
         this.sound = sound;                                                                     // reference to the sound
         this.maxRange = maxRange;                                                               // maximum range for attenuation
         this.maxVolume = maxVolume;                                                             // maximum volume 
+        this.volume = 0;                                                                        // current volume
         scene.events.on('update', this.update, this);                                           // listen to scene update events
-        sound.play({ loop: loop });                                                             // play the sound with looping option
+        sound.play({ volume: this.volume, loop: loop });                                        // play the sound with looping option
     }
 
     update() {
@@ -15,9 +16,9 @@ export class SoundAttenuator {
         const camX = this.cam.worldView.x + this.cam.worldView.width / 2;                       // Center X of the camera view
         const camY = this.cam.worldView.y + this.cam.worldView.height / 2;                      // Center Y of the camera view
         const dist = Phaser.Math.Distance.Between(camX, camY, this.sprite.x, this.sprite.y);    // calculate distance between camera center and sprite
-        let volume = 1 - dist / this.maxRange;                                                  // calculate volume based on distance
-        volume = Phaser.Math.Clamp(volume, 0, 1);                                               // clamp volume between 0 and 1
-        this.sound.setVolume(volume * this.maxVolume);                                          // set the sound volume
+        this.volume = 1 - dist / this.maxRange;                                                 // calculate volume based on distance
+        this.volume = Phaser.Math.Clamp(this.volume, 0, 1);                                     // clamp volume between 0 and 1
+        this.sound.setVolume(this.volume * this.maxVolume);                                     // set the sound volume
     }
 
     destroy() {

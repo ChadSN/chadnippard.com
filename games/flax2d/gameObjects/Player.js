@@ -711,7 +711,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                 key: 'glide',
                 frames: this.scene.anims.generateFrameNumbers('flax_Glide', { start: 0, end: 5 }),
                 frameRate: 12,
-                repeat: 0
+                repeat: -1
             });
         if (!this.scene.anims.exists('poleSwing'))
             this.scene.anims.create({

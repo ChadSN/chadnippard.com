@@ -15,6 +15,8 @@ import { WheelPlatform } from '../../gameObjects/WheelPlatform.js';
 import { Ring } from '../../gameObjects/Ring.js';
 import { Geyser } from '../../gameObjects/Geyser.js';
 
+// ADD CAMERA SHAKE
+
 export class Game extends Phaser.Scene {
     constructor() {
         super('Game');
@@ -59,6 +61,7 @@ export class Game extends Phaser.Scene {
         this.munchers = this.physics.add.group({ runChildUpdate: true });                                               // Create a group for munchers
         this.glizzards = this.add.group({ runChildUpdate: true });                                                      // Create a group for glizzards
         this.dnas = this.physics.add.staticGroup();                                                                     // Create a static group for DNAs
+        this.mountains = this.add.group();                                                                              // Create a group for mountains
         // CREATE LEVEL -------------------------------------------------------------------------------------------------------------------------------------------------------------
         this.createLevel('level1');                                                                                     // Create level 1
     }
@@ -101,6 +104,7 @@ export class Game extends Phaser.Scene {
         const spawnPoint = this.map.findObject("Objects", obj => obj.name === "spawnPoint");                    // Find the spawn point object in the Tiled map
         this.spawnPlayer(spawnPoint.x, spawnPoint.y);                                                           // Spawn the player at the spawn point location
         // OBJECTS SETUP
+        this.createMountains();
         this.addLights();                                                                                       // Add lighting effects
         this.spawnSigns();                                                                                      // Spawn signs with text
         this.spawnPoles();                                                                                      // Spawn poles for swinging
@@ -125,6 +129,7 @@ export class Game extends Phaser.Scene {
 
     destroyLevel() {
         this.physics.world.colliders.getActive().forEach(c => c.destroy());                                     // Destroy all active colliders
+        this.destroyGroup(this.mountains);                                                                      // Destroy mountains
         this.destroyGroup(this.signs);                                                                          // Destroy signs
         this.destroyGroup(this.poles);                                                                          // Destroy poles
         this.destroyGroup(this.crates);                                                                         // Destroy crates
@@ -235,6 +240,16 @@ export class Game extends Phaser.Scene {
         this.cameras.main.stopFollow();                                                                         // Temporarily stop camera from following player
         this.cameras.main.centerOn(x, y);                                                                       // Center camera on player spawn point
         this.time.delayedCall(100, () => this.cameras.main.startFollow(this.player, false, 0.08, 0.08));        // Make the camera follow the player smoothly
+    }
+
+    createMountains() {
+        const scrollFactor = 0.15;                                                                              // Parallax scroll factor for mountains
+        const imageHeight = this.textures.get('mountains').getSourceImage().height;                             // Get the height of the mountain image
+        const initM = this.add.image(0, imageHeight + 32, 'mountains')                                          // initial mountain
+            .setOrigin(0, 1).setDepth(0).setScrollFactor(scrollFactor);                                         // Position at bottom-left corner
+        const M = this.add.image(initM.displayWidth, initM.y, 'mountains')                                      // next mountain
+            .setOrigin(0, 1).setDepth(0).setScrollFactor(scrollFactor);                                         // Position to the right of the initial mountain
+        this.mountains.addMultiple([initM, M]);                                                                 // Add mountains to the mountains group
     }
 
     addLights() {
@@ -392,7 +407,7 @@ export class Game extends Phaser.Scene {
     spawnClouds() {
         const CloudYMinPoint = this.map.filterObjects("Objects", obj => obj.name === "CloudYMin")[0];               // Get cloud Y min point 
         const CloudYMaxPoint = this.map.filterObjects("Objects", obj => obj.name === "CloudYMax")[0];               // Get cloud Y max point
-        this.cloudSpawner = new CloudSpawner(this);                                                                 // Create a CloudSpawner instance
+        if (!this.cloudSpawner) this.cloudSpawner = new CloudSpawner(this);                                         // Create a CloudSpawner instance
         this.cloudSpawner.spawnClouds(1, CloudYMinPoint.y, CloudYMaxPoint.y);                                       // Spawn clouds in the background with depth 1
     }
 

@@ -1990,15 +1990,15 @@
                 }, 
                 {
                  "height":0,
-                 "id":396,
+                 "id":397,
                  "name":"spawnPoint",
                  "point":true,
                  "rotation":0,
                  "type":"",
                  "visible":true,
                  "width":0,
-                 "x":64,
-                 "y":3584
+                 "x":12597,
+                 "y":3154
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -2007,7 +2007,7 @@
          "y":0
         }],
  "nextlayerid":8,
- "nextobjectid":397,
+ "nextobjectid":398,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.11.2",
