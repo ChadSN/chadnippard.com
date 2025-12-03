@@ -501,6 +501,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.health = Math.max(0, this.health - amount);                                        // Decrease health but not below 0
         this.scene.uiManager.updateHealth(this.health);                                         // Update health text
         this.invulnerable = true;                                                               // set invulnerable
+        this.scene.cameras.main.shake(100, 0.01);                                               // Shake the camera for 100ms with intensity 0.01
         this.scene.time.delayedCall(250, () => this.invulnerable = false, null, this);          // remove invulnerable after 250ms
         if (this.health === 0) this.die();                                                      // Call die method if health reaches 0
     }
@@ -520,6 +521,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         if (this.state === STATES.DEAD) return;                                                 // Prevent multiple death triggers
         this.setState(STATES.DEAD);                                                             // Set isDead flag to true
         this.hitbox.body.enable = false;                                                        // Disable player physics
+        this.scene.cameras.main.shake(100, 0.01);                                               // Shake the camera for 100ms with intensity 0.01
         this.respawn();                                                                         // Respawn the player
     }
 
