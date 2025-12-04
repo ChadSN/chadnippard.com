@@ -1990,15 +1990,15 @@
                 }, 
                 {
                  "height":0,
-                 "id":397,
+                 "id":396,
                  "name":"spawnPoint",
                  "point":true,
                  "rotation":0,
                  "type":"",
                  "visible":true,
                  "width":0,
-                 "x":12597,
-                 "y":3154
+                 "x":64,
+                 "y":3584
                 }],
          "opacity":1,
          "type":"objectgroup",
