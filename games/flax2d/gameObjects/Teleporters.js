@@ -5,13 +5,13 @@ export class Teleporter extends Phaser.Physics.Arcade.Sprite {
         this.scene = scene;                                                                                             // Store scene reference
         this.scene.add.existing(this);                                                                                  // Add the teleporter to the scene
         this.scene.physics.add.existing(this, true);                                                                    // Enable physics on the teleporter
-        this.glow = scene.add.sprite(x, y - 64, 'teleporter').setDepth(11);                                             // Add teleporter glow above pad
+        this.setOrigin(0.5, 1).setDepth(11);                                                                            // Set origin to bottom center and depth above ground layer
         this.pad = scene.add.image(x, y - 64, 'teleporterPad').setDepth(11).setPipeline('Light2D');                     // Add teleporter pad below
         this.channel = channel;                                                                                         // Teleporter channel identifier
         this.initAnimations();                                                                                          // Initialise teleporter animations
-        this.glow.play('teleporterAnim', true);                                                                         // Play teleporter animation
+        this.play('teleporterAnim', true);                                                                              // Play teleporter animation
         this.teleporterSound = scene.sound.add('teleporterSound');                                                      // Load teleporter hum sound
-        this.attenuator = new SoundAttenuator(scene, this.glow, this.teleporterSound, 0.1, 1600, true);                 // Create sound attenuator for teleporter hum sound
+        this.attenuator = new SoundAttenuator(scene, this, this.teleporterSound, 0.1, 1600, true);                      // Create sound attenuator for teleporter hum sound
         this.setCollisions();                                                                                           // Set up collision handling
     }
 
@@ -39,7 +39,6 @@ export class Teleporter extends Phaser.Physics.Arcade.Sprite {
 
     destroy() {
         this.pad.destroy();                                                                                             // Destroy the teleporter pad
-        this.glow.destroy();                                                                                            // Destroy the teleporter glow
         this.attenuator.destroy();                                                                                      // Destroy the sound attenuator
         super.destroy();                                                                                                // Call the parent destroy method
     }

@@ -513,7 +513,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     collectDNA(dna) {
         if (this.health >= this.maxHealth) return;                                              // Don't collect if health is full
-        dna.disableBody(true, true);                                                            // Remove the collected DNA
+        //dna.disableBody(true, true);                                                            // Remove the collected DNA
+        dna.destroy();
         this.heal(1);                                                                           // Heal the player
     }
 

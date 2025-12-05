@@ -219,9 +219,8 @@ export class Game extends Phaser.Scene {
 
     setupCamera() {
         const cam = this.cameras.main;                                                                          // get main camera
-        cam.setBounds(0, 0, this.worldWidth, this.worldHeight);                                                 // Set camera bounds to the size of the level
         cam.setDeadzone(cam.width / 4, 0);                                                                      // Set deadzone to center quarter width and full height
-        this.cameras.main.roundPixels = true;                                                                   // Prevent sub-pixel rendering to avoid blurriness
+        cam.roundPixels = true;                                                                                 // Prevent sub-pixel rendering to avoid blurriness
     }
 
     // SPAWN OBJECTS --------------------------------------------------------------------------------------------------------------------------------------------------------------------

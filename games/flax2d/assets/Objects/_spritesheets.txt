@@ -1,4 +1,0 @@
-crate_small.png,64,64,8
-crate_large.png,64,128,8
-teleporter.png,64,128,8
-gust.png,192,192,12
