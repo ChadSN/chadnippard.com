@@ -50,6 +50,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.onPlatform = null;                                                                 // reference to the platform the player is on
         this.onCrate = null;
         this.glideTurnCooldown = true;                                                          // cooldown flag for glide turns
+        this.activeTween = null;                                                                // reference to active tween
+        this.isTailwhipping = false;                                                            // flag to indicate if tailwhip is active
         this.setState(STATES.IDLE);                                                             // set initial state to IDLE
         this.setCollisions();
     }
@@ -419,12 +421,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     poleSwing(pole) {
-        if (this.state === STATES.POLE_SWINGING || this.didStartPoleJump) return                // prevent multiple pole swings
-        if (!pole || this.activePole === pole) return;                                          // Prevent re-triggering on same pole
+        if (this.state === STATES.POLE_SWINGING) return                                         // prevent multiple pole swings
+        this.stopActiveTween();                                                                 // Stop any active tweens
+        if (!pole || this.activePole === pole || this.didStartPoleJump) return;                 // prevent multiple pole swings
         this.didStartPoleJump = false;                                                          // set pole jump flag
         this.didStartGlide = false;                                                             // Reset glide start flag
         this.disableMovement = false;                                                           // Ensure movement is enabled
-        this.stopActiveTween();                                                                 // Stop any active tweens
         this.endGlideSound();                                                                   // end gliding sound
         this.endTailwhip(true);                                                                 // End tailwhip if active
         this.activePole = pole;                                                                 // Store reference to the pole being swung on
