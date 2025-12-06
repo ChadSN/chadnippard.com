@@ -41,6 +41,7 @@ export class Game extends Phaser.Scene {
     }
 
     create() {
+        this.input.setDefaultCursor('none');                                                                            // Hide the default cursor
         this.physics.world.TILE_BIAS = 64;                                                                              // Increase the tile bias to prevent tunneling
         this.background = this.add.image(960, 540, 'sky').setDepth(0).setScrollFactor(0);                               // Add the background image at the center of the game canvas
         this.setupCamera();                                                                                             // Setup camera to follow the player
@@ -158,7 +159,7 @@ export class Game extends Phaser.Scene {
             switch (this.levelKey) {                                                                            // Determine the next level based on current level key
                 case 'level1': this.levelKey = 'level2'; this.transitionToLevel(this.levelKey); break;          // Transition to level 2
                 case 'level2': this.levelKey = 'level3'; this.transitionToLevel(this.levelKey); break;          // Transition to level 3
-                case 'level3': this.endGame(); break;                                                           // Transition to Game Over scene          
+                case 'level3': this.input.setDefaultCursor('default'); this.endGame(); break;                   // Transition to Game Over scene          
                 default: break;                                                                                 // Handle unknown level keys
             }
         });
@@ -207,12 +208,14 @@ export class Game extends Phaser.Scene {
         if (this.scene.isPaused()) return;                                                                      // Prevent double-pause
         this.musicManager.pauseMusic();                                                                         // Pause music
         this.scene.launch('Pause');                                                                             // Launch Pause scene
+        this.input.setDefaultCursor('default');                                                                 // Show the default cursor
         this.scene.pause();                                                                                     // Pause Game scene
     }
 
     unpauseGame() {
         this.scene.resume();                                                                                    // Resume Game scene
         this.musicManager.resumeMusic();                                                                        // Resume music
+        this.input.setDefaultCursor('none');                                                                    // Hide the default cursor
     }
 
     // SETUP CAMERA ---------------------------------------------------------------------------------------------------------------------------------------------------------------------

@@ -1,5 +1,6 @@
 import { createMusicMuteButton } from '../utils/Utils.js';
 import { createQuitButton } from '../utils/Utils.js';
+import { createRespawnButton } from '../utils/Utils.js';
 
 export class Pause extends Phaser.Scene {
     constructor() {
@@ -18,6 +19,7 @@ export class Pause extends Phaser.Scene {
         });
         this.createBackground();                                                                // Create blurred background
         this.createPauseText();                                                                 // Create "Game Paused" text
+        createRespawnButton(this);                                                             // Create respawn button
         createMusicMuteButton(this, gameScene.musicManager);                                    // Create the music mute button
         createQuitButton(this);                                                                 // Create the quit button
     }

@@ -45,6 +45,26 @@ export function createQuitButton(scene) {
     setButtonHoverEffect(scene, quitButton, exitIcon);                                          // Set hover effects for quit button
 }
 
+export function createRespawnButton(scene) {
+    const cam = scene.cameras.main;                                                             // Get the main camera
+    const button = scene.add.image(cam.width / 2, cam.height - 128, 'startGameButton')          // Create respawn button
+        .setInteractive({ useHandCursor: true })                                                // Make the button interactive with a hand cursor
+        .setDepth(1000)
+    const buttonText = scene.add.text(button.x, button.y, 'Respawn')                            // Create button text
+        .setOrigin(0.5)
+        .setFontFamily('Impact')
+        .setFontSize('48px')
+        .setColor('white')
+        .setDepth(1000);
+    setButtonHoverEffect(scene, button, buttonText);                                            // Set hover effects for respawn button
+    const gameScene = scene.scene.get('Game');                                                  // Get the Game scene
+    button.on('pointerdown', () => {                                                            // Handle button click
+        scene.scene.stop();                                                                     // Stop Pause scene
+        gameScene.unpauseGame();                                                                // Unpause the game
+        gameScene.player.respawn();                                                             // Call respawn on player
+    });
+}
+
 function exit() {
     window.sessionStorage.clear();                                                              // Clear session storage
     window.location.reload();                                                                   // Reload the page to quit to main menu
