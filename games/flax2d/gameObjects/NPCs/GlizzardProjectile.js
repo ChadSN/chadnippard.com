@@ -37,9 +37,9 @@ export class GlizzardProjectile extends Phaser.Physics.Arcade.Sprite {
     preUpdate(time, delta) {
         super.preUpdate(time, delta);                                                   // Call the parent class preUpdate
         if (!this.active) return;                                                       // Only update if active
-        this.setVelocityX(this.normalizedX * this.speed);                               // Maintain velocity towards target
-        this.setVelocityY(this.normalizedY * this.speed);                               // Maintain velocity towards target
-        this.rotation = Math.atan2(this.normalizedY, this.normalizedX);                 // Rotate to face movement direction
+        this.setVelocityX(this.normalisedX * this.speed);                               // Maintain velocity towards target
+        this.setVelocityY(this.normalisedY * this.speed);                               // Maintain velocity towards target
+        this.rotation = Math.atan2(this.normalisedY, this.normalisedX);                 // Rotate to face movement direction
         if (this.x < 0 || this.x > this.scene.worldWidth ||
             this.y < 0 || this.y > this.scene.worldHeight)
             this.init();                                                                // Deactivate the projectile if out of bounds
@@ -57,10 +57,10 @@ export class GlizzardProjectile extends Phaser.Physics.Arcade.Sprite {
         const directionX = this.targetX - this.x;                                       // Calculate direction vector
         const directionY = this.targetY - this.y;                                       // Calculate direction vector
         const magnitude = Math.sqrt(directionX * directionX + directionY * directionY); // Calculate magnitude
-        this.normalizedX = directionX / magnitude;                                      // Normalise X direction
-        this.normalizedY = directionY / magnitude;                                      // Normalise Y direction
-        this.setVelocityX(this.normalizedX * this.speed);                               // Set velocity in the normalised direction
-        this.setVelocityY(this.normalizedY * this.speed);                               // Set velocity in the normalised direction
+        this.normalisedX = directionX / magnitude;                                      // Normalise X direction
+        this.normalisedY = directionY / magnitude;                                      // Normalise Y direction
+        this.setVelocityX(this.normalisedX * this.speed);                               // Set velocity in the normalised direction
+        this.setVelocityY(this.normalisedY * this.speed);                               // Set velocity in the normalised direction
         this.scene.time.delayedCall(2000, () => {                                       // After 2 seconds
             if (this.active) {                                                          // IF STILL ACTIVE
                 this.init();                                                            // Deactivate the projectile after 2 seconds
