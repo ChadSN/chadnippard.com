@@ -96,6 +96,8 @@ export class Preloader extends Phaser.Scene {
     }
 
     create() {
-        this.scene.start('MainMenu'); // Start the MainMenu scene after loading is complete
+        window.dataLayer = window.dataLayer || [];                  // Initialise dataLayer if it doesn't exist
+        window.dataLayer.push({ 'event': 'phaser_game_start' });    // Push an event to dataLayer indicating the game has started
+        this.scene.start('MainMenu');                               // Start the MainMenu scene after loading is complete
     }
 }
