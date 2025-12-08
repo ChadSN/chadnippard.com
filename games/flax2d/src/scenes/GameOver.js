@@ -7,6 +7,12 @@ export class GameOver extends Phaser.Scene {
     }
 
     create(data) {
+        window.dataLayer = window.dataLayer || [];              // Initialise dataLayer if it doesn't exist
+        window.dataLayer.push({                                 // Push an event to dataLayer indicating the game has completed
+            event: 'phaser_game_complete',                      // Event name
+            score: data.score,                                  // Player's final score
+            elapsed_ms: data.elapsed                            // Elapsed time in milliseconds
+        });
         this.background = this.add.image(960, 540, 'sky');      // Set background image
         this.cameras.main.fadeIn(1000, 255, 255, 255);          // Fade in effect
         const elapsed = data.elapsed;                           // Get elapsed time from data
