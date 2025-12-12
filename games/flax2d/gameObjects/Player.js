@@ -125,8 +125,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.lastVel = this.hitbox.body.velocity.clone();                                       // Store the player's last velocity
         this.outOfBoundsCheck();                                                                // check if out of bounds
         if (this.onPlatform) {                                                                  // If the player is on a platform
-            this.hitbox.x += this.onPlatform._deltaX;                                           // Move player horizontally with platform
-            this.hitbox.y += this.onPlatform._deltaY;                                           // Move player vertically with platform
+            this.hitbox.x += this.onPlatform.deltaX;                                            // Move player horizontally with platform
+            this.hitbox.y += this.onPlatform.deltaY;                                            // Move player vertically with platform
             if (!this.hitbox.body.blocked.down)                                                 // If player is no longer on the platform
                 this.onPlatform = null;                                                         // Clear the onPlatform reference
         }

@@ -12,6 +12,18 @@
                     'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
         })(window, document, 'script', 'dataLayer', 'GTM-PRF5264G');</script>
     <!-- End Google Tag Manager -->
+    <script src="libs/discord-embedded-app-sdk.js"></script>
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            if (window.DiscordNative) {
+                DiscordNative.activity.init().then(() => {
+                    console.log('Discord Activity SDK initialized!');
+                });
+            } else {
+                console.warn('Discord Activity SDK not found. Running standalone.');
+            }
+        });
+    </script>
     <!-- Meta Tags -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">

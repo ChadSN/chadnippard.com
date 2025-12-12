@@ -28,7 +28,7 @@ export class WheelPlatform extends Phaser.Physics.Arcade.Sprite {
         const x = this.orbit.center.x + this.orbit.radius * Math.cos(this.orbit.angle);             // Calculate new x position
         const y = this.orbit.center.y + this.orbit.radius * Math.sin(this.orbit.angle);             // Calculate new y position
         this.body.reset(x, y);                                                                      // Update the physics body position
-        this._deltaX = x - oldX;                                                                    // Calculate change in x position
-        this._deltaY = y - oldY;                                                                    // Calculate change in y position
+        this.deltaX = x - oldX;                                                                     // Calculate change in x position
+        this.deltaY = y - oldY;                                                                     // Calculate change in y position
     }
 }
